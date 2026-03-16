@@ -2,6 +2,21 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <!--
+        Declare that telephony hardware is NOT required.
+        This tells the Play Store the app can run on devices without a SIM
+        (tablets, Chromebooks) — required by lint when READ_SMS / RECEIVE_SMS
+        permissions are declared.
+    -->
+    <uses-feature
+        android:name="android.hardware.telephony"
+        android:required="false" />
+
+    <!-- Fingerprint is optional — app works without it (biometric lock is a toggle) -->
+    <uses-feature
+        android:name="android.hardware.fingerprint"
+        android:required="false" />
+
     <!-- SMS -->
     <uses-permission android:name="android.permission.READ_SMS" />
     <uses-permission android:name="android.permission.RECEIVE_SMS" />
