@@ -2,8 +2,6 @@ name: Build SpendTracker Pro APK
 
 on:
   workflow_dispatch:
-  push:
-    branches: [ main ]
 
 jobs:
   build:
@@ -30,7 +28,7 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
-      # Gradle setup — no version override; wrapper controls the version
+      # Gradle setup
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
         with:
@@ -39,9 +37,7 @@ jobs:
       - name: Make Gradle executable
         run: chmod +x ./gradlew
 
-      # gradle-wrapper.jar must exist for ./gradlew to work.
-      # If it was not committed to the repo (e.g. caught by .gitignore),
-      # regenerate it here using the system Gradle installation.
+      # Regenerate gradle-wrapper.jar if missing
       - name: Regenerate Gradle Wrapper JAR if missing
         run: |
           if [ ! -f "gradle/wrapper/gradle-wrapper.jar" ]; then
@@ -52,13 +48,13 @@ jobs:
             echo "gradle-wrapper.jar present, skipping regeneration."
           fi
 
-      # Run lint
+      # Run Android lint
       - name: Run Android Lint
-        run: ./gradlew lint
+        run: ./gradlew lint --no-daemon
 
       # Run unit tests
       - name: Run Unit Tests
-        run: ./gradlew testDebugUnitTest
+        run: ./gradlew testDebugUnitTest --no-daemon
 
       # Build Debug APK
       - name: Build Debug APK
@@ -89,7 +85,7 @@ jobs:
           retention-days: 30
 
       # Upload Play Store AAB
-      - name: Upload AAB
+      - name: Upload Play Store AAB
         uses: actions/upload-artifact@v4
         with:
           name: SpendTrackerPro-AAB
