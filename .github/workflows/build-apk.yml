@@ -30,7 +30,7 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
-      # Gradle setup — no gradle-version override; let the wrapper decide
+      # Gradle setup — no version override; wrapper controls the version
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
         with:
@@ -39,11 +39,24 @@ jobs:
       - name: Make Gradle executable
         run: chmod +x ./gradlew
 
+      # gradle-wrapper.jar must exist for ./gradlew to work.
+      # If it was not committed to the repo (e.g. caught by .gitignore),
+      # regenerate it here using the system Gradle installation.
+      - name: Regenerate Gradle Wrapper JAR if missing
+        run: |
+          if [ ! -f "gradle/wrapper/gradle-wrapper.jar" ]; then
+            echo "gradle-wrapper.jar not found — regenerating with Gradle 8.9..."
+            gradle wrapper --gradle-version 8.9 --distribution-type bin
+            echo "Regenerated successfully."
+          else
+            echo "gradle-wrapper.jar present, skipping regeneration."
+          fi
+
       # Run lint
       - name: Run Android Lint
         run: ./gradlew lint
 
-      # Run tests
+      # Run unit tests
       - name: Run Unit Tests
         run: ./gradlew testDebugUnitTest
 
