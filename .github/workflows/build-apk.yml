@@ -16,27 +16,26 @@ jobs:
 
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v4.2.2
 
       - name: Setup Java 17
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v4.7.0
         with:
           distribution: temurin
           java-version: '17'
           cache: gradle
 
       - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
+        uses: android-actions/setup-android@v3.2.1
 
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v3
+        uses: gradle/actions/setup-gradle@v4.3.1
         with:
           cache-read-only: false
 
       - name: Make Gradle executable
         run: chmod +x ./gradlew
 
-      # Regenerate gradle-wrapper.jar if it was not committed
       - name: Regenerate Gradle Wrapper JAR if missing
         run: |
           if [ ! -f "gradle/wrapper/gradle-wrapper.jar" ]; then
@@ -44,15 +43,13 @@ jobs:
             gradle wrapper --gradle-version 8.9 --distribution-type bin
           fi
 
-      # Decode the keystore from the base64 GitHub Secret and write it to disk.
-      # The release build needs the physical file at app/spendtracker.keystore.
       - name: Decode Keystore
         run: |
           if [ -n "${{ secrets.KEYSTORE_BASE64 }}" ]; then
             echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > app/spendtracker.keystore
-            echo "✅ Keystore decoded successfully ($(wc -c < app/spendtracker.keystore) bytes)"
+            echo "✅ Keystore decoded ($(wc -c < app/spendtracker.keystore) bytes)"
           else
-            echo "⚠️ KEYSTORE_BASE64 secret not set — release build will fail signing"
+            echo "⚠️ KEYSTORE_BASE64 secret not set — release signing will fail"
           fi
 
       - name: Run Android Lint
@@ -71,21 +68,21 @@ jobs:
         run: ./gradlew bundleRelease --stacktrace --no-daemon
 
       - name: Upload Debug APK
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v4.6.2
         with:
           name: SpendTrackerPro-Debug-APK
           path: app/build/outputs/apk/debug/app-debug.apk
           retention-days: 30
 
       - name: Upload Release APK
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v4.6.2
         with:
           name: SpendTrackerPro-Release-APK
           path: app/build/outputs/apk/release/app-release.apk
           retention-days: 30
 
       - name: Upload AAB
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v4.6.2
         with:
           name: SpendTrackerPro-AAB
           path: app/build/outputs/bundle/release/app-release.aab
