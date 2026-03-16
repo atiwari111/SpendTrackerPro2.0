@@ -1,0 +1,100 @@
+{
+  "version": "1.5",
+  "description": "SpendTracker Pro merchant category dataset",
+  "merchants": {
+    "Food": [
+      "swiggy","zomato","dominos","domino","pizza hut","kfc","mcd","mcdonalds","burger king",
+      "subway","starbucks","cafe coffee day","ccd","blue tokai","third wave","haldiram","haldirams",
+      "chaayos","faasos","eatfit","freshmenu","box8","behrouz","taco bell","barbeque nation",
+      "barbeque","wow momo","wow momos","biryani by kilo","paradise biryani","social",
+      "pita pit","dunkin","baskin robbins","naturals ice cream","amul","papa johns",
+      "la pino z","rolls mania","oven story","ovenstory","lunchbox","the good bowl",
+      "kwality walls","mojo pizza","burger barn","instacafe"
+    ],
+    "Groceries": [
+      "zepto","blinkit","bigbasket","big basket","jiomart","jio mart","grofers","dmart","d-mart",
+      "smart bazar","smart bazaar","reliance fresh","reliance smart","more supermarket","more retail",
+      "nature basket","spencers","spencer","star bazaar","star market","easyday","foodhall",
+      "godrej nature","safal","vegetable market","subzi mandi","dunzo","swiggy instamart",
+      "instamart","bb daily"
+    ],
+    "Shopping": [
+      "amazon","flipkart","myntra","ajio","meesho","nykaa","tatacliq","tata cliq","snapdeal",
+      "shopsy","decathlon","ikea","h&m","zara","uniqlo","pantaloons","westside","shoppers stop",
+      "max fashion","max retail","lifestyle","central","v2 retail","bewakoof","firstcry",
+      "hopscotch","lenskart","pepperfry","urban ladder","livspace","boat","noise","samsung",
+      "apple","croma","reliance digital","vijay sales","poorvika","sangeetha","inr clothing",
+      "blackberrys","raymond","fabindia","bata","liberty shoes","metro shoes","mochi",
+      "clovia","zivame","purplle","sugar cosmetics","mamaearth","minimalist","plum",
+      "wow skin","mcaffeine"
+    ],
+    "Transport": [
+      "uber","ola","rapido","meru","bluestar","jugnoo","shuttl","chalo","dtc","bmtc","ksrtc",
+      "msrtc","metro card","dmrc","nmmc","best bus","yulu","bounce","vogo","blu smart",
+      "blusmart","taxi","cab","auto rickshaw"
+    ],
+    "Fuel": [
+      "hp","hpcl","bp","bpcl","iocl","indian oil","hindustan petroleum","bharat petroleum",
+      "shell","essar oil","reliance petrol","nayara","petronet","petrol pump","fuel station",
+      "cng station","ev charging","ather grid","tata power ev","statiq"
+    ],
+    "Travel": [
+      "irctc","indian railway","makemytrip","goibibo","redbus","ixigo","yatra","cleartrip",
+      "easemytrip","airindia","air india","indigo","spicejet","vistara","akasa","go first",
+      "air asia","airasia","oyo","oyo rooms","airbnb","treebo","fabhotels","taj hotels",
+      "marriott","ihg","booking.com","agoda","expedia","trivago","holidify",
+      "thrillophilia","viator"
+    ],
+    "Bills": [
+      "airtel","jio","vodafone","bsnl","tata sky","tatasky","dish tv","dishtv","sun direct",
+      "d2h","videocon d2h","tata power","adani electricity","bescom","msedcl","tneb","bses",
+      "torrent power","mahadiscom","cesc","wesco","indane","hp gas","bharat gas",
+      "mahanagar gas","indraprastha gas","igl","mgl","act fibernet","hathway",
+      "you broadband","excitel","den networks","water board","bwssb","nmmc water"
+    ],
+    "Entertainment": [
+      "netflix","spotify","hotstar","disney","disney+ hotstar","prime video","amazon prime",
+      "youtube premium","youtube","sony liv","sonyliv","zee5","voot","alt balaji","altbalaji",
+      "aha","mx player","jio cinema","apple tv","pvr","inox","cinepolis","carnival cinemas",
+      "bookmyshow","paytm insider","lbb","dineout","steam","playstation","xbox","gaana",
+      "wynk","jiosaavn","saavn","hungama"
+    ],
+    "Health": [
+      "apollo","appollo","fortis","max hospital","aiims","manipal","narayana","columbia asia",
+      "medanta","kokilaben","lilavati","nh health","practo","lybrate","tata health","mfine",
+      "healthians","thyrocare","dr lal","lal path","srl diagnostics"
+    ],
+    "Medicine": [
+      "apollo pharmacy","pharmeasy","1mg","netmeds","medplus","wellness forever",
+      "guardian pharmacy","frank ross","suraksha diagnostic","tata 1mg","saveo",
+      "medlife","myra medicines"
+    ],
+    "Education": [
+      "byjus","byju","unacademy","vedantu","udemy","coursera","toppr","meritnation",
+      "physicswallah","pw","great learning","simplilearn","upgrad","coding ninjas",
+      "scaler","leetcode","pluralsight","skillshare","khan academy","whitehat jr",
+      "cuemath","school fees","college fees","tuition","cambly","duolingo"
+    ],
+    "Fitness": [
+      "cult fit","cultfit","cure fit","gold gym","gold's gym","anytime fitness",
+      "snap fitness","fitness first","talwalkars","powerhouse gym","crossfit","yoga",
+      "fitpass","gympass","healthifyme","nike","adidas","puma","under armour","reebok",
+      "skechers","salon","loreal","vlcc","enrich","naturals salon","jawed habib",
+      "barber","lakme"
+    ],
+    "Investment": [
+      "zerodha","groww","upstox","gullak","coin","kuvera","etmoney","niyo","smallcase",
+      "indmoney","wealthsimple","navi","paytm money","5paisa","angel broking","angel one",
+      "hdfc securities","icici direct","motilal oswal","lic","hdfc life","sbi life",
+      "max life","bajaj allianz","tata aia","policybazaar","acko"
+    ],
+    "Rent": [
+      "nobroker","magicbricks","99acres","housing.com","nestaway","zolo","stanza living",
+      "colive","society maintenance","apartment rent"
+    ],
+    "Gifts": [
+      "igp","ferns n petals","fnp","archies","hallmark","giftease","myflowertree",
+      "winni","bakingo","floweraura","brownberry"
+    ]
+  }
+}

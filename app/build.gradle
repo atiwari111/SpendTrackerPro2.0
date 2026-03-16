@@ -1,0 +1,66 @@
+plugins {
+    id 'com.android.application'
+}
+android {
+    namespace 'com.spendtracker.pro'
+    compileSdk 34
+    defaultConfig {
+        applicationId "com.spendtracker.pro"
+        minSdk 26
+        targetSdk 34
+        versionCode System.getenv("VERSION_CODE") != null ?
+                System.getenv("VERSION_CODE").toInteger() : 2
+        versionName "2.1"
+    }
+    signingConfigs {
+        release {
+            storeFile file("spendtracker.keystore")
+            storePassword System.getenv("RELEASE_STORE_PASSWORD")
+            keyAlias "spendtracker"
+            keyPassword System.getenv("RELEASE_KEY_PASSWORD")
+        }
+    }
+    buildTypes {
+        release {
+            signingConfig signingConfigs.release
+            minifyEnabled false
+            shrinkResources false
+            debuggable false
+            proguardFiles getDefaultProguardFile(
+                    'proguard-android-optimize.txt'
+            ), 'proguard-rules.pro'
+        }
+        debug {
+            debuggable true
+            minifyEnabled false
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+    buildFeatures {
+        viewBinding true
+    }
+}
+dependencies {
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation 'androidx.core:core:1.12.0'
+    implementation 'com.google.android.material:material:1.10.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+    implementation 'androidx.recyclerview:recyclerview:1.3.2'
+    implementation 'androidx.cardview:cardview:1.0.0'
+    implementation 'androidx.activity:activity:1.8.2'
+    implementation "androidx.viewpager2:viewpager2:1.0.0"
+    implementation "com.airbnb.android:lottie:6.4.0"
+    implementation "com.tbuonomo:dotsindicator:4.3"
+    implementation 'com.github.PhilJay:MPAndroidChart:v3.1.0'
+    implementation 'androidx.lifecycle:lifecycle-viewmodel:2.6.2'
+    implementation 'androidx.lifecycle:lifecycle-livedata:2.6.2'
+    implementation 'androidx.room:room-runtime:2.6.0'
+    annotationProcessor 'androidx.room:room-compiler:2.6.0'
+    implementation 'androidx.work:work-runtime:2.9.0'
+    implementation 'androidx.biometric:biometric:1.1.0'
+    implementation 'androidx.preference:preference:1.2.1'
+    implementation 'com.google.code.findbugs:jsr305:3.0.2'
+}

@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent" android:layout_height="match_parent"
+    android:orientation="vertical" android:background="@color/bg_dark">
+
+    <androidx.appcompat.widget.Toolbar android:id="@+id/toolbar"
+        android:layout_width="match_parent" android:layout_height="?attr/actionBarSize"
+        android:background="@color/bg_card" app:titleTextColor="@color/white"/>
+
+    <ScrollView android:layout_width="match_parent" android:layout_height="match_parent">
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:orientation="vertical" android:padding="20dp">
+
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:text="Amount (Rs.)" android:textColor="@color/white_70" android:textSize="12sp"/>
+            <com.google.android.material.textfield.TextInputLayout
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:layout_marginTop="4dp" style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                app:boxStrokeColor="@color/purple_main" app:hintTextColor="@color/white_50">
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etAmount" android:layout_width="match_parent"
+                    android:layout_height="wrap_content" android:inputType="numberDecimal"
+                    android:hint="0.00" android:textColor="@color/white" android:textSize="24sp"
+                    android:textStyle="bold"/>
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:text="Merchant / Where?" android:textColor="@color/white_70"
+                android:textSize="12sp" android:layout_marginTop="16dp"/>
+            <com.google.android.material.textfield.TextInputLayout
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:layout_marginTop="4dp" style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                app:boxStrokeColor="@color/purple_main">
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etMerchant" android:layout_width="match_parent"
+                    android:layout_height="wrap_content" android:hint="e.g. Swiggy, Amazon"
+                    android:textColor="@color/white" android:inputType="textCapWords"/>
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:text="Category" android:textColor="@color/white_70"
+                android:textSize="12sp" android:layout_marginTop="16dp"/>
+            <androidx.cardview.widget.CardView android:layout_width="match_parent"
+                android:layout_height="wrap_content" android:layout_marginTop="4dp"
+                app:cardBackgroundColor="@color/bg_card" app:cardCornerRadius="8dp">
+                <Spinner android:id="@+id/spCategory" android:layout_width="match_parent"
+                    android:layout_height="52dp" android:padding="12dp"
+                    android:popupBackground="@color/bg_card"/>
+            </androidx.cardview.widget.CardView>
+
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:text="Payment Method" android:textColor="@color/white_70"
+                android:textSize="12sp" android:layout_marginTop="16dp"/>
+            <androidx.cardview.widget.CardView android:layout_width="match_parent"
+                android:layout_height="wrap_content" android:layout_marginTop="4dp"
+                app:cardBackgroundColor="@color/bg_card" app:cardCornerRadius="8dp">
+                <Spinner android:id="@+id/spPayment" android:layout_width="match_parent"
+                    android:layout_height="52dp" android:padding="12dp"
+                    android:popupBackground="@color/bg_card"/>
+            </androidx.cardview.widget.CardView>
+
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:text="Date" android:textColor="@color/white_70"
+                android:textSize="12sp" android:layout_marginTop="16dp"/>
+            <androidx.cardview.widget.CardView android:layout_width="match_parent"
+                android:layout_height="wrap_content" android:layout_marginTop="4dp"
+                app:cardBackgroundColor="@color/bg_card" app:cardCornerRadius="8dp">
+                <TextView android:id="@+id/tvDate" android:layout_width="match_parent"
+                    android:layout_height="52dp" android:gravity="center_vertical"
+                    android:padding="16dp" android:textColor="@color/white"
+                    android:textSize="15sp" android:clickable="true" android:focusable="true"/>
+            </androidx.cardview.widget.CardView>
+
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:text="Notes (optional)" android:textColor="@color/white_70"
+                android:textSize="12sp" android:layout_marginTop="16dp"/>
+            <com.google.android.material.textfield.TextInputLayout
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:layout_marginTop="4dp" style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                app:boxStrokeColor="@color/purple_main">
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etNotes" android:layout_width="match_parent"
+                    android:layout_height="wrap_content" android:hint="Add a note..."
+                    android:textColor="@color/white" android:minLines="2" android:inputType="textMultiLine"/>
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <!-- Self-transfer toggle -->
+            <androidx.cardview.widget.CardView android:layout_width="match_parent"
+                android:layout_height="wrap_content" android:layout_marginTop="16dp"
+                app:cardBackgroundColor="#221E293B" app:cardCornerRadius="10dp">
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:orientation="horizontal" android:padding="14dp" android:gravity="center_vertical">
+                    <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content"
+                        android:layout_weight="1" android:orientation="vertical">
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                            android:text="Self-Transfer" android:textSize="14sp"
+                            android:textStyle="bold" android:textColor="@color/white"/>
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                            android:text="Moving money between own accounts - excluded from spending totals"
+                            android:textSize="11sp" android:textColor="@color/white_50"
+                            android:layout_marginTop="2dp"/>
+                    </LinearLayout>
+                    <Switch android:id="@+id/swSelfTransfer"
+                        android:layout_width="wrap_content" android:layout_height="wrap_content"
+                        android:layout_marginStart="12dp"/>
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
+            <Button android:id="@+id/btnSave"
+                android:layout_width="match_parent" android:layout_height="56dp"
+                android:layout_marginTop="24dp" android:text="Save Expense"
+                android:textSize="16sp" android:textStyle="bold"
+                android:backgroundTint="@color/purple_main" android:textColor="@color/white"/>
+        </LinearLayout>
+    </ScrollView>
+</LinearLayout>

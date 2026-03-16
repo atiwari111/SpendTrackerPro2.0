@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:id="@+id/nav_home"
+        android:title="Home"
+        android:icon="@drawable/ic_nav_home"/>
+    <item android:id="@+id/nav_txn"
+        android:title="Expenses"
+        android:icon="@drawable/ic_nav_expenses"/>
+    <item android:id="@+id/nav_analytics"
+        android:title="Analytics"
+        android:icon="@drawable/ic_nav_analytics"/>
+    <item android:id="@+id/nav_budget"
+        android:title="Budget"
+        android:icon="@drawable/ic_nav_budget"/>
+    <item android:id="@+id/nav_settings"
+        android:title="Settings"
+        android:icon="@drawable/ic_nav_settings"/>
+</menu>

@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Network Security Config for SpendTracker Pro
+  Enforces HTTPS-only connections to the backend.
+  Add your server's domain in base-config or domain-config.
+-->
+<network-security-config>
+
+    <!-- PRODUCTION: Only trust system CAs (i.e. valid HTTPS cert required) -->
+    <base-config cleartextTrafficPermitted="false">
+        <trust-anchors>
+            <certificates src="system"/>
+        </trust-anchors>
+    </base-config>
+
+    <!--
+        ⚠️ DEVELOPMENT ONLY — REMOVE BEFORE PLAY STORE RELEASE ⚠️
+        Allows HTTP to Android emulator localhost for local backend testing.
+        Delete this entire domain-config block before publishing to production.
+    -->
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="false">10.0.2.2</domain>
+        <domain includeSubdomains="false">localhost</domain>
+    </domain-config>
+
+</network-security-config>

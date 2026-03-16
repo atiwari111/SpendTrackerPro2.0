@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="bg_dark">#0F172A</color>
+    <color name="bg_card">#1E293B</color>
+    <color name="bg_card2">#162032</color>
+    <color name="purple_main">#7C3AED</color>
+    <color name="purple_light">#A78BFA</color>
+    <color name="teal">#0EA5E9</color>
+    <color name="green">#10B981</color>
+    <color name="red">#EF4444</color>
+    <color name="amber">#F59E0B</color>
+    <color name="white">#FFFFFF</color>
+    <color name="white_70">#B3FFFFFF</color>
+    <color name="white_50">#80FFFFFF</color>
+    <color name="white_30">#4DFFFFFF</color>
+    <color name="white_10">#1AFFFFFF</color>
+    <color name="text_primary">#F1F5F9</color>
+    <color name="text_secondary">#94A3B8</color>
+    <color name="colorPrimary">#7C3AED</color>
+    <color name="colorPrimaryDark">#5B21B6</color>
+    <color name="colorAccent">#A78BFA</color>
+    <color name="gradient_start">#1A0533</color>
+    <color name="gradient_end">#0F172A</color>
+</resources>

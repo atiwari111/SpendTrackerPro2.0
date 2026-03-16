@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent" android:layout_height="match_parent"
+    android:orientation="vertical" android:background="@color/bg_dark">
+
+    <androidx.appcompat.widget.Toolbar android:id="@+id/toolbar"
+        android:layout_width="match_parent" android:layout_height="?attr/actionBarSize"
+        android:background="@color/bg_card" app:titleTextColor="@color/white"/>
+
+    <!-- Summary header -->
+    <androidx.cardview.widget.CardView android:layout_width="match_parent"
+        android:layout_height="wrap_content" android:layout_margin="16dp"
+        app:cardBackgroundColor="#1E293B" app:cardCornerRadius="14dp">
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:orientation="horizontal" android:padding="16dp">
+            <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content"
+                android:layout_weight="1" android:orientation="vertical" android:gravity="center">
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:text="Total Budget" android:textColor="#94A3B8" android:textSize="11sp"/>
+                <TextView android:id="@+id/tvTotalBudget" android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" android:text="₹0"
+                    android:textColor="#FFFFFF" android:textSize="18sp" android:textStyle="bold"/>
+            </LinearLayout>
+            <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content"
+                android:layout_weight="1" android:orientation="vertical" android:gravity="center">
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:text="Spent" android:textColor="#94A3B8" android:textSize="11sp"/>
+                <TextView android:id="@+id/tvTotalUsed" android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" android:text="₹0"
+                    android:textColor="#EF4444" android:textSize="18sp" android:textStyle="bold"/>
+            </LinearLayout>
+            <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content"
+                android:layout_weight="1" android:orientation="vertical" android:gravity="center">
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:text="Remaining" android:textColor="#94A3B8" android:textSize="11sp"/>
+                <TextView android:id="@+id/tvTotalLeft" android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" android:text="₹0"
+                    android:textColor="#10B981" android:textSize="18sp" android:textStyle="bold"/>
+            </LinearLayout>
+        </LinearLayout>
+    </androidx.cardview.widget.CardView>
+
+    <!-- Empty state -->
+    <TextView android:id="@+id/tvEmptyState"
+        android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:text="No budgets set yet.\nTap + to add a budget for a category."
+        android:textColor="#94A3B8" android:textSize="14sp" android:gravity="center"
+        android:padding="32dp" android:visibility="gone"/>
+
+    <androidx.recyclerview.widget.RecyclerView android:id="@+id/rv"
+        android:layout_width="match_parent" android:layout_height="0dp"
+        android:layout_weight="1" android:paddingHorizontal="16dp"
+        android:clipToPadding="false"/>
+
+    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:orientation="horizontal" android:layout_margin="16dp">
+
+        <Button android:id="@+id/btnAutoGenerate"
+            android:layout_width="0dp" android:layout_height="52dp"
+            android:layout_weight="1" android:layout_marginEnd="8dp"
+            android:text="✨ AI Suggest"
+            android:backgroundTint="#7C3AED"
+            android:textColor="@color/white" android:textSize="13sp"
+            android:textStyle="bold"/>
+
+        <Button android:id="@+id/btnAddBudget"
+            android:layout_width="0dp" android:layout_height="52dp"
+            android:layout_weight="1"
+            android:text="+ Set Budget"
+            android:backgroundTint="@color/purple_main"
+            android:textColor="@color/white" android:textSize="13sp"
+            android:textStyle="bold"/>
+
+    </LinearLayout>
+
+</LinearLayout>

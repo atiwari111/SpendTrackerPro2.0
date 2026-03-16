@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent" android:layout_height="match_parent"
+    android:background="@color/bg_dark">
+
+    <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <androidx.appcompat.widget.Toolbar android:id="@+id/toolbar"
+            android:layout_width="match_parent" android:layout_height="?attr/actionBarSize"
+            android:background="@color/bg_card" app:titleTextColor="@color/white"/>
+
+        <!-- Search box -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:layout_marginHorizontal="12dp" android:layout_marginTop="8dp"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            app:boxStrokeColor="@color/purple_main" app:hintTextColor="@color/white_50"
+            android:hint="Search merchant, category...">
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etSearch" android:layout_width="match_parent"
+                android:layout_height="wrap_content" android:inputType="text"
+                android:textColor="@color/white" android:singleLine="true"/>
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Merchant filter spinner -->
+        <androidx.cardview.widget.CardView android:layout_width="match_parent"
+            android:layout_height="wrap_content" android:layout_marginHorizontal="12dp"
+            android:layout_marginTop="6dp" app:cardBackgroundColor="@color/bg_card"
+            app:cardCornerRadius="8dp">
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:orientation="horizontal" android:gravity="center_vertical" android:padding="8dp">
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:text="🏪 " android:textSize="16sp" android:layout_marginEnd="4dp"/>
+                <Spinner android:id="@+id/spMerchant" android:layout_width="match_parent"
+                    android:layout_height="40dp" android:popupBackground="@color/bg_card"/>
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
+        <!-- Payment method chips -->
+        <HorizontalScrollView android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:layout_marginTop="6dp" android:scrollbars="none">
+            <com.google.android.material.chip.ChipGroup android:id="@+id/chipGroup"
+                android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:paddingHorizontal="12dp" app:singleSelection="true"/>
+        </HorizontalScrollView>
+
+        <!-- Category chips -->
+        <HorizontalScrollView android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:scrollbars="none">
+            <com.google.android.material.chip.ChipGroup android:id="@+id/chipCategory"
+                android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:paddingHorizontal="12dp" android:paddingBottom="4dp"
+                app:singleSelection="true"/>
+        </HorizontalScrollView>
+
+        <!-- Summary bar -->
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:orientation="horizontal" android:paddingHorizontal="16dp"
+            android:paddingVertical="6dp" android:background="@color/bg_card">
+            <TextView android:id="@+id/tvCount" android:layout_width="0dp"
+                android:layout_height="wrap_content" android:layout_weight="1"
+                android:textColor="#94A3B8" android:textSize="12sp"/>
+            <TextView android:id="@+id/tvTotal" android:layout_width="wrap_content"
+                android:layout_height="wrap_content" android:textColor="@color/white"
+                android:textSize="13sp" android:textStyle="bold"/>
+        </LinearLayout>
+
+        <androidx.recyclerview.widget.RecyclerView android:id="@+id/rv"
+            android:layout_width="match_parent" android:layout_height="0dp"
+            android:layout_weight="1" android:paddingBottom="80dp" android:clipToPadding="false"/>
+    </LinearLayout>
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fabAdd" android:layout_width="wrap_content" android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end" android:layout_marginBottom="16dp"
+        android:layout_marginEnd="16dp" android:src="@android:drawable/ic_input_add"
+        app:backgroundTint="@color/purple_main" app:tint="@color/white"/>
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>
