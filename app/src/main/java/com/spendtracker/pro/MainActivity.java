@@ -1,0 +1,421 @@
+package com.spendtracker.pro;
+
+import android.Manifest;
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.os.Build;
+import android.os.Bundle;
+import android.view.View;
+import android.widget.*;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import androidx.recyclerview.widget.*;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
+import java.text.SimpleDateFormat;
+import java.util.*;
+public class MainActivity extends AppCompatActivity {
+
+    private static final int PERM_CODE = 100;
+
+    private TextView tvGreeting, tvDate, tvTodayAmt, tvMonthAmt, tvBudgetLeft,
+            tvTopCat, tvTransCount, tvHealthScore, tvImportStatus, tvPrediction;
+
+    private RecyclerView rvRecent;
+    private TransactionAdapter adapter;
+
+    private ProgressBar progressBar;
+    private Button btnScan;
+
+    private AppDatabase db;
+
+    @Override
+    protected void onCreate(Bundle s) {
+
+        super.onCreate(s);
+        setContentView(R.layout.activity_main);
+
+        db = AppDatabase.getInstance(this);
+
+        CategoryEngine.init(this);
+        MerchantLogoProvider.load(this);
+
+        initViews();
+        setupNav();
+        setGreeting();
+        observeData();
+
+        if (!hasSmsPermission()) {
+            requestSmsPermission();
+        }
+    }
+
+    private void initViews() {
+
+        tvGreeting     = findViewById(R.id.tvGreeting);
+        tvDate         = findViewById(R.id.tvDate);
+        tvTodayAmt     = findViewById(R.id.tvTodayAmt);
+        tvMonthAmt     = findViewById(R.id.tvMonthAmt);
+        tvBudgetLeft   = findViewById(R.id.tvBudgetLeft);
+        tvTopCat       = findViewById(R.id.tvTopCat);
+        tvTransCount   = findViewById(R.id.tvTransCount);
+        tvHealthScore  = findViewById(R.id.tvHealthScore);
+        tvImportStatus = findViewById(R.id.tvImportStatus);
+        tvPrediction   = findViewById(R.id.tvPrediction);
+
+        progressBar = findViewById(R.id.progressBar);
+        btnScan     = findViewById(R.id.btnScan);
+        rvRecent    = findViewById(R.id.rvRecent);
+
+        adapter = new TransactionAdapter(true);
+        rvRecent.setLayoutManager(new LinearLayoutManager(this));
+        rvRecent.setAdapter(adapter);
+        rvRecent.setNestedScrollingEnabled(false);
+
+        btnScan.setOnClickListener(v -> {
+
+            if (!hasSmsPermission()) {
+                requestSmsPermission();
+                return;
+            }
+
+            startImport();
+        });
+
+        findViewById(R.id.fabAdd).setOnClickListener(v ->
+                startActivity(new Intent(this, AddExpenseActivity.class)));
+
+        findViewById(R.id.cardInsights).setOnClickListener(v ->
+                startActivity(new Intent(this, AnalyticsActivity.class)));
+
+        findViewById(R.id.cardBudget).setOnClickListener(v ->
+                startActivity(new Intent(this, BudgetActivity.class)));
+
+        tvBudgetLeft.setOnClickListener(v ->
+                startActivity(new Intent(this, BudgetActivity.class)));
+
+        findViewById(R.id.cardNetWorth).setOnClickListener(v ->
+                startActivity(new Intent(this, NetWorthActivity.class)));
+    }
+
+    private void setupNav() {
+
+        BottomNavigationView nav = findViewById(R.id.bottomNav);
+
+        nav.setSelectedItemId(R.id.nav_home);
+
+        nav.setOnItemSelectedListener(item -> {
+
+            int id = item.getItemId();
+
+            if (id == R.id.nav_txn) {
+                startActivity(new Intent(this, TransactionsActivity.class));
+                return true;
+            }
+
+            if (id == R.id.nav_analytics) {
+                startActivity(new Intent(this, AnalyticsActivity.class));
+                return true;
+            }
+
+            if (id == R.id.nav_budget) {
+                startActivity(new Intent(this, BudgetActivity.class));
+                return true;
+            }
+
+            if (id == R.id.nav_settings) {
+                startActivity(new Intent(this, SettingsActivity.class));
+                return true;
+            }
+
+            return true;
+        });
+    }
+
+    private void setGreeting() {
+
+        int h = Calendar.getInstance().get(Calendar.HOUR_OF_DAY);
+
+        String g = h < 12 ? "Good Morning ☀️"
+                : h < 17 ? "Good Afternoon 🌤️"
+                : "Good Evening 🌙";
+
+        tvGreeting.setText(g);
+
+        tvDate.setText(
+                new SimpleDateFormat(
+                        "EEEE, dd MMMM yyyy",
+                        Locale.getDefault()
+                ).format(new Date())
+        );
+    }
+
+    private void observeData() {
+
+        db.transactionDao().getRecent(50).observe(this, list -> {
+
+            if (list == null) return;
+
+            List<Transaction> recent =
+                    list.size() > 6 ? list.subList(0, 6) : list;
+
+            adapter.setTransactions(recent);
+
+            AppExecutors.db().execute(() -> {
+
+                List<Transaction> all = db.transactionDao().getAllSync();
+
+                if (all != null) updateStats(all);
+            });
+        });
+
+        db.transactionDao().getTotalCount().observe(this,
+                count -> tvTransCount.setText((count != null ? count : 0) + " total"));
+    }
+
+    private void startImport() {
+
+        progressBar.setVisibility(View.VISIBLE);
+        tvImportStatus.setVisibility(View.VISIBLE);
+
+        btnScan.setEnabled(false);
+
+        tvImportStatus.setText("🔍 Scanning SMS messages...");
+
+        SmsImporter.importAll(this, new SmsImporter.Callback() {
+
+            public void onProgress(int d, int t) {
+
+                runOnUiThread(() ->
+                        tvImportStatus.setText("Scanning... " + d + " found"));
+            }
+
+            public void onComplete(int count) {
+
+                runOnUiThread(() -> {
+
+                    progressBar.setVisibility(View.GONE);
+                    btnScan.setEnabled(true);
+
+                    if (count > 0) {
+                        tvImportStatus.setText("✅ Imported " + count + " transactions");
+                    } else {
+                        tvImportStatus.setText("ℹ️ No new transactions found");
+                    }
+
+                    loadDashboard();
+                });
+            }
+
+            public void onError(String msg) {
+
+                runOnUiThread(() -> {
+
+                    progressBar.setVisibility(View.GONE);
+                    btnScan.setEnabled(true);
+
+                    tvImportStatus.setText("❌ " + msg);
+                });
+            }
+        });
+    }
+
+    private boolean hasSmsPermission() {
+
+        return ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.READ_SMS
+        ) == PackageManager.PERMISSION_GRANTED;
+    }
+
+    private void requestSmsPermission() {
+
+        List<String> permissions = new ArrayList<>();
+
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_SMS)
+                != PackageManager.PERMISSION_GRANTED) {
+
+            permissions.add(Manifest.permission.READ_SMS);
+        }
+
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECEIVE_SMS)
+                != PackageManager.PERMISSION_GRANTED) {
+
+            permissions.add(Manifest.permission.RECEIVE_SMS);
+        }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+                ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
+                        != PackageManager.PERMISSION_GRANTED) {
+
+            permissions.add(Manifest.permission.POST_NOTIFICATIONS);
+        }
+
+        if (!permissions.isEmpty()) {
+
+            ActivityCompat.requestPermissions(
+                    this,
+                    permissions.toArray(new String[0]),
+                    PERM_CODE
+            );
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(
+            int requestCode,
+            String[] permissions,
+            int[] grantResults) {
+
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        if (requestCode == PERM_CODE) {
+
+            boolean granted = false;
+
+            for (int i = 0; i < permissions.length; i++) {
+
+                if (Manifest.permission.READ_SMS.equals(permissions[i])
+                        && grantResults.length > i
+                        && grantResults[i] == PackageManager.PERMISSION_GRANTED) {
+
+                    granted = true;
+                    break;
+                }
+            }
+
+            if (granted) {
+
+                Toast.makeText(this,
+                        "SMS permission granted",
+                        Toast.LENGTH_SHORT).show();
+
+                startImport();
+
+            } else {
+
+                Toast.makeText(this,
+                        "SMS permission required to scan transactions",
+                        Toast.LENGTH_LONG).show();
+
+                btnScan.setEnabled(true);
+            }
+        }
+    }
+
+    @Override
+    protected void onResume() {
+
+        super.onResume();
+
+        setGreeting();
+        loadDashboard();
+    }
+
+    private void loadDashboard() {
+
+        AppExecutors.db().execute(() -> {
+
+            List<Transaction> all = db.transactionDao().getAllSync();
+
+            if (all != null) updateStats(all);
+        });
+
+        // Clear stale scan status message when navigating back to home
+        if (tvImportStatus != null && progressBar != null
+                && progressBar.getVisibility() != View.VISIBLE) {
+            tvImportStatus.setVisibility(View.GONE);
+        }
+    }
+
+    private void updateStats(List<Transaction> list) {
+        long now        = System.currentTimeMillis();
+        long todayStart = getDayStart(now);
+        long monthStart = getMonthStart(now);
+
+        double todayTotal = 0, monthTotal = 0;
+        Map<String, Double> catMap = new HashMap<>();
+
+        for (Transaction t : list) {
+            if (t.isSelfTransfer) continue;
+            if (t.timestamp >= todayStart)  todayTotal  += t.amount;
+            if (t.timestamp >= monthStart) {
+                monthTotal += t.amount;
+                catMap.merge(t.category != null ? t.category : "Others", t.amount, Double::sum);
+            }
+        }
+
+        // Top category
+        String topCat = catMap.isEmpty() ? "—" :
+                Collections.max(catMap.entrySet(), Map.Entry.comparingByValue()).getKey();
+
+        // Budget left for this month
+        List<Budget> budgets = db.budgetDao().getByMonthYearSync(
+                getCalendarField(now, java.util.Calendar.MONTH) + 1,
+                getCalendarField(now, java.util.Calendar.YEAR));
+        double totalLimit = 0, totalUsed = 0;
+        for (Budget b : budgets) { totalLimit += b.limitAmount; totalUsed += b.usedAmount; }
+        final double budgetLeft = totalLimit - totalUsed;
+
+        // Health score
+        final int score = InsightEngine.calcHealthScore(list, budgets);
+
+        // Spend prediction
+        SpendPredictor.Prediction pred = SpendPredictor.predict(list);
+        final String predText = pred != null ? pred.getSummary() : "";
+
+        final double ft = todayTotal, fm = monthTotal;
+        final String topCatFinal = topCat;
+
+        runOnUiThread(() -> {
+            if (tvTodayAmt    != null) tvTodayAmt.setText(String.format("₹%.0f", ft));
+            if (tvMonthAmt    != null) tvMonthAmt.setText(String.format("₹%.0f", fm));
+            if (tvTopCat      != null) tvTopCat.setText(topCatFinal);
+            if (tvPrediction  != null) tvPrediction.setText(predText);
+
+            if (tvBudgetLeft != null) {
+                if (totalLimit <= 0) {
+                    tvBudgetLeft.setText("No budget set");
+                    tvBudgetLeft.setTextColor(0xFFB0BEC5);
+                } else {
+                    tvBudgetLeft.setText(String.format("₹%.0f left", budgetLeft));
+                    tvBudgetLeft.setTextColor(budgetLeft >= 0 ? 0xFF10B981 : 0xFFEF4444);
+                }
+            }
+
+            if (tvHealthScore != null) {
+                tvHealthScore.setText(InsightEngine.getHealthScoreLabel(score) + " · " + score + "/100");
+                int color = score >= 70 ? 0xFF10B981 : score >= 40 ? 0xFFF59E0B : 0xFFEF4444;
+                tvHealthScore.setTextColor(color);
+            }
+        });
+    }
+
+    // ── Date helpers ─────────────────────────────────────────────
+    private long getDayStart(long ts) {
+        java.util.Calendar c = java.util.Calendar.getInstance();
+        c.setTimeInMillis(ts);
+        c.set(java.util.Calendar.HOUR_OF_DAY, 0);
+        c.set(java.util.Calendar.MINUTE, 0);
+        c.set(java.util.Calendar.SECOND, 0);
+        c.set(java.util.Calendar.MILLISECOND, 0);
+        return c.getTimeInMillis();
+    }
+
+    private long getMonthStart(long ts) {
+        java.util.Calendar c = java.util.Calendar.getInstance();
+        c.setTimeInMillis(ts);
+        c.set(java.util.Calendar.DAY_OF_MONTH, 1);
+        c.set(java.util.Calendar.HOUR_OF_DAY, 0);
+        c.set(java.util.Calendar.MINUTE, 0);
+        c.set(java.util.Calendar.SECOND, 0);
+        c.set(java.util.Calendar.MILLISECOND, 0);
+        return c.getTimeInMillis();
+    }
+
+    private int getCalendarField(long ts, int field) {
+        java.util.Calendar c = java.util.Calendar.getInstance();
+        c.setTimeInMillis(ts);
+        return c.get(field);
+    }
+}
