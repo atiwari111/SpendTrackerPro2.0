@@ -43,14 +43,15 @@ android {
         viewBinding true
     }
     lint {
-        // Fail CI only on errors — 301 warnings must not abort the build
+        // Fail CI only on errors — warnings must not abort the build
         abortOnError true
         warningsAsErrors false
 
-        // Suppress cosmetic/intentional warnings that are not real bugs
-        disable 'SetTextI18n'        // ₹ rupee symbol — intentional
-        disable 'HardcodedText'      // UI label strings — intentional
-        disable 'NotifyDataSetChanged' // acceptable adapter pattern used here
+        // Suppress cosmetic/intentional warnings and issues handled in code
+        disable 'SetTextI18n'           // ₹ rupee symbol — intentional
+        disable 'HardcodedText'         // UI label strings — intentional
+        disable 'NotifyDataSetChanged'  // acceptable adapter pattern
+        disable 'ScheduleExactAlarm'    // handled in BootReceiver with canScheduleExactAlarms() + SecurityException fallback
     }
 }
 dependencies {
