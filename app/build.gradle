@@ -42,6 +42,16 @@ android {
     buildFeatures {
         viewBinding true
     }
+    lint {
+        // Fail CI only on errors — 301 warnings must not abort the build
+        abortOnError true
+        warningsAsErrors false
+
+        // Suppress cosmetic/intentional warnings that are not real bugs
+        disable 'SetTextI18n'        // ₹ rupee symbol — intentional
+        disable 'HardcodedText'      // UI label strings — intentional
+        disable 'NotifyDataSetChanged' // acceptable adapter pattern used here
+    }
 }
 dependencies {
     implementation 'androidx.appcompat:appcompat:1.6.1'
