@@ -51,7 +51,14 @@ public class BudgetAdapter extends RecyclerView.Adapter<BudgetAdapter.VH> {
         else if (pct >= 80) barColor = Color.parseColor("#F59E0B");
         else if (pct >= 50) barColor = Color.parseColor("#FBBF24");
         else barColor = Color.parseColor("#10B981");
-        h.progressBar.getProgressDrawable().setColorFilter(barColor, android.graphics.PorterDuff.Mode.SRC_IN);
+        // Use BlendModeColorFilter (API 29+) with PorterDuff fallback for API 26-28
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+            h.progressBar.getProgressDrawable().setColorFilter(
+                    new android.graphics.BlendModeColorFilter(barColor, android.graphics.BlendMode.SRC_IN));
+        } else {
+            //noinspection deprecation
+            h.progressBar.getProgressDrawable().setColorFilter(barColor, android.graphics.PorterDuff.Mode.SRC_IN);
+        }
 
         h.tvPercent.setText(String.format("%.0f%%", pct));
         h.tvPercent.setTextColor(barColor);

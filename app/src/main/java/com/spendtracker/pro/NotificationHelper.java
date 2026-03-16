@@ -4,6 +4,9 @@ import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.*;
+import android.content.pm.PackageManager;
+import android.os.Build;
+import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 import androidx.core.app.TaskStackBuilder;
@@ -15,7 +18,7 @@ public class NotificationHelper {
     public static final String CH_INSIGHTS = "stp_insights";
 
     public static void createChannels(Context ctx) {
-        if (android.os.Build.VERSION.SDK_INT < 26) return;
+        if (Build.VERSION.SDK_INT < 26) return;
         NotificationManager nm = ctx.getSystemService(NotificationManager.class);
         nm.createNotificationChannel(new NotificationChannel(CH_ALERTS,   "Spend Alerts",    NotificationManager.IMPORTANCE_HIGH));
         nm.createNotificationChannel(new NotificationChannel(CH_BILLS,    "Bill Reminders",  NotificationManager.IMPORTANCE_HIGH));
@@ -24,13 +27,24 @@ public class NotificationHelper {
     }
 
     /**
+     * Returns true if POST_NOTIFICATIONS permission is granted (required on API 33+).
+     * Always returns true on API < 33 since the permission didn't exist yet.
+     */
+    private static boolean canNotify(Context ctx) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            return ActivityCompat.checkSelfPermission(ctx,
+                    android.Manifest.permission.POST_NOTIFICATIONS)
+                    == PackageManager.PERMISSION_GRANTED;
+        }
+        return true; // permission not required below API 33
+    }
+
+    /**
      * Creates a properly stacked PendingIntent using TaskStackBuilder.
      * When notification is tapped: opens `target` activity with MainActivity as parent in back stack.
-     * Back-press from notification-opened activity goes to MainActivity (not home screen).
      */
     private static PendingIntent makeStackedIntent(Context ctx, Class<?> target, int requestCode) {
         TaskStackBuilder stack = TaskStackBuilder.create(ctx);
-        // Add MainActivity as parent so back-press works correctly
         stack.addNextIntent(new Intent(ctx, MainActivity.class)
                 .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP));
         if (target != MainActivity.class) {
@@ -71,7 +85,17 @@ public class NotificationHelper {
                 makeStackedIntent(ctx, AnalyticsActivity.class, 9999));
     }
 
+    public static void sendAnomalyAlert(Context ctx, String merchant, double amount, String category, String reason) {
+        int id = (int)(System.currentTimeMillis() % 100000);
+        send(ctx, CH_ALERTS, id,
+                "⚠️ Unusual Spend Detected",
+                String.format("₹%.0f at %s · %s (%s)", amount, merchant, category, reason),
+                makeStackedIntent(ctx, MainActivity.class, id));
+    }
+
     private static void send(Context ctx, String channel, int id, String title, String msg, PendingIntent pi) {
+        // Guard: POST_NOTIFICATIONS permission required on API 33+ and may be revoked at runtime
+        if (!canNotify(ctx)) return;
         try {
             NotificationCompat.Builder b = new NotificationCompat.Builder(ctx, channel)
                     .setSmallIcon(android.R.drawable.ic_dialog_info)
@@ -82,14 +106,9 @@ public class NotificationHelper {
                     .setAutoCancel(true)
                     .setPriority(NotificationCompat.PRIORITY_DEFAULT);
             NotificationManagerCompat.from(ctx).notify(id, b.build());
+        } catch (SecurityException e) {
+            // Permission was revoked between check and notify — silently ignore
+            android.util.Log.w("NotificationHelper", "Notification permission denied: " + e.getMessage());
         } catch (Exception ignored) {}
     }
-    public static void sendAnomalyAlert(Context ctx, String merchant, double amount, String category, String reason) {
-        int id = (int)(System.currentTimeMillis() % 100000);
-        send(ctx, CH_ALERTS, id,
-                "⚠️ Unusual Spend Detected",
-                String.format("₹%.0f at %s · %s (%s)", amount, merchant, category, reason),
-                makeStackedIntent(ctx, MainActivity.class, id));
-    }
-
 }
