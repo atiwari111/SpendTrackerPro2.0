@@ -355,7 +355,9 @@ public class MainActivity extends AppCompatActivity {
                 getCalendarField(now, java.util.Calendar.YEAR));
         double totalLimit = 0, totalUsed = 0;
         for (Budget b : budgets) { totalLimit += b.limitAmount; totalUsed += b.usedAmount; }
-        final double budgetLeft = totalLimit - totalUsed;
+        // Copy to final locals so they can be captured by the lambda below
+        final double fTotalLimit = totalLimit;
+        final double budgetLeft  = totalLimit - totalUsed;
 
         // Health score
         final int score = InsightEngine.calcHealthScore(list, budgets);
@@ -374,7 +376,7 @@ public class MainActivity extends AppCompatActivity {
             if (tvPrediction  != null) tvPrediction.setText(predText);
 
             if (tvBudgetLeft != null) {
-                if (totalLimit <= 0) {
+                if (fTotalLimit <= 0) {
                     tvBudgetLeft.setText("No budget set");
                     tvBudgetLeft.setTextColor(0xFFB0BEC5);
                 } else {
