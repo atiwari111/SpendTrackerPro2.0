@@ -1,37 +1,59 @@
 package com.spendtracker.pro;
 
+import android.app.AlarmManager;
+import android.app.PendingIntent;
 import android.content.*;
-import java.text.SimpleDateFormat;
-import java.util.*;
+import android.os.Build;
+import java.util.List;
 
 public class BootReceiver extends BroadcastReceiver {
+
     @Override
     public void onReceive(Context ctx, Intent intent) {
         if (Intent.ACTION_BOOT_COMPLETED.equals(intent.getAction())) {
-            // Re-schedule recurring reminders after boot
-            new Thread(() -> {
+            // Re-schedule recurring reminders after boot on a background thread
+            AppExecutors.db().execute(() -> {
                 AppDatabase db = AppDatabase.getInstance(ctx);
                 List<RecurringTransaction> list = db.recurringDao().getActiveSync();
                 for (RecurringTransaction r : list) {
                     scheduleReminder(ctx, r);
                 }
-            }).start();
+            });
         }
     }
 
     public static void scheduleReminder(Context ctx, RecurringTransaction r) {
-        // Use AlarmManager for reminders (simplified)
-        android.app.AlarmManager am = (android.app.AlarmManager) ctx.getSystemService(Context.ALARM_SERVICE);
+        AlarmManager am = (AlarmManager) ctx.getSystemService(Context.ALARM_SERVICE);
+        if (am == null) return;
+
+        long remindAt = r.nextDueDate - 86400000L; // 1 day before due
+        if (remindAt <= System.currentTimeMillis()) return; // already past
+
         Intent i = new Intent(ctx, ReminderReceiver.class);
         i.putExtra("name", r.name);
         i.putExtra("amount", r.amount);
         i.putExtra("due", r.nextDueDate);
-        android.app.PendingIntent pi = android.app.PendingIntent.getBroadcast(
-                ctx, r.id, i, android.app.PendingIntent.FLAG_UPDATE_CURRENT | android.app.PendingIntent.FLAG_IMMUTABLE);
-        // Remind 1 day before due
-        long remindAt = r.nextDueDate - 86400000L;
-        if (remindAt > System.currentTimeMillis() && am != null) {
-            am.setExactAndAllowWhileIdle(android.app.AlarmManager.RTC_WAKEUP, remindAt, pi);
+        PendingIntent pi = PendingIntent.getBroadcast(
+                ctx, r.id, i,
+                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                // API 31+: must check canScheduleExactAlarms() before calling setExact
+                if (am.canScheduleExactAlarms()) {
+                    am.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, remindAt, pi);
+                } else {
+                    // Exact alarm permission not granted — fall back to inexact alarm
+                    // (reminder may fire a few minutes late but will still fire)
+                    am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, remindAt, pi);
+                }
+            } else {
+                // API 26-30: setExactAndAllowWhileIdle is safe without permission check
+                am.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, remindAt, pi);
+            }
+        } catch (SecurityException e) {
+            // Permission revoked between check and set — fall back to inexact
+            am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, remindAt, pi);
         }
     }
 }
