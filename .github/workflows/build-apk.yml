@@ -10,6 +10,7 @@ jobs:
     env:
       RELEASE_STORE_PASSWORD: ${{ secrets.RELEASE_STORE_PASSWORD }}
       RELEASE_KEY_PASSWORD: ${{ secrets.RELEASE_KEY_PASSWORD }}
+      RELEASE_KEY_ALIAS: spendtracker
       VERSION_CODE: ${{ github.run_number }}
 
     steps:
@@ -43,12 +44,16 @@ jobs:
 
       - name: Decode Keystore
         run: |
-          if [ -n "${{ secrets.KEYSTORE_BASE64 }}" ]; then
-            echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > app/spendtracker.keystore
-            echo "✅ Keystore decoded ($(wc -c < app/spendtracker.keystore) bytes)"
-          else
-            echo "⚠️ KEYSTORE_BASE64 secret not set — release signing will fail"
+          if [ -z "${{ secrets.KEYSTORE_BASE64 }}" ]; then
+            echo "❌ KEYSTORE_BASE64 secret is not set. Cannot build release APK."
+            exit 1
           fi
+          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > app/spendtracker.keystore
+          echo "✅ Keystore decoded: $(wc -c < app/spendtracker.keystore) bytes"
+          # Verify keystore is valid
+          keytool -list -keystore app/spendtracker.keystore \
+            -storepass "${{ secrets.RELEASE_STORE_PASSWORD }}" \
+            -alias spendtracker && echo "✅ Keystore verified" || echo "⚠️ Keystore check failed"
 
       - name: Run Android Lint
         run: ./gradlew lint
@@ -60,10 +65,29 @@ jobs:
         run: ./gradlew assembleDebug --stacktrace --no-daemon
 
       - name: Build Release APK
-        run: ./gradlew assembleRelease --stacktrace --no-daemon
+        run: |
+          ./gradlew assembleRelease --stacktrace --no-daemon
+          echo "✅ Release APK built"
+          ls -lh app/build/outputs/apk/release/
 
       - name: Build Release AAB
-        run: ./gradlew bundleRelease --stacktrace --no-daemon
+        run: |
+          ./gradlew bundleRelease --stacktrace --no-daemon
+          echo "✅ AAB built"
+          ls -lh app/build/outputs/bundle/release/
+
+      - name: Verify all artifacts exist
+        run: |
+          echo "=== Checking artifacts ==="
+          test -f app/build/outputs/apk/debug/app-debug.apk \
+            && echo "✅ Debug APK: $(du -sh app/build/outputs/apk/debug/app-debug.apk)" \
+            || echo "❌ Debug APK missing"
+          test -f app/build/outputs/apk/release/app-release.apk \
+            && echo "✅ Release APK: $(du -sh app/build/outputs/apk/release/app-release.apk)" \
+            || echo "❌ Release APK missing"
+          test -f app/build/outputs/bundle/release/app-release.aab \
+            && echo "✅ AAB: $(du -sh app/build/outputs/bundle/release/app-release.aab)" \
+            || echo "❌ AAB missing"
 
       - name: Upload Debug APK
         uses: actions/upload-artifact@v4.6.2

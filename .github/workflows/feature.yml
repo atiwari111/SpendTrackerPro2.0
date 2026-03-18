@@ -15,6 +15,7 @@ jobs:
     env:
       RELEASE_STORE_PASSWORD: ${{ secrets.RELEASE_STORE_PASSWORD }}
       RELEASE_KEY_PASSWORD: ${{ secrets.RELEASE_KEY_PASSWORD }}
+      RELEASE_KEY_ALIAS: spendtracker
       VERSION_CODE: ${{ github.run_number }}
 
     steps:
@@ -47,16 +48,23 @@ jobs:
 
       - name: Decode Keystore
         run: |
-          if [ -n "${{ secrets.KEYSTORE_BASE64 }}" ]; then
-            echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > app/spendtracker.keystore
-            echo "✅ Keystore decoded"
-          else
-            echo "❌ KEYSTORE_BASE64 secret not set"
+          if [ -z "${{ secrets.KEYSTORE_BASE64 }}" ]; then
+            echo "❌ KEYSTORE_BASE64 secret is not set."
             exit 1
           fi
+          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > app/spendtracker.keystore
+          echo "✅ Keystore decoded: $(wc -c < app/spendtracker.keystore) bytes"
 
       - name: Build Release APK
-        run: ./gradlew assembleRelease --stacktrace --no-daemon
+        run: |
+          ./gradlew assembleRelease --stacktrace --no-daemon
+          ls -lh app/build/outputs/apk/release/
+
+      - name: Verify Release APK
+        run: |
+          test -f app/build/outputs/apk/release/app-release.apk \
+            && echo "✅ Release APK ready: $(du -sh app/build/outputs/apk/release/app-release.apk)" \
+            || (echo "❌ Release APK not found" && exit 1)
 
       - name: Upload Release APK
         uses: actions/upload-artifact@v4.6.2
