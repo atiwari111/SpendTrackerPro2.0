@@ -6,7 +6,6 @@ import android.os.Bundle;
 import android.view.MenuItem;
 import android.widget.*;
 import androidx.activity.result.*;
-import androidx.activity.result.register.*;
 import androidx.activity.result.contract.*;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
