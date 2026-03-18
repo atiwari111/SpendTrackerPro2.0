@@ -42,7 +42,7 @@ public class Transaction {
 
     public String smsAddress;
 
-    // For SMS rows: SHA-1 of (body+date). For manual/CSV rows: "manual_" + UUID.
+    // For SMS rows: SHA-256 of (body+date). For manual/CSV rows: "csv_" + UUID.
     public String smsHash;
 
     // true = income (salary/cashback/refund/dividend), false = expense (debit)
