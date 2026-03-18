@@ -55,7 +55,22 @@
             android:backgroundTint="@color/green" android:textColor="@color/white"/>
         <Button android:id="@+id/btnAddLiability"
             android:layout_width="0dp" android:layout_height="48dp" android:layout_weight="1"
-            android:text="+ Liability"
+            android:layout_marginEnd="8dp" android:text="+ Liability"
             android:backgroundTint="@color/red" android:textColor="@color/white"/>
+        <Button android:id="@+id/btnSyncBankAccounts"
+            android:layout_width="0dp" android:layout_height="48dp" android:layout_weight="1"
+            android:text="🏦 Sync"
+            android:backgroundTint="@color/teal" android:textColor="@color/white"
+            android:textSize="12sp"/>
     </LinearLayout>
+
+    <TextView
+        android:id="@+id/tvSyncStatus"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:paddingBottom="12dp"
+        android:textColor="@color/text_secondary"
+        android:textSize="12sp"
+        android:visibility="gone" />
 </LinearLayout>
