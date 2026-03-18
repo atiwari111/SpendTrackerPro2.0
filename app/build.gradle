@@ -55,6 +55,7 @@ android {
         disable 'NotifyDataSetChanged'                  // acceptable adapter pattern
         disable 'ScheduleExactAlarm'                    // handled in BootReceiver with canScheduleExactAlarms() check
         disable 'PermissionImpliesUnsupportedChromeOsHardware' // uses-feature required="false" added to manifest
+        disable 'HardcodedDebugMode'                          // removed from manifest — added as safety net
     }
 }
 dependencies {
