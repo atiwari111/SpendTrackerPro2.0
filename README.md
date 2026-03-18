@@ -276,8 +276,9 @@ MIT License — free to use, modify, and distribute.
 
 ## 👤 Author
 
-**Aman Tiwari**
+**Animesh Tiwari**
 GitHub: [@atiwari111](https://github.com/atiwari111)
+Linkdin : https://www.linkedin.com/in/animeshtiwari/
 
 ---
 
