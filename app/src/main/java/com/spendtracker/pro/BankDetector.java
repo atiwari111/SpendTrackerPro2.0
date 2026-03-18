@@ -74,6 +74,11 @@ public class BankDetector {
         { "AUSFBL",  "AU",      "AU Small Finance Bank" },
         // Bandhan
         { "BANDHN",  "BANDHAN", "Bandhan Bank" },
+        // PNB — Punjab National Bank
+        { "PNBSMS",  "PNB",  "Punjab National Bank" },
+        { "PNBINB",  "PNB",  "Punjab National Bank" },
+        { "PUNBSMS", "PNB",  "Punjab National Bank" },
+        { "PUNBNK",  "PNB",  "Punjab National Bank" },
         // Paytm Payments Bank
         { "PYTMBN",  "PAYTM",   "Paytm Payments Bank" },
         // Airtel Payments Bank

@@ -79,6 +79,18 @@ public class BankAwareSmsParser {
         "(?:Rs\\.?|INR|₹)\\s*([0-9,]+(?:\\.[0-9]{1,2})?)\\s*debited.*?to\\s+([A-Za-z0-9&'./\\-\\s]{2,40}?)(?:\\s+via|\\s+Ref|\\.|$)",
         Pattern.CASE_INSENSITIVE);
 
+        // ── PNB ──────────────────────────────────────────────────
+    // "A/c XXXX debited INR 60.00 Dt 17-03-26 thru UPI:XXXXXXXXXX"
+    // Merchant not in body for bare UPI debits — resolved via category engine from sender/UPI info
+    private static final Pattern PNB_DEBIT = safeCompile(
+        "(?:INR|Rs\.?|\u20b9)\\s*([0-9,]+(?:\\.[0-9]{1,2})?)\\s+(?:Dt|on)\\s+[0-9\\-/]+",
+        Pattern.CASE_INSENSITIVE);
+
+    // PNB NEFT/IMPS with beneficiary: "transferred to BENEFICIARY Ref"
+    private static final Pattern PNB_NEFT = safeCompile(
+        "(?:INR|Rs\.?|\u20b9)\\s*([0-9,]+(?:\\.[0-9]{1,2})?).*?(?:to|ben)\\s+([A-Za-z][A-Za-z0-9&'.\\-\\s]{1,35}?)(?:\\s+(?:Ref|A/c|UPI)|\\.|,|$)",
+        Pattern.CASE_INSENSITIVE);
+
     // ── GENERIC FALLBACK ──────────────────────────────────────────
     // FIX: was [0-9]{1,2]) — same mismatched bracket bug as SBI_SPENT
     private static final Pattern GENERIC_UPI_TO = safeCompile(
@@ -107,6 +119,7 @@ public class BankAwareSmsParser {
                 case "ICICI": am = tryPatterns(body, ICICI_UPI, ICICI_INFO);  break;
                 case "AXIS":  am = tryPatterns(body, AXIS_TOWARDS);            break;
                 case "KOTAK": am = tryPatterns(body, KOTAK_TO);                break;
+                case "PNB":   am = tryPatterns(body, PNB_NEFT, PNB_DEBIT);    break;
                 default:      am = tryPatterns(body, GENERIC_UPI_TO);          break;
             }
 

@@ -36,6 +36,9 @@ public class SmsParser {
         "sim swap", "registered mobile", "kyc", "your account is",
         // Missed call / service alerts
         "missed call", "alert service",
+        // PNB bare balance reminders (no transaction info, no merchant)
+        // e.g. "Maintain balance-PNB" without any to/at/autopay pattern
+        // These are handled separately via isBareBalanceReminder()
     };
 
     // ── Sender IDs that never send spend transactions ────────────────────────
