@@ -13,20 +13,22 @@ public class CsvExporter {
         if (!dir.exists()) dir.mkdirs();
         String fname = "SpendTracker_" + new SimpleDateFormat("yyyyMMdd_HHmm", Locale.getDefault()).format(new Date()) + ".csv";
         File file = new File(dir, fname);
-        PrintWriter pw = new PrintWriter(new FileWriter(file));
-        pw.println("Date,Merchant,Amount,Category,Payment Method,Payment Detail,Notes,Manual");
-        for (Transaction t : transactions) {
-            pw.printf("\"%s\",\"%s\",%.2f,\"%s\",\"%s\",\"%s\",\"%s\",%s%n",
-                    sdf.format(new Date(t.timestamp)),
-                    t.merchant != null ? t.merchant : "",
-                    t.amount,
-                    t.category != null ? t.category : "",
-                    t.paymentMethod != null ? t.paymentMethod : "",
-                    t.paymentDetail != null ? t.paymentDetail : "",
-                    t.notes != null ? t.notes : "",
-                    t.isManual ? "Yes" : "No");
-        }
-        pw.close();
+        // try-with-resources guarantees the writer is closed even if an exception is thrown
+        // mid-export (e.g. out of disk space), preventing a file handle leak and corrupt output.
+        try (PrintWriter pw = new PrintWriter(new BufferedWriter(new FileWriter(file)))) {
+            pw.println("Date,Merchant,Amount,Category,Payment Method,Payment Detail,Notes,Manual");
+            for (Transaction t : transactions) {
+                pw.printf("\"%s\",\"%s\",%.2f,\"%s\",\"%s\",\"%s\",\"%s\",%s%n",
+                        sdf.format(new Date(t.timestamp)),
+                        t.merchant != null ? t.merchant : "",
+                        t.amount,
+                        t.category != null ? t.category : "",
+                        t.paymentMethod != null ? t.paymentMethod : "",
+                        t.paymentDetail != null ? t.paymentDetail : "",
+                        t.notes != null ? t.notes : "",
+                        t.isManual ? "Yes" : "No");
+            }
+        } // auto-closed — flushes and closes even on IOException
         return file;
     }
 }

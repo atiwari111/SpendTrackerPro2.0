@@ -5,7 +5,6 @@ import android.provider.Telephony;
 import android.telephony.SmsMessage;
 import java.util.*;
 import java.util.concurrent.*;
-import java.util.stream.Collectors;
 
 public class SmsReceiver extends BroadcastReceiver {
 
@@ -83,13 +82,9 @@ public class SmsReceiver extends BroadcastReceiver {
         }
 
         // ── Anomaly detection ─────────────────────────────────────
-        // Get last 20 transactions in the same category for the baseline
-        List<Transaction> recentSameCategory = db.transactionDao().getAllSync()
-                .stream()
-                .filter(t -> p.category.equals(t.category) && !t.isSelfTransfer)
-                .sorted((a, b) -> Long.compare(b.timestamp, a.timestamp))
-                .limit(20)
-                .collect(Collectors.toList());
+        // Use scoped DAO query — avoids loading the full transaction table
+        List<Transaction> recentSameCategory =
+                db.transactionDao().getRecentByCategory(p.category, 20);
 
         List<Double> history = new ArrayList<>();
         for (Transaction t : recentSameCategory) history.add(t.amount);
@@ -111,17 +106,18 @@ public class SmsReceiver extends BroadcastReceiver {
                 || b.contains("current account to");
     }
 
-    /** SHA-1 of (body + timestamp) — used as a stable dedup key. */
+    /** SHA-256 of (body + timestamp) — used as a stable, collision-resistant dedup key. */
     private static String sha1(String text) {
         try {
-            java.security.MessageDigest md = java.security.MessageDigest.getInstance("SHA-1");
+            java.security.MessageDigest md = java.security.MessageDigest.getInstance("SHA-256");
             byte[] result = md.digest(text.getBytes(java.nio.charset.StandardCharsets.UTF_8));
             StringBuilder sb = new StringBuilder();
             for (byte b : result) sb.append(String.format("%02x", b));
             return sb.toString();
         } catch (Exception e) {
-            // Fallback: combine hashCodes with timestamp to reduce collision risk
-            return Integer.toHexString(text.hashCode()) + Long.toHexString(System.currentTimeMillis());
+            long h1 = text.hashCode();
+            long h2 = text.length() * 31L + (text.isEmpty() ? 0 : text.charAt(0));
+            return Long.toHexString(h1 ^ (h2 << 17));
         }
     }
 

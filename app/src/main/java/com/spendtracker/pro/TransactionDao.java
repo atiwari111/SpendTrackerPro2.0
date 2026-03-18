@@ -32,15 +32,32 @@ public interface TransactionDao {
     @Query("SELECT COUNT(*) FROM transactions")
     LiveData<Integer> getTotalCount();
 
-    @Query("SELECT * FROM transactions WHERE timestamp BETWEEN :start AND :end")
+    @Query("SELECT * FROM transactions WHERE timestamp BETWEEN :start AND :end ORDER BY timestamp DESC")
     List<Transaction> getByDateRange(long start, long end);
 
     @Query("SELECT COALESCE(SUM(amount), 0) FROM transactions WHERE category = :category AND timestamp BETWEEN :start AND :end")
     double getSumForCategoryBetween(String category, long start, long end);
 
-    @Query("SELECT * FROM transactions WHERE rawSms = :sms LIMIT 1")
-    Transaction findBySms(String sms);
+    // ── Scoped queries — use these instead of getAllSync() wherever possible ──
 
+    /** Non-self-transfer spend transactions from the current month only. */
+    @Query("SELECT * FROM transactions WHERE timestamp BETWEEN :start AND :end AND isSelfTransfer = 0 ORDER BY timestamp DESC")
+    List<Transaction> getSpendingInRange(long start, long end);
+
+    /** Recent N transactions in a given category, for anomaly baseline. */
+    @Query("SELECT * FROM transactions WHERE category = :category AND isSelfTransfer = 0 ORDER BY timestamp DESC LIMIT :limit")
+    List<Transaction> getRecentByCategory(String category, int limit);
+
+    /** Aggregate monthly spend per category — avoids loading full rows for analytics. */
+    @Query("SELECT category, SUM(amount) as amount FROM transactions WHERE timestamp BETWEEN :start AND :end AND isSelfTransfer = 0 AND isCredit = 0 GROUP BY category ORDER BY amount DESC")
+    List<CategorySum> getCategorySums(long start, long end);
+
+    /** Exists check — faster than findBySms full table scan. */
     @Query("SELECT EXISTS(SELECT 1 FROM transactions WHERE smsHash = :hash)")
     boolean existsHash(String hash);
+
+    /** @deprecated Use existsHash() instead — rawSms is no longer stored. */
+    @Deprecated
+    @Query("SELECT * FROM transactions WHERE rawSms = :sms LIMIT 1")
+    Transaction findBySms(String sms);
 }
