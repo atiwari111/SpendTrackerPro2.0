@@ -12,6 +12,7 @@ jobs:
       RELEASE_KEY_PASSWORD: ${{ secrets.RELEASE_KEY_PASSWORD }}
       RELEASE_KEY_ALIAS: spendtracker
       VERSION_CODE: ${{ github.run_number }}
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
     steps:
       - name: Checkout Repository
