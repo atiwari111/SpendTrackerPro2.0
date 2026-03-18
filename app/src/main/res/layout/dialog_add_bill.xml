@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent" android:layout_height="wrap_content"
+    android:orientation="vertical" android:padding="20dp"
+    android:background="@color/bg_card">
+
+    <EditText android:id="@+id/etBillName"
+        android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:hint="Bill name (e.g. Airtel, Netflix)"
+        android:textColor="@color/text_primary" android:textColorHint="@color/text_hint"
+        android:inputType="textCapWords" android:layout_marginBottom="12dp"/>
+
+    <EditText android:id="@+id/etBillAmount"
+        android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:hint="Amount (₹)"
+        android:textColor="@color/text_primary" android:textColorHint="@color/text_hint"
+        android:inputType="numberDecimal" android:layout_marginBottom="12dp"/>
+
+    <EditText android:id="@+id/etBillDueDate"
+        android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:hint="Due date (e.g. 25 Mar 2026)"
+        android:textColor="@color/text_primary" android:textColorHint="@color/text_hint"
+        android:layout_marginBottom="12dp"/>
+
+    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+        android:text="Category" android:textColor="@color/text_secondary"
+        android:textSize="12sp" android:layout_marginBottom="4dp"/>
+    <Spinner android:id="@+id/spBillCategory"
+        android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:layout_marginBottom="12dp"/>
+
+    <CheckBox android:id="@+id/cbRecurring"
+        android:layout_width="wrap_content" android:layout_height="wrap_content"
+        android:text="Recurring bill"
+        android:textColor="@color/text_primary" android:layout_marginBottom="8dp"/>
+
+    <Spinner android:id="@+id/spFrequency"
+        android:layout_width="match_parent" android:layout_height="wrap_content"/>
+
+</LinearLayout>

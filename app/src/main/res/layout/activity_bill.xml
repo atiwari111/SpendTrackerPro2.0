@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent" android:layout_height="match_parent"
+    android:orientation="vertical" android:background="@color/bg_dark">
+
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent" android:layout_height="?attr/actionBarSize"
+        android:background="@color/bg_dark"
+        app:titleTextColor="@color/text_primary"/>
+
+    <!-- Action buttons -->
+    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:orientation="horizontal" android:padding="16dp" android:paddingTop="4dp">
+
+        <Button android:id="@+id/btnScanBills"
+            android:layout_width="0dp" android:layout_height="44dp"
+            android:layout_weight="1" android:layout_marginEnd="8dp"
+            android:text="🔍 Scan SMS"
+            android:backgroundTint="@color/bg_card"
+            android:textColor="@color/purple_light"
+            android:textSize="13sp"/>
+
+        <Button android:id="@+id/btnAddBill"
+            android:layout_width="0dp" android:layout_height="44dp"
+            android:layout_weight="1"
+            android:text="+ Add Bill"
+            android:backgroundTint="@color/purple_main"
+            android:textColor="@color/white"
+            android:textSize="13sp"/>
+    </LinearLayout>
+
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent" android:layout_height="match_parent">
+
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:orientation="vertical" android:paddingBottom="24dp">
+
+            <!-- PENDING BILLS -->
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:orientation="horizontal" android:paddingHorizontal="16dp"
+                android:paddingTop="8dp" android:gravity="center_vertical">
+                <TextView android:layout_width="0dp" android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="⏳ Pending Bills"
+                    android:textSize="16sp" android:textStyle="bold"
+                    android:textColor="@color/text_primary"/>
+                <TextView android:id="@+id/tvPendingCount"
+                    android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:textSize="12sp" android:textColor="@color/amber"/>
+            </LinearLayout>
+
+            <TextView android:id="@+id/tvEmptyPending"
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:text="No pending bills 🎉\nTap 'Scan SMS' to detect bills automatically"
+                android:textColor="@color/text_secondary" android:textSize="13sp"
+                android:gravity="center" android:padding="24dp"
+                android:visibility="visible"/>
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvPending"
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:paddingHorizontal="12dp" android:clipToPadding="false"
+                android:nestedScrollingEnabled="false" android:visibility="gone"/>
+
+            <!-- Divider -->
+            <View android:layout_width="match_parent" android:layout_height="1dp"
+                android:background="@color/divider" android:layout_marginVertical="16dp"
+                android:layout_marginHorizontal="16dp"/>
+
+            <!-- PAID BILLS -->
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:orientation="horizontal" android:paddingHorizontal="16dp"
+                android:gravity="center_vertical">
+                <TextView android:layout_width="0dp" android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="✅ Paid Bills"
+                    android:textSize="16sp" android:textStyle="bold"
+                    android:textColor="@color/text_primary"/>
+                <TextView android:id="@+id/tvPaidCount"
+                    android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:textSize="12sp" android:textColor="@color/green"/>
+            </LinearLayout>
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvPaid"
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:paddingHorizontal="12dp" android:paddingTop="8dp"
+                android:clipToPadding="false" android:nestedScrollingEnabled="false"/>
+
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+
+</LinearLayout>

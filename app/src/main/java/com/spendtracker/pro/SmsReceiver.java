@@ -45,6 +45,7 @@ public class SmsReceiver extends BroadcastReceiver {
         tx.smsAddress        = sender;
         tx.isManual          = false;
         tx.categoryIcon      = CategoryEngine.getInfo(p.category).icon;
+        tx.isCredit          = SmsParser.isCreditTransaction(body);
         // Detect self-transfers (own account moves) — exclude from spending totals
         tx.isSelfTransfer    = isSelfTransfer(body);
         db.transactionDao().insert(tx);

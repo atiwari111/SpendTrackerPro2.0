@@ -26,6 +26,7 @@ public class MainActivity extends AppCompatActivity {
 
     private ProgressBar progressBar;
     private Button btnScan;
+    private TextView tvBillsBadge;
 
     private AppDatabase db;
 
@@ -63,39 +64,59 @@ public class MainActivity extends AppCompatActivity {
         tvImportStatus = findViewById(R.id.tvImportStatus);
         tvPrediction   = findViewById(R.id.tvPrediction);
 
-        progressBar = findViewById(R.id.progressBar);
+        progressBar    = findViewById(R.id.progressBar);
+        tvBillsBadge   = findViewById(R.id.tvBillsBadge);
         btnScan     = findViewById(R.id.btnScan);
         rvRecent    = findViewById(R.id.rvRecent);
 
-        adapter = new TransactionAdapter(true);
+        // Fix: pass false so tap-to-edit works on dashboard transactions too
+        adapter = new TransactionAdapter(false);
         rvRecent.setLayoutManager(new LinearLayoutManager(this));
         rvRecent.setAdapter(adapter);
         rvRecent.setNestedScrollingEnabled(false);
 
         btnScan.setOnClickListener(v -> {
-
             if (!hasSmsPermission()) {
                 requestSmsPermission();
                 return;
             }
-
             startImport();
         });
 
         findViewById(R.id.fabAdd).setOnClickListener(v ->
                 startActivity(new Intent(this, AddExpenseActivity.class)));
 
+        // ── Quick action cards ────────────────────────────────────
         findViewById(R.id.cardInsights).setOnClickListener(v ->
                 startActivity(new Intent(this, AnalyticsActivity.class)));
 
         findViewById(R.id.cardBudget).setOnClickListener(v ->
                 startActivity(new Intent(this, BudgetActivity.class)));
 
-        tvBudgetLeft.setOnClickListener(v ->
-                startActivity(new Intent(this, BudgetActivity.class)));
-
         findViewById(R.id.cardNetWorth).setOnClickListener(v ->
                 startActivity(new Intent(this, NetWorthActivity.class)));
+
+        // ── Stat cards — whole card is tappable for better UX ───────
+        findViewById(R.id.cardToday).setOnClickListener(v ->
+                startActivity(new Intent(this, TransactionsActivity.class)));
+
+        findViewById(R.id.cardMonth).setOnClickListener(v ->
+                startActivity(new Intent(this, TransactionsActivity.class)));
+
+        findViewById(R.id.cardBudgetLeft).setOnClickListener(v ->
+                startActivity(new Intent(this, BudgetActivity.class)));
+
+        findViewById(R.id.cardTopCat).setOnClickListener(v ->
+                startActivity(new Intent(this, AnalyticsActivity.class)));
+
+        tvHealthScore.setOnClickListener(v ->
+                startActivity(new Intent(this, AnalyticsActivity.class)));
+
+        tvPrediction.setOnClickListener(v ->
+                startActivity(new Intent(this, AnalyticsActivity.class)));
+
+        findViewById(R.id.cardBills).setOnClickListener(v ->
+                startActivity(new Intent(this, BillActivity.class)));
     }
 
     private void setupNav() {
@@ -171,6 +192,18 @@ public class MainActivity extends AppCompatActivity {
 
         db.transactionDao().getTotalCount().observe(this,
                 count -> tvTransCount.setText((count != null ? count : 0) + " total"));
+
+        // Show pending bill count badge
+        db.billDao().getPendingCount().observe(this, count -> {
+            if (tvBillsBadge != null) {
+                if (count != null && count > 0) {
+                    tvBillsBadge.setText(count + " pending");
+                    tvBillsBadge.setVisibility(android.view.View.VISIBLE);
+                } else {
+                    tvBillsBadge.setVisibility(android.view.View.GONE);
+                }
+            }
+        });
     }
 
     private void startImport() {
