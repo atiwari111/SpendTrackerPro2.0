@@ -19,7 +19,8 @@ public class MainActivity extends AppCompatActivity {
     private static final int PERM_CODE = 100;
 
     private TextView tvGreeting, tvDate, tvTodayAmt, tvMonthAmt, tvBudgetLeft,
-            tvTopCat, tvTransCount, tvHealthScore, tvImportStatus, tvPrediction;
+            tvTopCat, tvTransCount, tvHealthScore, tvImportStatus, tvPrediction,
+            tvCreditCardSpent, tvTotalBankBalance;
 
     private RecyclerView rvRecent;
     private TransactionAdapter adapter;
@@ -63,6 +64,8 @@ public class MainActivity extends AppCompatActivity {
         tvHealthScore  = findViewById(R.id.tvHealthScore);
         tvImportStatus = findViewById(R.id.tvImportStatus);
         tvPrediction   = findViewById(R.id.tvPrediction);
+        tvCreditCardSpent   = findViewById(R.id.tvCreditCardSpent);
+        tvTotalBankBalance  = findViewById(R.id.tvTotalBankBalance);
 
         progressBar    = findViewById(R.id.progressBar);
         tvBillsBadge   = findViewById(R.id.tvBillsBadge);
@@ -117,6 +120,12 @@ public class MainActivity extends AppCompatActivity {
 
         findViewById(R.id.cardBills).setOnClickListener(v ->
                 startActivity(new Intent(this, BillActivity.class)));
+
+        findViewById(R.id.cardCreditCards).setOnClickListener(v ->
+                startActivity(new Intent(this, CreditCardActivity.class)));
+
+        findViewById(R.id.cardBankAccounts).setOnClickListener(v ->
+                startActivity(new Intent(this, BankAccountActivity.class)));
     }
 
     private void setupNav() {
@@ -202,6 +211,30 @@ public class MainActivity extends AppCompatActivity {
                 } else {
                     tvBillsBadge.setVisibility(android.view.View.GONE);
                 }
+            }
+        });
+
+        // Credit card total spent badge
+        db.creditCardDao().getAll().observe(this, cards -> {
+            if (tvCreditCardSpent == null) return;
+            if (cards != null && !cards.isEmpty()) {
+                double total = 0;
+                for (com.spendtracker.pro.CreditCard c : cards) total += c.currentSpent;
+                tvCreditCardSpent.setText(String.format("₹%.0f spent", total));
+                tvCreditCardSpent.setVisibility(android.view.View.VISIBLE);
+            } else {
+                tvCreditCardSpent.setVisibility(android.view.View.GONE);
+            }
+        });
+
+        // Bank total balance badge
+        db.bankAccountDao().getTotalBalance().observe(this, total -> {
+            if (tvTotalBankBalance == null) return;
+            if (total != null && total > 0) {
+                tvTotalBankBalance.setText(String.format("₹%.0f", total));
+                tvTotalBankBalance.setVisibility(android.view.View.VISIBLE);
+            } else {
+                tvTotalBankBalance.setVisibility(android.view.View.GONE);
             }
         });
     }

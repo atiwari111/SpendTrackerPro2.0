@@ -62,6 +62,10 @@ public class SettingsActivity extends AppCompatActivity {
                 startActivity(new Intent(this, RecurringActivity.class)));
         findViewById(R.id.btnNetWorth).setOnClickListener(v ->
                 startActivity(new Intent(this, NetWorthActivity.class)));
+        findViewById(R.id.btnCreditCards).setOnClickListener(v ->
+                startActivity(new Intent(this, CreditCardActivity.class)));
+        findViewById(R.id.btnBankAccounts).setOnClickListener(v ->
+                startActivity(new Intent(this, BankAccountActivity.class)));
         findViewById(R.id.btnClearData).setOnClickListener(v -> confirmClear());
     }
 
