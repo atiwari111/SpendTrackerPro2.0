@@ -17,6 +17,7 @@ public class SplashActivity extends AppCompatActivity {
         setContentView(R.layout.activity_splash);
 
         NotificationHelper.createChannels(this);
+        DailySummaryWorker.schedule(this);
 
         new Handler(Looper.getMainLooper()).postDelayed(this::checkFirstLaunch, 1200);
     }

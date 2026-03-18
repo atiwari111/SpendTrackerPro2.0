@@ -20,6 +20,8 @@ public class TransactionAdapter
         this.dashboard = dashboard;
     }
 
+    public List<Transaction> getTransactions() { return transactions; }
+
     public void setTransactions(List<Transaction> list) {
         if (list == null) list = new ArrayList<>();
         this.transactions = list;
