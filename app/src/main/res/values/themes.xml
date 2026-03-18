@@ -26,8 +26,6 @@
         <item name="rippleColor">#337C3AED</item>
 
         <!-- Shapes -->
-        <item name="shapeAppearanceMediumComponent">@style/ShapeAppearance.SpendTracker.Medium</item>
-        <item name="shapeAppearanceLargeComponent">@style/ShapeAppearance.SpendTracker.Large</item>
 
         <!-- Bottom navigation -->
         <item name="bottomNavigationStyle">@style/BottomNavStyle</item>
@@ -45,14 +43,6 @@
         <item name="colorPrimary">@color/purple_main</item>
         <item name="android:textColorPrimary">@color/text_primary</item>
         <item name="android:textColorSecondary">@color/text_secondary</item>
-    </style>
-
-    <!-- Shape appearances -->
-    <style name="ShapeAppearance.SpendTracker.Medium" parent="ShapeAppearanceMediumComponent">
-        <item name="cornerSize">12dp</item>
-    </style>
-    <style name="ShapeAppearance.SpendTracker.Large" parent="ShapeAppearanceLargeComponent">
-        <item name="cornerSize">16dp</item>
     </style>
 
     <!-- Bottom navigation style -->
