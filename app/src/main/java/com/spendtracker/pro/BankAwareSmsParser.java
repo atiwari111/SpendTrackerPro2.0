@@ -92,6 +92,9 @@ public class BankAwareSmsParser {
     public static ParseResult parse(String body, String sender) {
         if (body == null || body.isEmpty()) return null;
 
+        // Reject non-transaction SMS (price alerts, OTPs, balance checks, promos)
+        if (!SmsParser.isTransactionSms(body, sender)) return null;
+
         try {
             BankDetector.BankInfo bankInfo = BankDetector.detect(sender, body);
             String bank = bankInfo != null ? bankInfo.name : "";
