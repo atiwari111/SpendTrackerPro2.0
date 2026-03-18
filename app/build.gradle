@@ -14,9 +14,11 @@ android {
     }
     signingConfigs {
         release {
-            storeFile file("spendtracker.keystore")
+            // Path relative to app/ module directory
+            def keystorePath = System.getenv("KEYSTORE_PATH") ?: "spendtracker.keystore"
+            storeFile file(keystorePath)
             storePassword System.getenv("RELEASE_STORE_PASSWORD")
-            keyAlias "spendtracker"
+            keyAlias System.getenv("RELEASE_KEY_ALIAS") ?: "spendtracker"
             keyPassword System.getenv("RELEASE_KEY_PASSWORD")
         }
     }
