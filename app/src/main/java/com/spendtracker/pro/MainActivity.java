@@ -67,35 +67,51 @@ public class MainActivity extends AppCompatActivity {
         btnScan     = findViewById(R.id.btnScan);
         rvRecent    = findViewById(R.id.rvRecent);
 
-        adapter = new TransactionAdapter(true);
+        // Fix: pass false so tap-to-edit works on dashboard transactions too
+        adapter = new TransactionAdapter(false);
         rvRecent.setLayoutManager(new LinearLayoutManager(this));
         rvRecent.setAdapter(adapter);
         rvRecent.setNestedScrollingEnabled(false);
 
         btnScan.setOnClickListener(v -> {
-
             if (!hasSmsPermission()) {
                 requestSmsPermission();
                 return;
             }
-
             startImport();
         });
 
         findViewById(R.id.fabAdd).setOnClickListener(v ->
                 startActivity(new Intent(this, AddExpenseActivity.class)));
 
+        // ── Quick action cards ────────────────────────────────────
         findViewById(R.id.cardInsights).setOnClickListener(v ->
                 startActivity(new Intent(this, AnalyticsActivity.class)));
 
         findViewById(R.id.cardBudget).setOnClickListener(v ->
                 startActivity(new Intent(this, BudgetActivity.class)));
 
-        tvBudgetLeft.setOnClickListener(v ->
-                startActivity(new Intent(this, BudgetActivity.class)));
-
         findViewById(R.id.cardNetWorth).setOnClickListener(v ->
                 startActivity(new Intent(this, NetWorthActivity.class)));
+
+        // ── Stat cards — whole card is tappable for better UX ───────
+        findViewById(R.id.cardToday).setOnClickListener(v ->
+                startActivity(new Intent(this, TransactionsActivity.class)));
+
+        findViewById(R.id.cardMonth).setOnClickListener(v ->
+                startActivity(new Intent(this, TransactionsActivity.class)));
+
+        findViewById(R.id.cardBudgetLeft).setOnClickListener(v ->
+                startActivity(new Intent(this, BudgetActivity.class)));
+
+        findViewById(R.id.cardTopCat).setOnClickListener(v ->
+                startActivity(new Intent(this, AnalyticsActivity.class)));
+
+        tvHealthScore.setOnClickListener(v ->
+                startActivity(new Intent(this, AnalyticsActivity.class)));
+
+        tvPrediction.setOnClickListener(v ->
+                startActivity(new Intent(this, AnalyticsActivity.class)));
     }
 
     private void setupNav() {
