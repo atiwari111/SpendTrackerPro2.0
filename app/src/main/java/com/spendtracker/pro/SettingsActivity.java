@@ -43,6 +43,17 @@ public class SettingsActivity extends AppCompatActivity {
         swBiometric.setOnCheckedChangeListener((v, checked) ->
                 prefs.edit().putBoolean("bio_enabled", checked).apply());
 
+        // Daily summary notification toggle
+        Switch swDailySummary = (Switch) findViewById(R.id.swDailySummary);
+        if (swDailySummary != null) {
+            swDailySummary.setChecked(prefs.getBoolean("daily_summary_enabled", true));
+            swDailySummary.setOnCheckedChangeListener((v, checked) -> {
+                prefs.edit().putBoolean("daily_summary_enabled", checked).apply();
+                if (checked) DailySummaryWorker.schedule(this);
+                else         DailySummaryWorker.cancel(this);
+            });
+        }
+
         findViewById(R.id.btnExportCsv).setOnClickListener(v -> exportCsv());
         findViewById(R.id.btnCsvImport).setOnClickListener(v ->
                 csvPicker.launch(new String[]{"text/csv", "text/comma-separated-values",

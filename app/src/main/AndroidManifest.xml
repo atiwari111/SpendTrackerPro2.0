@@ -51,6 +51,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.SpendTrackerPro"
+        android:usesCleartextTraffic="false"
         tools:targetApi="31">
 
         <!-- Splash Screen (Launcher) -->
@@ -110,6 +111,11 @@
         <activity
             android:name=".RecurringActivity"
             android:exported="false" />
+
+        <activity
+            android:name=".BillActivity"
+            android:exported="false"
+            android:parentActivityName=".MainActivity" />
 
         <!-- SMS Receiver — permission attr ensures only the system can trigger it -->
         <receiver

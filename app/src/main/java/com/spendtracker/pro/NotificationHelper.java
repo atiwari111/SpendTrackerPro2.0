@@ -30,7 +30,7 @@ public class NotificationHelper {
      * Returns true if POST_NOTIFICATIONS permission is granted (required on API 33+).
      * Always returns true on API < 33 since the permission didn't exist yet.
      */
-    private static boolean canNotify(Context ctx) {
+    static boolean canNotify(Context ctx) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             return ActivityCompat.checkSelfPermission(ctx,
                     android.Manifest.permission.POST_NOTIFICATIONS)

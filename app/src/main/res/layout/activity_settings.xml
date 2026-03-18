@@ -40,6 +40,29 @@
                     <Switch android:id="@+id/swBiometric" android:layout_width="wrap_content"
                         android:layout_height="wrap_content" android:thumbTint="@color/purple_main"/>
                 </LinearLayout>
+
+    <!-- Daily Spend Summary Notification -->
+    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:orientation="horizontal" android:padding="16dp"
+        android:gravity="center_vertical"
+        android:background="@color/bg_card" android:layout_marginBottom="8dp">
+        <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content"
+            android:layout_weight="1" android:orientation="vertical">
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:text="📊 Daily Spend Summary"
+                android:textSize="15sp" android:textStyle="bold"
+                android:textColor="@color/text_primary"/>
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:text="Get a smart spending summary at 8 PM daily"
+                android:textSize="12sp" android:textColor="@color/text_secondary"
+                android:layout_marginTop="2dp"/>
+        </LinearLayout>
+        <Switch android:id="@+id/swDailySummary"
+            android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:checked="true"
+            android:thumbTint="@color/purple_main"
+            android:trackTint="@color/purple_dim"/>
+    </LinearLayout>
             </androidx.cardview.widget.CardView>
 
             <!-- ══ DATA ══ -->

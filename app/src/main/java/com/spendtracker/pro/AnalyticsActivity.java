@@ -2,14 +2,18 @@ package com.spendtracker.pro;
 
 import android.graphics.Color;
 import android.os.Bundle;
+import android.view.*;
 import android.view.MenuItem;
 import android.widget.*;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.recyclerview.widget.*;
 import com.github.mikephil.charting.charts.*;
 import com.github.mikephil.charting.components.*;
 import com.github.mikephil.charting.data.*;
 import com.github.mikephil.charting.formatter.IndexAxisValueFormatter;
+import com.github.mikephil.charting.highlight.Highlight;
+import com.github.mikephil.charting.listener.OnChartValueSelectedListener;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -19,6 +23,9 @@ public class AnalyticsActivity extends AppCompatActivity {
     private LineChart lineChart;
     private TextView tvWeekTotal, tvAvgDaily, tvTopMerchant, tvInsights, tvMonthTotal, tvHealthScore, tvMerchantBreakdown;
     private AppDatabase db;
+    // Instance vars shared with pie chart drill-down listener
+    private Map<String, Double> catMapInstance = new LinkedHashMap<>();
+    private List<Transaction> allTransactions = new ArrayList<>();
     private static final int[] COLORS = {0xFFFF6B6B, 0xFF4ECDC4, 0xFF45B7D1, 0xFF96CEB4, 0xFFFFBE0B, 0xFFDDA0DD, 0xFFFF8C69, 0xFFA8E6CF, 0xFFFFD3B6, 0xFFB8E0FF, 0xFFC3B1E1, 0xFF98D8C8};
 
     @Override
@@ -61,6 +68,7 @@ public class AnalyticsActivity extends AppCompatActivity {
 
             // Category + merchant + month totals
             Map<String, Double> catMap = new LinkedHashMap<>(), merchantMap = new LinkedHashMap<>();
+            allTransactions = all; // Store for drill-down
             double weekTotal = 0, monthTotal = 0;
 
             for (Transaction t : all) {
@@ -135,6 +143,7 @@ public class AnalyticsActivity extends AppCompatActivity {
                 tvHealthScore.setText("Health Score: " + fscore + "/100");
                 int sc = fscore >= 70 ? Color.parseColor("#10B981") : fscore >= 40 ? Color.parseColor("#F59E0B") : Color.parseColor("#EF4444");
                 tvHealthScore.setTextColor(sc);
+                catMapInstance = catMap; // Store for drill-down listener
                 setupBarChart(barEntries, barLabels);
                 setupPieChart(pieEntries);
                 setupLineChart(lineEntries);
@@ -179,6 +188,16 @@ public class AnalyticsActivity extends AppCompatActivity {
         pieChart.getLegend().setTextColor(Color.WHITE);
         pieChart.getLegend().setTextSize(10f);
         pieChart.animateY(1000);
+        pieChart.setOnChartValueSelectedListener(new OnChartValueSelectedListener() {
+            @Override
+            public void onValueSelected(Entry e, Highlight h) {
+                if (e instanceof PieEntry) {
+                    String label = ((PieEntry) e).getLabel();
+                    showCategoryDrillDown(label);
+                }
+            }
+            @Override public void onNothingSelected() {}
+        });
         pieChart.invalidate();
     }
 
@@ -207,6 +226,60 @@ public class AnalyticsActivity extends AppCompatActivity {
         chart.setBackgroundColor(Color.parseColor("#0F172A"));
         chart.getDescription().setEnabled(false);
         chart.getLegend().setTextColor(Color.WHITE);
+    }
+
+    /** Show a bottom sheet with all transactions for the tapped pie slice category */
+    private void showCategoryDrillDown(String categoryLabel) {
+        // Match full category name from catMapInstance (label has emoji stripped)
+        String matchedCat = null;
+        for (String key : catMapInstance.keySet()) {
+            String stripped = key.replaceAll("[^a-zA-Z\\s]", "").trim();
+            if (stripped.equalsIgnoreCase(categoryLabel)) { matchedCat = key; break; }
+        }
+        if (matchedCat == null) matchedCat = categoryLabel;
+
+        // Filter transactions for this category this month
+        long monthStart = getMonthStart(System.currentTimeMillis());
+        List<Transaction> filtered = new ArrayList<>();
+        for (Transaction t : allTransactions) {
+            if (!t.isSelfTransfer && t.timestamp >= monthStart
+                    && matchedCat.equals(t.category)) {
+                filtered.add(t);
+            }
+        }
+
+        final String cat = matchedCat;
+        final List<Transaction> txns = filtered;
+
+        // Build and show bottom sheet dialog
+        View sheet = LayoutInflater.from(this).inflate(R.layout.bottom_sheet_category, null);
+        TextView tvTitle  = sheet.findViewById(R.id.tvCatTitle);
+        TextView tvTotal  = sheet.findViewById(R.id.tvCatTotal);
+        RecyclerView rv   = sheet.findViewById(R.id.rvCatTransactions);
+
+        double total = 0;
+        for (Transaction t : txns) total += t.amount;
+
+        tvTitle.setText(cat);
+        tvTotal.setText(String.format("₹%.0f · %d transactions", total, txns.size()));
+
+        rv.setLayoutManager(new LinearLayoutManager(this));
+        TransactionAdapter adapter = new TransactionAdapter(true);
+        adapter.setTransactions(txns);
+        rv.setAdapter(adapter);
+
+        android.app.AlertDialog dialog = new android.app.AlertDialog.Builder(this, R.style.AlertDialogDark)
+                .setView(sheet)
+                .create();
+        // Make it appear like a bottom sheet
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setLayout(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT);
+            dialog.getWindow().setGravity(android.view.Gravity.BOTTOM);
+            dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+        }
+        dialog.show();
     }
 
     private long getMonthStart(long ts) {

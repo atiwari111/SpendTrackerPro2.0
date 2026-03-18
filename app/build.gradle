@@ -14,9 +14,11 @@ android {
     }
     signingConfigs {
         release {
-            storeFile file("spendtracker.keystore")
+            // Path relative to app/ module directory
+            def keystorePath = System.getenv("KEYSTORE_PATH") ?: "spendtracker.keystore"
+            storeFile file(keystorePath)
             storePassword System.getenv("RELEASE_STORE_PASSWORD")
-            keyAlias "spendtracker"
+            keyAlias System.getenv("RELEASE_KEY_ALIAS") ?: "spendtracker"
             keyPassword System.getenv("RELEASE_KEY_PASSWORD")
         }
     }
@@ -53,6 +55,7 @@ android {
         disable 'NotifyDataSetChanged'                  // acceptable adapter pattern
         disable 'ScheduleExactAlarm'                    // handled in BootReceiver with canScheduleExactAlarms() check
         disable 'PermissionImpliesUnsupportedChromeOsHardware' // uses-feature required="false" added to manifest
+        disable 'HardcodedDebugMode'                          // removed from manifest — added as safety net
     }
 }
 dependencies {

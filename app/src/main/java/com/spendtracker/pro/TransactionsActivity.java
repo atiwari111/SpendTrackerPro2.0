@@ -1,6 +1,9 @@
 package com.spendtracker.pro;
 
 import android.content.Intent;
+import android.graphics.*;
+import com.airbnb.lottie.LottieAnimationView;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.text.*;
 import android.view.MenuItem;
@@ -9,6 +12,7 @@ import android.widget.*;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.*;
+import androidx.core.content.ContextCompat;
 import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
 import java.util.*;
@@ -18,6 +22,8 @@ import java.util.stream.Collectors;
 public class TransactionsActivity extends AppCompatActivity {
     private RecyclerView rv;
     private TransactionAdapter adapter;
+    private View layoutEmptyState;
+    private LottieAnimationView lottieEmpty;
     private EditText etSearch;
     private ChipGroup chipPayment, chipCategory;
     private TextView tvCount, tvTotal;
@@ -50,6 +56,9 @@ public class TransactionsActivity extends AppCompatActivity {
         adapter = new TransactionAdapter(false); // false = full list, tap-to-edit enabled
         rv.setLayoutManager(new LinearLayoutManager(this));
         rv.setAdapter(adapter);
+        attachSwipeHelper();
+        layoutEmptyState = findViewById(R.id.emptyState);
+        if (layoutEmptyState != null) lottieEmpty = layoutEmptyState.findViewById(R.id.lottieEmpty);
 
         setupPaymentChips();
         setupCategoryChips();
@@ -129,6 +138,12 @@ public class TransactionsActivity extends AppCompatActivity {
                         || (t.paymentDetail != null && t.paymentDetail.toLowerCase().contains(q)))
                 .collect(Collectors.toList());
         adapter.setTransactions(filtered);
+        if (layoutEmptyState != null) {
+            boolean empty = filtered.isEmpty();
+            layoutEmptyState.setVisibility(empty ? android.view.View.VISIBLE : android.view.View.GONE);
+            rv.setVisibility(empty ? android.view.View.GONE : android.view.View.VISIBLE);
+            if (empty && lottieEmpty != null) lottieEmpty.playAnimation();
+        }
 
         // Update summary
         double total = filtered.stream().filter(t -> !t.isSelfTransfer).mapToDouble(t -> t.amount).sum();
@@ -140,4 +155,89 @@ public class TransactionsActivity extends AppCompatActivity {
         if (item.getItemId() == android.R.id.home) { getOnBackPressedDispatcher().onBackPressed(); return true; }
         return super.onOptionsItemSelected(item);
     }
+    /**
+     * Swipe gestures on transaction list:
+     *   LEFT  → delete transaction (with undo snackbar)
+     *   RIGHT → toggle self-transfer flag
+     */
+    private void attachSwipeHelper() {
+        new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(
+                0, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
+
+            @Override
+            public boolean onMove(@androidx.annotation.NonNull RecyclerView rv,
+                    @androidx.annotation.NonNull RecyclerView.ViewHolder vh,
+                    @androidx.annotation.NonNull RecyclerView.ViewHolder t) {
+                return false;
+            }
+
+            @Override
+            public void onSwiped(@androidx.annotation.NonNull RecyclerView.ViewHolder vh, int dir) {
+                int pos = vh.getAdapterPosition();
+                if (pos < 0 || pos >= adapter.getTransactions().size()) return;
+                Transaction t = adapter.getTransactions().get(pos);
+
+                if (dir == ItemTouchHelper.LEFT) {
+                    // ── Delete ──────────────────────────────────────
+                    AppExecutors.db().execute(() -> db.transactionDao().delete(t));
+                    com.google.android.material.snackbar.Snackbar
+                            .make(rv, "Transaction deleted", com.google.android.material.snackbar.Snackbar.LENGTH_LONG)
+                            .setAction("UNDO", v -> AppExecutors.db().execute(() ->
+                                    db.transactionDao().insert(t)))
+                            .setActionTextColor(0xFFA78BFA)
+                            .setBackgroundTint(0xFF1E293B)
+                            .setTextColor(0xFFF1F5F9)
+                            .show();
+                } else {
+                    // ── Toggle self-transfer ────────────────────────
+                    t.isSelfTransfer = !t.isSelfTransfer;
+                    AppExecutors.db().execute(() -> db.transactionDao().update(t));
+                    String msg = t.isSelfTransfer ? "Marked as self-transfer" : "Unmarked as self-transfer";
+                    com.google.android.material.snackbar.Snackbar
+                            .make(rv, msg, com.google.android.material.snackbar.Snackbar.LENGTH_SHORT)
+                            .setBackgroundTint(0xFF1E293B)
+                            .setTextColor(0xFFF1F5F9)
+                            .show();
+                }
+            }
+
+            @Override
+            public void onChildDraw(@androidx.annotation.NonNull Canvas c,
+                    @androidx.annotation.NonNull RecyclerView rv,
+                    @androidx.annotation.NonNull RecyclerView.ViewHolder vh,
+                    float dX, float dY, int actionState, boolean active) {
+
+                if (actionState != ItemTouchHelper.ACTION_STATE_SWIPE) {
+                    super.onChildDraw(c, rv, vh, dX, dY, actionState, active);
+                    return;
+                }
+
+                View item = vh.itemView;
+                Paint paint  = new Paint();
+                Paint textPt = new Paint();
+                textPt.setColor(Color.WHITE);
+                textPt.setTextSize(36f);
+                textPt.setAntiAlias(true);
+
+                if (dX < 0) {
+                    // Swiping LEFT → red background + delete icon
+                    paint.setColor(Color.parseColor("#EF4444"));
+                    c.drawRect(item.getRight() + dX, item.getTop(),
+                            item.getRight(), item.getBottom(), paint);
+                    c.drawText("🗑️", item.getRight() + dX + 24,
+                            item.getTop() + (item.getHeight() / 2f) + 14, textPt);
+                } else if (dX > 0) {
+                    // Swiping RIGHT → blue background + transfer icon
+                    paint.setColor(Color.parseColor("#0EA5E9"));
+                    c.drawRect(item.getLeft(), item.getTop(),
+                            item.getLeft() + dX, item.getBottom(), paint);
+                    c.drawText("🔄", item.getLeft() + 24,
+                            item.getTop() + (item.getHeight() / 2f) + 14, textPt);
+                }
+
+                super.onChildDraw(c, rv, vh, dX, dY, actionState, active);
+            }
+        }).attachToRecyclerView(rv);
+    }
+
 }
