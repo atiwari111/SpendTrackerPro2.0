@@ -85,6 +85,20 @@ public class NotificationHelper {
                 makeStackedIntent(ctx, AnalyticsActivity.class, 9999));
     }
 
+    public static void sendBillDueReminder(Context ctx, Bill bill) {
+        if (!canNotify(ctx)) return;
+        int days = bill.daysUntilDue();
+        String title = days <= 0 ? "🔴 Bill Overdue: " + bill.name
+                     : days == 0 ? "⚠️ Bill Due Today: " + bill.name
+                     : "📋 Bill Due in " + days + " day(s): " + bill.name;
+        String msg = String.format("₹%.0f due %s",
+                bill.amount,
+                days <= 0 ? "NOW" : "on " + new java.text.SimpleDateFormat("dd MMM", java.util.Locale.getDefault())
+                        .format(new java.util.Date(bill.dueDate)));
+        send(ctx, CH_BILLS, bill.id + 50000, title, msg,
+                makeStackedIntent(ctx, BillActivity.class, bill.id + 50000));
+    }
+
     public static void sendAnomalyAlert(Context ctx, String merchant, double amount, String category, String reason) {
         int id = (int)(System.currentTimeMillis() % 100000);
         send(ctx, CH_ALERTS, id,

@@ -99,6 +99,7 @@ public class SmsImporter {
                     t.timestamp      = date;
                     t.smsHash        = hash;
                     t.isSelfTransfer = isSelfTransfer(body);
+                    t.isCredit       = SmsParser.isCreditTransaction(body);
                     t.paymentMethod  = parsed.paymentMethod;
                     t.paymentDetail  = parsed.paymentDetail;
                     t.rawSms         = body;

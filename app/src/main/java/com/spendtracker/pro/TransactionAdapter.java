@@ -53,11 +53,14 @@ public class TransactionAdapter
         // Date
         h.date.setText(t.timestamp > 0 ? dateFmt.format(new Date(t.timestamp)) : "");
 
-        // Amount — red for regular, grey for self-transfer
-        h.amount.setText(String.format("₹%.0f", t.amount));
+        // Amount — green for credit/income, red for expense, grey for self-transfer
+        String amtPrefix = t.isCredit ? "+ ₹" : "₹";
+        h.amount.setText(String.format(amtPrefix + "%.0f", t.amount));
         h.amount.setTextColor(t.isSelfTransfer
-                ? 0xFF9CA3AF   // grey — self-transfer
-                : 0xFFEF4444); // red  — expense
+                ? 0xFF9CA3AF   // grey  — self-transfer
+                : t.isCredit
+                ? 0xFF10B981   // green — credit/income
+                : 0xFFEF4444); // red   — expense
 
         // Tap / long-press to edit (full list only, not dashboard)
         if (!dashboard) {

@@ -14,9 +14,20 @@ public class BootReceiver extends BroadcastReceiver {
             // Re-schedule recurring reminders after boot on a background thread
             AppExecutors.db().execute(() -> {
                 AppDatabase db = AppDatabase.getInstance(ctx);
+
+                // Re-schedule recurring bill reminders
                 List<RecurringTransaction> list = db.recurringDao().getActiveSync();
                 for (RecurringTransaction r : list) {
                     scheduleReminder(ctx, r);
+                }
+
+                // Send bill due notifications for bills due within 3 days
+                db.billDao().markOverdue(System.currentTimeMillis());
+                long now   = System.currentTimeMillis();
+                long in3   = now + (3L * 24 * 60 * 60 * 1000);
+                List<Bill> dueSoon = db.billDao().getDueInRange(now, in3);
+                for (Bill bill : dueSoon) {
+                    NotificationHelper.sendBillDueReminder(ctx, bill);
                 }
             });
         }

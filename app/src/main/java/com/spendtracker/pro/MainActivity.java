@@ -26,6 +26,7 @@ public class MainActivity extends AppCompatActivity {
 
     private ProgressBar progressBar;
     private Button btnScan;
+    private TextView tvBillsBadge;
 
     private AppDatabase db;
 
@@ -63,7 +64,8 @@ public class MainActivity extends AppCompatActivity {
         tvImportStatus = findViewById(R.id.tvImportStatus);
         tvPrediction   = findViewById(R.id.tvPrediction);
 
-        progressBar = findViewById(R.id.progressBar);
+        progressBar    = findViewById(R.id.progressBar);
+        tvBillsBadge   = findViewById(R.id.tvBillsBadge);
         btnScan     = findViewById(R.id.btnScan);
         rvRecent    = findViewById(R.id.rvRecent);
 
@@ -112,6 +114,9 @@ public class MainActivity extends AppCompatActivity {
 
         tvPrediction.setOnClickListener(v ->
                 startActivity(new Intent(this, AnalyticsActivity.class)));
+
+        findViewById(R.id.cardBills).setOnClickListener(v ->
+                startActivity(new Intent(this, BillActivity.class)));
     }
 
     private void setupNav() {
@@ -187,6 +192,18 @@ public class MainActivity extends AppCompatActivity {
 
         db.transactionDao().getTotalCount().observe(this,
                 count -> tvTransCount.setText((count != null ? count : 0) + " total"));
+
+        // Show pending bill count badge
+        db.billDao().getPendingCount().observe(this, count -> {
+            if (tvBillsBadge != null) {
+                if (count != null && count > 0) {
+                    tvBillsBadge.setText(count + " pending");
+                    tvBillsBadge.setVisibility(android.view.View.VISIBLE);
+                } else {
+                    tvBillsBadge.setVisibility(android.view.View.GONE);
+                }
+            }
+        });
     }
 
     private void startImport() {

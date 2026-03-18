@@ -50,6 +50,12 @@ public class BankAwareSmsParser {
         "(?:Rs\\.?|INR|₹)\\s*([0-9,]+(?:\\.[0-9]{1,2})?)\\s*debited.*?Info:([A-Za-z0-9&'./\\-\\s]{2,40})",
         Pattern.CASE_INSENSITIVE);
 
+    // HDFC Card SMS: "Txn Rs.30.00\nOn HDFC Bank Card 7235\nAt paytmqr@ptys\nby UPI"
+    // No "debited" keyword — triggered by "Txn" + "At merchant" multiline pattern
+    private static final Pattern HDFC_TXN_AT = safeCompile(
+        "(?is)(?:Txn)\\s+(?:Rs\.?|INR)\\s*([0-9,]+(?:\\.[0-9]{1,2})?).{0,120}?\\nAt\\s+([A-Za-z0-9@&'./\\-]{2,50})",
+        0);
+
     // ── SBI ───────────────────────────────────────────────────────
     // FIX: was [0-9]{1,2]) — missing opening bracket, caused PatternSyntaxException
     private static final Pattern SBI_SPENT = safeCompile(
@@ -114,7 +120,7 @@ public class BankAwareSmsParser {
 
             AmountMerchant am = null;
             switch (bank) {
-                case "HDFC":  am = tryPatterns(body, HDFC_DEBIT, HDFC_INFO);  break;
+                case "HDFC":  am = tryPatterns(body, HDFC_DEBIT, HDFC_INFO, HDFC_TXN_AT);  break;
                 case "SBI":   am = tryPatterns(body, SBI_UPI, SBI_SPENT);     break;
                 case "ICICI": am = tryPatterns(body, ICICI_UPI, ICICI_INFO);  break;
                 case "AXIS":  am = tryPatterns(body, AXIS_TOWARDS);            break;
@@ -134,7 +140,13 @@ public class BankAwareSmsParser {
 
             // Bank-specific result
             String merchant      = am.merchant;
-            String category      = CategoryEngine.classify(merchant, body);
+            // For credit transactions, use income classifier instead of spend classifier
+            String category;
+            if (SmsParser.isCreditTransaction(body)) {
+                category = SmsParser.classifyCreditCategory(body, merchant);
+            } else {
+                category = CategoryEngine.classify(merchant, body);
+            }
             if (category == null) category = "Others";
             String paymentMethod = detectPaymentMethod(body);
             String paymentDetail = buildPaymentDetail(bank, buildDetailFromBody(body, bank));

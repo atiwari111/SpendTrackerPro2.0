@@ -44,4 +44,7 @@ public class Transaction {
 
     // For SMS rows: SHA-1 of (body+date). For manual/CSV rows: "manual_" + UUID.
     public String smsHash;
+
+    // true = income (salary/cashback/refund/dividend), false = expense (debit)
+    public boolean isCredit;
 }

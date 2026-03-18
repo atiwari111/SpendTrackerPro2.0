@@ -14,9 +14,10 @@ import androidx.room.migration.Migration;
                 Transaction.class,
                 Budget.class,
                 RecurringTransaction.class,
-                NetWorthItem.class
+                NetWorthItem.class,
+                Bill.class
         },
-        version = 2,
+        version = 3,
         exportSchema = false
 )
 public abstract class AppDatabase extends RoomDatabase {
@@ -57,12 +58,31 @@ public abstract class AppDatabase extends RoomDatabase {
         }
     };
 
+    static final Migration MIGRATION_2_3 = new Migration(2, 3) {
+        @Override
+        public void migrate(@NonNull SupportSQLiteDatabase db) {
+            db.execSQL("CREATE TABLE IF NOT EXISTS `bills` ("
+                    + "`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,"
+                    + "`name` TEXT, `category` TEXT, `icon` TEXT,"
+                    + "`amount` REAL NOT NULL DEFAULT 0,"
+                    + "`dueDate` INTEGER NOT NULL DEFAULT 0,"
+                    + "`detectedDate` INTEGER NOT NULL DEFAULT 0,"
+                    + "`status` TEXT, `paidDate` INTEGER NOT NULL DEFAULT 0,"
+                    + "`sourceSmS` TEXT, `isRecurring` INTEGER NOT NULL DEFAULT 0,"
+                    + "`frequency` TEXT, `merchantId` TEXT)");
+            // Add isCredit field to transactions
+            try { db.execSQL("ALTER TABLE transactions ADD COLUMN isCredit INTEGER NOT NULL DEFAULT 0"); }
+            catch (Exception ignored) {}
+        }
+    };
+
     private static volatile AppDatabase INSTANCE;
 
     public abstract TransactionDao transactionDao();
     public abstract BudgetDao budgetDao();
     public abstract RecurringDao recurringDao();
     public abstract NetWorthDao netWorthDao();
+    public abstract BillDao billDao();
 
     public static AppDatabase getInstance(Context context) {
         if (INSTANCE == null) {
@@ -73,7 +93,7 @@ public abstract class AppDatabase extends RoomDatabase {
                             AppDatabase.class,
                             "spendtracker.db"
                     )
-                    .addMigrations(MIGRATION_1_2)
+                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
                     .build();
                 }
             }

@@ -1,0 +1,199 @@
+package com.spendtracker.pro;
+
+import java.util.*;
+import java.util.regex.*;
+
+/**
+ * BillSmsDetector — identifies bill/payment-due SMS and extracts structured data.
+ *
+ * Handles:
+ *  - Electricity bills ("Your BSES bill of Rs.X is due on DD-MM")
+ *  - Mobile/broadband recharges ("Your Airtel bill Rs.X due on...")
+ *  - Subscription reminders ("Netflix subscription Rs.X due on...")
+ *  - Credit card bills ("Min due Rs.X, Total due Rs.X by DD-MM")
+ *  - Insurance premiums ("LIC premium Rs.X due on DD-MMM")
+ *  - Paid confirmation ("Payment of Rs.X received for your Airtel bill")
+ */
+public class BillSmsDetector {
+
+    public static class BillSmsResult {
+        public final String  name;
+        public final String  category;
+        public final String  icon;
+        public final double  amount;
+        public final long    dueDate;    // 0 if not found
+        public final String  status;     // PENDING or PAID
+        public final boolean isRecurring;
+        public final String  merchantId;
+
+        BillSmsResult(String name, String category, String icon,
+                      double amount, long dueDate, String status, boolean isRecurring) {
+            this.name       = name;
+            this.category   = category;
+            this.icon       = icon;
+            this.amount     = amount;
+            this.dueDate    = dueDate;
+            this.status     = status;
+            this.isRecurring = isRecurring;
+            this.merchantId = name != null ? name.toLowerCase().replaceAll("[^a-z0-9]","") : "";
+        }
+    }
+
+    // ── Keywords that indicate a bill due notice ─────────────────────────────
+    private static final String[] BILL_DUE_KEYWORDS = {
+        "bill due", "bill amount", "payment due", "due on", "due date",
+        "please pay", "last date", "outstanding amount",
+        "recharge due", "subscription due", "premium due",
+        "emi", "payable by", "pay before",
+    };
+
+    // ── Keywords for paid confirmation ────────────────────────────────────────
+    private static final String[] BILL_PAID_KEYWORDS = {
+        "payment received", "payment successful", "bill paid", "payment confirmed",
+        "thank you for payment", "transaction successful for bill",
+        "recharge successful", "subscription renewed",
+    };
+
+    private static final Pattern AMOUNT_PAT = Pattern.compile(
+            "(?i)(?:rs\\.?|inr|₹)\\s*([0-9,]+(?:\\.[0-9]{1,2})?)");
+
+    // Matches: "due on 25-03", "due by 25 Mar", "due date: 25/03/2026"
+    private static final Pattern DUE_DATE_PAT = Pattern.compile(
+            "(?i)(?:due\\s+(?:on|by|date[:\\s]?)\\s*|last\\s+date[:\\s]*|pay\\s+(?:by|before)[:\\s]*)([0-3]?[0-9][\\s\\-/](?:(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*|[01]?[0-9])[\\s\\-/]?(?:2?0?[2-9][0-9])?)",
+            Pattern.CASE_INSENSITIVE);
+
+    // ── Known biller patterns ─────────────────────────────────────────────────
+    private static final String[][] BILLERS = {
+        // { keyword, name, category, icon, isRecurring }
+        { "airtel",      "Airtel",         "🔌 Bills", "📱", "true" },
+        { "jio",         "Jio",            "🔌 Bills", "📱", "true" },
+        { "vodafone",    "Vodafone",       "🔌 Bills", "📱", "true" },
+        { "bsnl",        "BSNL",           "🔌 Bills", "📱", "true" },
+        { "act fibernet","ACT Fibernet",   "🔌 Bills", "🌐", "true" },
+        { "hathway",     "Hathway",        "🔌 Bills", "🌐", "true" },
+        { "bses",        "BSES Electricity","🔌 Bills","⚡", "true" },
+        { "tata power",  "Tata Power",     "🔌 Bills", "⚡", "true" },
+        { "electricity", "Electricity",    "🔌 Bills", "⚡", "true" },
+        { "bescom",      "BESCOM",         "🔌 Bills", "⚡", "true" },
+        { "ndmc",        "NDMC",           "🔌 Bills", "⚡", "true" },
+        { "netflix",     "Netflix",        "🎬 Entertainment","🎬","true" },
+        { "hotstar",     "Disney Hotstar", "🎬 Entertainment","🎬","true" },
+        { "spotify",     "Spotify",        "🎬 Entertainment","🎵","true" },
+        { "amazon prime","Amazon Prime",   "🎬 Entertainment","📦","true" },
+        { "lic",         "LIC",            "💰 Investment","🛡️","true" },
+        { "insurance",   "Insurance",      "💰 Investment","🛡️","true" },
+        { "credit card", "Credit Card",    "🔌 Bills","💳","true" },
+        { "indane",      "Indane Gas",     "🔌 Bills","🔥","true" },
+        { "hp gas",      "HP Gas",         "🔌 Bills","🔥","true" },
+        { "maintenance", "Society Maintenance","🏠 Rent","🏢","true" },
+    };
+
+    /**
+     * Detects if SMS is a bill-related message and extracts bill info.
+     * Returns null if this SMS is not a bill notification.
+     */
+    public static BillSmsResult detect(String body, String sender) {
+        if (body == null || body.length() < 10) return null;
+        String lower = body.toLowerCase();
+
+        // Check if paid or pending
+        boolean isPaid    = containsAny(lower, BILL_PAID_KEYWORDS);
+        boolean isBillDue = containsAny(lower, BILL_DUE_KEYWORDS);
+
+        if (!isPaid && !isBillDue) return null;
+
+        // Extract amount
+        Matcher amtM = AMOUNT_PAT.matcher(body);
+        if (!amtM.find()) return null;
+        double amount;
+        try { amount = Double.parseDouble(amtM.group(1).replace(",", "")); }
+        catch (Exception e) { return null; }
+        if (amount <= 0) return null;
+
+        // Identify biller
+        String name = null, category = "🔌 Bills", icon = "📋";
+        boolean isRecurring = true;
+        for (String[] biller : BILLERS) {
+            if (lower.contains(biller[0])) {
+                name       = biller[1];
+                category   = biller[2];
+                icon       = biller[3];
+                isRecurring = "true".equals(biller[4]);
+                break;
+            }
+        }
+        if (name == null) {
+            // Try to extract from sender
+            name = extractBillerFromSender(sender);
+            if (name == null) name = "Bill Payment";
+        }
+
+        // Extract due date
+        long dueDate = 0;
+        if (!isPaid) {
+            Matcher dateM = DUE_DATE_PAT.matcher(body);
+            if (dateM.find()) {
+                dueDate = parseDate(dateM.group(1));
+            }
+            // If no explicit date, assume due in 7 days
+            if (dueDate <= 0) {
+                dueDate = System.currentTimeMillis() + (7L * 24 * 60 * 60 * 1000);
+            }
+        }
+
+        String status = isPaid ? "PAID" : "PENDING";
+        return new BillSmsResult(name, category, icon, amount, dueDate, status, isRecurring);
+    }
+
+    private static String extractBillerFromSender(String sender) {
+        if (sender == null) return null;
+        String s = sender.toLowerCase().replaceAll("^[a-z]{2}-", "");
+        if (s.contains("airtel")) return "Airtel";
+        if (s.contains("jio"))    return "Jio";
+        if (s.contains("bses"))   return "BSES";
+        if (s.contains("tata"))   return "Tata";
+        return null;
+    }
+
+    private static boolean containsAny(String text, String[] keywords) {
+        for (String kw : keywords) {
+            if (text.contains(kw)) return true;
+        }
+        return false;
+    }
+
+    private static long parseDate(String dateStr) {
+        if (dateStr == null || dateStr.isEmpty()) return 0;
+        try {
+            // Normalize separators
+            String clean = dateStr.trim().replaceAll("[\\s/]", "-");
+            // Try dd-MMM-yy, dd-MM-yy, dd-MM-yyyy
+            String[] formats = { "dd-MMM-yy", "dd-MMM-yyyy", "dd-MM-yy", "dd-MM-yyyy" };
+            Calendar cal = Calendar.getInstance();
+            for (String fmt : formats) {
+                try {
+                    java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat(fmt, Locale.ENGLISH);
+                    sdf.setLenient(false);
+                    java.util.Date d = sdf.parse(clean);
+                    if (d != null) return d.getTime();
+                } catch (Exception ignored) {}
+            }
+            // If just dd-MM, use current year
+            if (clean.matches("\\d{1,2}-\\d{2}")) {
+                clean = clean + "-" + cal.get(Calendar.YEAR);
+                java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("dd-MM-yyyy", Locale.ENGLISH);
+                java.util.Date d = sdf.parse(clean);
+                if (d != null) {
+                    // If date is in past, it's next month
+                    if (d.getTime() < System.currentTimeMillis()) {
+                        cal.setTime(d);
+                        cal.add(Calendar.MONTH, 1);
+                        return cal.getTimeInMillis();
+                    }
+                    return d.getTime();
+                }
+            }
+        } catch (Exception ignored) {}
+        return 0;
+    }
+}

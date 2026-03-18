@@ -12,44 +12,30 @@ public class SmsParser {
             Pattern.compile("(?i)(debited|spent|paid|purchase|txn|deducted|withdrawn)");
 
     private static final Pattern CREDIT_PATTERN =
-            Pattern.compile("(?i)(credited|received|refund|cashback)");
+            Pattern.compile("(?i)(credited|received|refund|cashback|reversed)");
 
-    // ── Phrases that indicate this is NOT a real debit transaction ──────────
-    // These SMS types contain amounts but are NOT spend transactions:
-    // price alerts, OTPs, balance enquiries, statements, market rates, etc.
+    // NON_TRANSACTION phrases — amounts in these SMS are NOT real transactions
     private static final String[] NON_TRANSACTION_PHRASES = {
-        // Market / commodity price alerts
         "as on ", "mcx ", "mcx ltd", "nse ", "bse ", "sensex", "nifty",
         "gold rate", "silver rate", "commodity", "market price",
-        // OTP / verification
         "otp", "one time password", "verification code", "do not share",
-        // Balance / statement
-        "available balance", "avl bal", "avbl bal", "closing balance",
-        "min due", "minimum due", "outstanding", "due date", "statement",
-        "your limit", "credit limit",
-        // Promotional / offers
-        "congratulations", "you have won", "offer expires", "discount",
-        "cashback offer", "get flat", "upto",
-        // Loan / insurance alerts (not spend)
+        "avl bal", "avbl bal", "closing balance",
+        "min due", "minimum due", "your limit", "credit limit",
+        "congratulations", "you have won", "offer expires",
+        "get flat", "upto ", "cashback offer",
         "emi due", "loan amount", "insurance premium due",
-        // SIM / account alerts
         "sim swap", "registered mobile", "kyc", "your account is",
-        // Missed call / service alerts
         "missed call", "alert service",
-        // PNB bare balance reminders (no transaction info, no merchant)
-        // e.g. "Maintain balance-PNB" without any to/at/autopay pattern
-        // These are handled separately via isBareBalanceReminder()
     };
 
-    // ── Sender IDs that never send spend transactions ────────────────────────
     private static final String[] NON_BANK_SENDERS = {
         "mcxltd", "mcx-ltd", "jm-mcx", "nse", "bse", "cdsl", "nsdl",
-        "sebi", "irda", "irdai", "mutual", "zerodha-alert",
+        "sebi", "irda", "irdai", "zerodha-alert",
     };
 
     /**
-     * Returns true if the SMS is a real spend/debit transaction.
-     * Returns false for price alerts, OTPs, balance checks, promos, etc.
+     * Returns true if SMS is a real financial transaction (debit OR credit).
+     * Rejects price alerts, OTPs, balance checks, promos, etc.
      */
     public static boolean isTransactionSms(String body, String sender) {
         if (body == null || body.length() < 10) return false;
@@ -57,37 +43,33 @@ public class SmsParser {
         String lower = body.toLowerCase();
         String senderLower = sender != null ? sender.toLowerCase() : "";
 
-        // Reject known non-bank senders immediately
         for (String nonBank : NON_BANK_SENDERS) {
             if (senderLower.contains(nonBank)) return false;
         }
-
-        // Reject if any non-transaction phrase is found
         for (String phrase : NON_TRANSACTION_PHRASES) {
             if (lower.contains(phrase)) return false;
         }
-
-        // Must contain an amount
         if (!AMOUNT_PATTERN.matcher(body).find()) return false;
 
-        // Must have a debit keyword (credit-only messages like "credited" without
-        // debit keywords are income, not spend — handled separately in classifier)
         boolean hasDebit  = DEBIT_PATTERN.matcher(body).find();
         boolean hasCredit = CREDIT_PATTERN.matcher(body).find();
 
-        // Pure credit with no debit = income, skip
-        if (!hasDebit && hasCredit) return false;
+        // Must have at least one transaction keyword
+        return hasDebit || hasCredit;
+    }
 
-        // No transaction keyword at all = probably informational
-        if (!hasDebit && !hasCredit) return false;
-
-        return true;
+    /** Returns true if this SMS is a credit/income transaction (not a debit). */
+    public static boolean isCreditTransaction(String body) {
+        if (body == null) return false;
+        String lower = body.toLowerCase();
+        boolean hasDebit  = DEBIT_PATTERN.matcher(body).find();
+        boolean hasCredit = CREDIT_PATTERN.matcher(body).find();
+        // Pure credit = credited/received/refund/cashback without any debit keyword
+        return hasCredit && !hasDebit;
     }
 
     public static SmsTransaction parse(String body, String sender) {
         if (body == null || body.length() < 5) return null;
-
-        // ── Reject non-transaction SMS before doing anything else ──────────
         if (!isTransactionSms(body, sender)) return null;
 
         Matcher amountMatcher = AMOUNT_PATTERN.matcher(body);
@@ -96,35 +78,62 @@ public class SmsParser {
         double amount;
         try {
             amount = Double.parseDouble(amountMatcher.group(1).replace(",", ""));
-        } catch (Exception e) {
-            return null;
-        }
-
+        } catch (Exception e) { return null; }
         if (amount <= 0) return null;
 
         SmsTransaction t = new SmsTransaction();
         t.amount = amount;
+        t.isCredit = isCreditTransaction(body);
 
-        // Extract merchant
         String merchant = "";
-        try {
-            merchant = MerchantExtractor.extract(body);
-        } catch (Exception ignored) {}
-
+        try { merchant = MerchantExtractor.extract(body); } catch (Exception ignored) {}
         if (merchant == null || merchant.isEmpty()) {
             merchant = sender != null ? sender : "Unknown";
         }
-
         t.merchant = merchant;
 
-        // ── FIX: use classify() not getInfo() to resolve category by merchant ──
-        t.category = CategoryEngine.classify(merchant, body);
+        // Classify with credit awareness
+        if (t.isCredit) {
+            t.category = classifyCreditCategory(body, merchant);
+        } else {
+            t.category = CategoryEngine.classify(merchant, body);
+        }
 
         t.paymentMethod  = detectPaymentMethod(body);
         t.paymentDetail  = sender;
         t.isSelfTransfer = isSelfTransfer(body);
 
         return t;
+    }
+
+    /**
+     * Classify credit/income transactions into the correct income category.
+     */
+    public static String classifyCreditCategory(String body, String merchant) {
+        String lower = (body != null ? body : "").toLowerCase();
+        String m     = (merchant != null ? merchant : "").toLowerCase();
+
+        if (lower.contains("salary") || lower.contains("payroll") ||
+            lower.contains("credited by employer"))
+            return "💵 Salary";
+
+        if (lower.contains("cashback"))
+            return "🎉 Cashback";
+
+        if (lower.contains("refund") || lower.contains("reversed") ||
+            lower.contains("return"))
+            return "↩️ Refund";
+
+        if (lower.contains("dividend") || lower.contains("interest credit") ||
+            lower.contains("mutual fund") || lower.contains("redemption") ||
+            m.contains("zerodha") || m.contains("groww") || m.contains("upstox"))
+            return "📈 Investment Return";
+
+        // Generic bank transfer from known person = likely personal transfer
+        if (lower.contains("credited") && (lower.contains("upi") || lower.contains("imps")))
+            return "↩️ Refund"; // Closest — user can re-categorise
+
+        return "↩️ Refund"; // Safe default for any credit
     }
 
     private static String detectPaymentMethod(String sms) {
