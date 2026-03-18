@@ -1,8 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:dots="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
-    android:background="#7FAF8C"
+    android:background="@color/bg_dark"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
@@ -17,8 +18,10 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
+        android:layout_marginBottom="8dp"
+        android:layout_marginTop="8dp"
         dots:dotsColor="#FFFFFF"
-        dots:selectedDotColor="#FFFFFF"/>
+        dots:selectedDotColor="#7C3AED"/>
 
     <Button
         android:id="@+id/btnNext"
@@ -26,8 +29,8 @@
         android:textStyle="bold"
         android:layout_margin="24dp"
         android:layout_width="match_parent"
-        android:layout_height="60dp"
-        android:backgroundTint="#FFFFFF"
-        android:textColor="#7FAF8C"/>
+        android:layout_height="56dp"
+        android:backgroundTint="#7C3AED"
+        android:textColor="#FFFFFF"/>
 
 </LinearLayout>
