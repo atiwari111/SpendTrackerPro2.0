@@ -118,6 +118,18 @@
             android:exported="false"
             android:parentActivityName=".MainActivity" />
 
+        <!-- Credit Cards feature -->
+        <activity
+            android:name=".CreditCardActivity"
+            android:exported="false"
+            android:parentActivityName=".MainActivity" />
+
+        <!-- Bank Accounts feature -->
+        <activity
+            android:name=".BankAccountActivity"
+            android:exported="false"
+            android:parentActivityName=".MainActivity" />
+
         <!-- SMS Receiver — permission attr ensures only the system can trigger it -->
         <receiver
             android:name=".SmsReceiver"
@@ -130,10 +142,11 @@
 
         </receiver>
 
-        <!-- Boot Receiver -->
+        <!-- Boot Receiver — permission attr restricts triggering to the system only -->
         <receiver
             android:name=".BootReceiver"
-            android:exported="true">
+            android:exported="true"
+            android:permission="android.permission.RECEIVE_BOOT_COMPLETED">
 
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED"/>
