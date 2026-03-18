@@ -6,12 +6,12 @@ import android.os.Bundle;
 import android.view.MenuItem;
 import android.widget.*;
 import androidx.activity.result.*;
+import androidx.activity.result.register.*;
 import androidx.activity.result.contract.*;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import java.io.File;
 import java.util.List;
-import java.util.concurrent.Executors;
 
 public class SettingsActivity extends AppCompatActivity {
     private SharedPreferences prefs;
@@ -70,22 +70,65 @@ public class SettingsActivity extends AppCompatActivity {
     }
 
     private void exportCsv() {
+        String[] options = {"Transactions", "Credit Cards", "Bank Accounts"};
+        new androidx.appcompat.app.AlertDialog.Builder(this, R.style.AlertDialogDark)
+                .setTitle("Export as CSV")
+                .setItems(options, (d, which) -> {
+                    switch (which) {
+                        case 0: exportTransactions(); break;
+                        case 1: exportCreditCardsCsv(); break;
+                        case 2: exportBankAccountsCsv(); break;
+                    }
+                }).show();
+    }
+
+    private void exportTransactions() {
         AppExecutors.db().execute(() -> {
             try {
                 List<Transaction> all = db.transactionDao().getAllSync();
                 File f = CsvExporter.export(this, all);
-                Uri uri = androidx.core.content.FileProvider.getUriForFile(
-                        this, getPackageName() + ".fileprovider", f);
-                Intent share = new Intent(Intent.ACTION_SEND);
-                share.setType("text/csv");
-                share.putExtra(Intent.EXTRA_STREAM, uri);
-                share.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                runOnUiThread(() -> startActivity(Intent.createChooser(share, "Export CSV via...")));
+                shareFile(f, "Export Transactions via...");
             } catch (Exception e) {
                 runOnUiThread(() -> Toast.makeText(this,
                         "Export failed: " + e.getMessage(), Toast.LENGTH_LONG).show());
             }
         });
+    }
+
+    private void exportCreditCardsCsv() {
+        AppExecutors.db().execute(() -> {
+            try {
+                List<CreditCard> cards = db.creditCardDao().getAllSync();
+                File f = CsvExporter.exportCreditCards(this, cards);
+                shareFile(f, "Export Credit Cards via...");
+            } catch (Exception e) {
+                runOnUiThread(() -> Toast.makeText(this,
+                        "Export failed: " + e.getMessage(), Toast.LENGTH_LONG).show());
+            }
+        });
+    }
+
+    private void exportBankAccountsCsv() {
+        AppExecutors.db().execute(() -> {
+            try {
+                List<BankAccount> accounts = db.bankAccountDao().getAllSync();
+                File f = CsvExporter.exportBankAccounts(this, accounts);
+                shareFile(f, "Export Bank Accounts via...");
+            } catch (Exception e) {
+                runOnUiThread(() -> Toast.makeText(this,
+                        "Export failed: " + e.getMessage(), Toast.LENGTH_LONG).show());
+            }
+        });
+    }
+
+    private void shareFile(File f, String title) {
+        Uri uri = androidx.core.content.FileProvider.getUriForFile(
+                this, getPackageName() + ".fileprovider", f);
+        Intent share = new Intent(Intent.ACTION_SEND);
+        share.setType("text/csv");
+        share.putExtra(Intent.EXTRA_STREAM, uri);
+        share.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+        runOnUiThread(() -> startActivity(Intent.createChooser(share, title)));
     }
 
     private void confirmClear() {

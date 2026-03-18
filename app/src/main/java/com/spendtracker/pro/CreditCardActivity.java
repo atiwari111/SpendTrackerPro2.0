@@ -1,6 +1,7 @@
 package com.spendtracker.pro;
 
 import android.app.AlertDialog;
+import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.text.TextUtils;

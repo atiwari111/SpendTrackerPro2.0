@@ -55,6 +55,13 @@ public class SmsReceiver extends BroadcastReceiver {
         tx.isSelfTransfer    = isSelfTransfer(body);
         db.transactionDao().insert(tx);
 
+        // ── Credit card auto-update ───────────────────────────────
+        // If this is a credit card debit, find the matching card by last-4 digits
+        // (extracted from the SMS) and refresh its currentSpent for the billing cycle.
+        if ("CREDIT_CARD".equals(p.paymentMethod) && !tx.isSelfTransfer && !tx.isCredit) {
+            updateCreditCardSpent(db, body, ts);
+        }
+
         // ── Budget recalc ─────────────────────────────────────────
         Calendar cal = Calendar.getInstance();
         cal.setTimeInMillis(ts);
@@ -95,6 +102,55 @@ public class SmsReceiver extends BroadcastReceiver {
         } else {
             NotificationHelper.sendSpendAlert(ctx, p.merchant, p.amount, p.category);
         }
+    }
+
+    /**
+     * When a credit card SMS arrives, find the matching card in the DB by last-4 digits
+     * and recalculate its currentSpent over the active billing cycle window.
+     *
+     * Match logic: extract 4-digit card number from SMS (e.g. "Card xx1234"),
+     * then find the CreditCard row with the same lastFour. If multiple cards share
+     * the same last-4 (rare), all of them are refreshed — harmless over-refresh.
+     */
+    private void updateCreditCardSpent(AppDatabase db, String body, long ts) {
+        try {
+            // Extract last-4 from SMS patterns like "Card xx6956", "card ending 6956", "x-6956"
+            java.util.regex.Matcher m = java.util.regex.Pattern
+                    .compile("(?:card|x{1,4})[\\s\\-x]*([0-9]{4})(?:[^0-9]|$)",
+                            java.util.regex.Pattern.CASE_INSENSITIVE)
+                    .matcher(body);
+
+            String last4 = null;
+            if (m.find()) last4 = m.group(1);
+
+            java.util.List<CreditCard> cards = db.creditCardDao().getAllSync();
+            long now = System.currentTimeMillis();
+
+            for (CreditCard card : cards) {
+                // Match on last-4 if we found one, otherwise refresh all credit cards
+                if (last4 != null && !last4.equals(card.lastFour)) continue;
+
+                long cycleStart = card.billingCycleStart > 0
+                        ? card.billingCycleStart
+                        : getMonthStart(ts);
+
+                double spent = db.creditCardDao().getCreditSpendInRange(cycleStart, now);
+                db.creditCardDao().updateSpent(card.id, spent, now);
+            }
+        } catch (Exception e) {
+            android.util.Log.e("SmsReceiver", "Credit card spend update failed: " + e.getMessage());
+        }
+    }
+
+    private long getMonthStart(long ts) {
+        Calendar c = Calendar.getInstance();
+        c.setTimeInMillis(ts);
+        c.set(Calendar.DAY_OF_MONTH, 1);
+        c.set(Calendar.HOUR_OF_DAY, 0);
+        c.set(Calendar.MINUTE, 0);
+        c.set(Calendar.SECOND, 0);
+        c.set(Calendar.MILLISECOND, 0);
+        return c.getTimeInMillis();
     }
 
     private boolean isSelfTransfer(String body) {
