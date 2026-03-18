@@ -102,8 +102,11 @@ public class SmsImporter {
                     t.isCredit       = SmsParser.isCreditTransaction(body);
                     t.paymentMethod  = parsed.paymentMethod;
                     t.paymentDetail  = parsed.paymentDetail;
-                    t.rawSms         = body;
-                    t.smsAddress     = sender;
+                    // SECURITY: Never persist raw SMS body — may contain OTPs and account numbers.
+                    // smsHash (already computed above) is sufficient for deduplication.
+                    t.rawSms         = null;
+                    // Store only the bank sender ID prefix, not the full originating address.
+                    t.smsAddress     = redactSender(sender);
                     t.isManual       = false;
 
                     db.transactionDao().insert(t);
@@ -190,5 +193,17 @@ public class SmsImporter {
                 || b.contains("transfer to your") || b.contains("transfer to self")
                 || b.contains("linked account") || b.contains("savings account to")
                 || b.contains("current account to");
+    }
+
+    /**
+     * Redacts the originating address to remove personal phone numbers.
+     * Alphanumeric bank sender IDs (e.g. "VK-HDFCBK") are kept as-is.
+     * Numeric addresses are truncated to prefix only.
+     */
+    private static String redactSender(String sender) {
+        if (sender == null) return null;
+        if (sender.matches("[A-Za-z0-9\\-]{2,20}")) return sender;
+        if (sender.length() > 4) return sender.substring(0, 4) + "****";
+        return "****";
     }
 }

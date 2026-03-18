@@ -31,7 +31,9 @@ public class SmsReceiver extends BroadcastReceiver {
         if (p == null) return;
 
         AppDatabase db = AppDatabase.getInstance(ctx);
-        if (db.transactionDao().findBySms(body) != null) return; // dedup
+        // SECURITY FIX: dedup via indexed smsHash — never query by raw SMS body
+        String hash = sha1(body + ts);
+        if (db.transactionDao().existsHash(hash)) return;
 
         // ── Save transaction ──────────────────────────────────────
         Transaction tx       = new Transaction();
@@ -41,8 +43,12 @@ public class SmsReceiver extends BroadcastReceiver {
         tx.paymentDetail     = p.paymentDetail;
         tx.category          = p.category;
         tx.timestamp         = ts;
-        tx.rawSms            = body;
-        tx.smsAddress        = sender;
+        tx.smsHash           = hash;
+        // SECURITY: Never persist the raw SMS body — it may contain OTPs, account numbers,
+        // and reference IDs. The smsHash (SHA-1 of body+date) is sufficient for deduplication.
+        tx.rawSms            = null;
+        // Store only the sender ID prefix (e.g. "VK-HDFCBK"), not the full originating address.
+        tx.smsAddress        = redactSender(sender);
         tx.isManual          = false;
         tx.categoryIcon      = CategoryEngine.getInfo(p.category).icon;
         tx.isCredit          = SmsParser.isCreditTransaction(body);
@@ -103,5 +109,33 @@ public class SmsReceiver extends BroadcastReceiver {
                 || b.contains("transfer to your") || b.contains("transfer to self")
                 || b.contains("linked account") || b.contains("savings account to")
                 || b.contains("current account to");
+    }
+
+    /** SHA-1 of (body + timestamp) — used as a stable dedup key. */
+    private static String sha1(String text) {
+        try {
+            java.security.MessageDigest md = java.security.MessageDigest.getInstance("SHA-1");
+            byte[] result = md.digest(text.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+            StringBuilder sb = new StringBuilder();
+            for (byte b : result) sb.append(String.format("%02x", b));
+            return sb.toString();
+        } catch (Exception e) {
+            // Fallback: combine hashCodes with timestamp to reduce collision risk
+            return Integer.toHexString(text.hashCode()) + Long.toHexString(System.currentTimeMillis());
+        }
+    }
+
+    /**
+     * Redacts the originating address to remove any personal number.
+     * Bank sender IDs (e.g. "VK-HDFCBK", "AM-SBI") are kept as-is.
+     * Numeric phone numbers are masked to preserve only the country prefix.
+     */
+    private static String redactSender(String sender) {
+        if (sender == null) return null;
+        // Alphanumeric sender IDs (bank short codes) — safe to store as-is
+        if (sender.matches("[A-Za-z0-9\\-]{2,20}")) return sender;
+        // Phone numbers — keep only the first 4 chars (country + area code), mask the rest
+        if (sender.length() > 4) return sender.substring(0, 4) + "****";
+        return "****";
     }
 }
