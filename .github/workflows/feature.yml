@@ -55,6 +55,40 @@ jobs:
           fi
           echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > app/spendtracker.keystore
           echo "✅ Keystore decoded: $(wc -c < app/spendtracker.keystore) bytes"
+          # FIX: Verify via stdin — never pass password as a shell argument.
+          # Shell arguments are visible in process listings and verbose CI logs.
+          echo "${{ secrets.RELEASE_STORE_PASSWORD }}" | \
+            keytool -list \
+              -keystore app/spendtracker.keystore \
+              -storepass:stdin \
+              -alias spendtracker \
+            && echo "✅ Keystore verified" || echo "⚠️ Keystore check failed"
+
+      # ── Quality gates (must pass before any artifact is built) ────────────
+      - name: Run Android Lint
+        run: ./gradlew lint
+
+      - name: Run Unit Tests
+        run: ./gradlew testDebugUnitTest
+
+      # ── Security scanning ─────────────────────────────────────────────────
+      # Scans all Gradle dependencies against the GitHub Advisory Database.
+      # Results appear in Security → Dependency Graph tab.
+      - name: Dependency vulnerability scan
+        uses: gradle/actions/dependency-submission@v4.3.1
+
+      # SAST — Android, secrets, and OWASP-Top-10 rules.
+      # continue-on-error keeps feature builds green while findings are triaged.
+      # Remove it once the baseline is clean to enforce a hard gate.
+      - name: SAST — Semgrep Android rules
+        uses: semgrep/semgrep-action@v1
+        with:
+          config: >-
+            p/android
+            p/secrets
+            p/owasp-top-ten
+        continue-on-error: true
+      # ──────────────────────────────────────────────────────────────────────
 
       - name: Build Debug APK
         run: ./gradlew assembleDebug --stacktrace --no-daemon
