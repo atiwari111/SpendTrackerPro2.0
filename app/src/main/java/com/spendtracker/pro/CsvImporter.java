@@ -136,7 +136,7 @@ public class CsvImporter {
             } catch (Exception e) {
                 if (cb != null) cb.onError("Import failed: " + e.getMessage());
             }
-        }).start();
+        });
     }
 
     /** Detect header row and map column names → indices */

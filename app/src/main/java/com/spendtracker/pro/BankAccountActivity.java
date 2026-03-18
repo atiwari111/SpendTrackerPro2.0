@@ -78,9 +78,9 @@ public class BankAccountActivity extends AppCompatActivity {
             tvTotalBalance.setText(String.format("₹%,.2f", total));
 
             // "X of Y accounts" label
+            final int activeCount = accounts.size();
             AppExecutors.db().execute(() -> {
                 int totalCount = db.bankAccountDao().getTotalCount();
-                int activeCount = accounts.size();
                 final String countLabel = "(" + activeCount + " of " + totalCount + " accounts)";
                 runOnUiThread(() -> tvAccountCount.setText(countLabel));
             });
