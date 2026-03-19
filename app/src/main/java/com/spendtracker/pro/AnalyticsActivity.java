@@ -72,7 +72,7 @@ public class AnalyticsActivity extends AppCompatActivity {
             double weekTotal = 0, monthTotal = 0;
 
             for (Transaction t : all) {
-                if (t.isSelfTransfer) continue;
+                if (t.isSelfTransfer || t.isCredit) continue;
                 if (t.timestamp >= week) {
                     daily.merge(dayFmt.format(new Date(t.timestamp)), t.amount, Double::sum);
                     weekTotal += t.amount;
@@ -93,7 +93,7 @@ public class AnalyticsActivity extends AppCompatActivity {
             }
             long month30 = now - 30L * 86400000L;
             for (Transaction t : all) {
-                if (!t.isSelfTransfer && t.timestamp >= month30)
+                if (!t.isSelfTransfer && !t.isCredit && t.timestamp >= month30)
                     last30.merge(d30.format(new Date(t.timestamp)), t.amount, Double::sum);
             }
 
@@ -242,7 +242,7 @@ public class AnalyticsActivity extends AppCompatActivity {
         long monthStart = getMonthStart(System.currentTimeMillis());
         List<Transaction> filtered = new ArrayList<>();
         for (Transaction t : allTransactions) {
-            if (!t.isSelfTransfer && t.timestamp >= monthStart
+            if (!t.isSelfTransfer && !t.isCredit && t.timestamp >= monthStart
                     && matchedCat.equals(t.category)) {
                 filtered.add(t);
             }

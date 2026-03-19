@@ -15,7 +15,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.chip.Chip;
@@ -33,7 +32,6 @@ public class HomeFragment extends Fragment {
     private ProgressBar progressBar;
     private Button btnScan;
     private AppDatabase db;
-    private SharedViewModel sharedVm;
 
     // Time range for the summary stat cards — default to today
     private long timeRangeMs = 0; // 0 = today, set on chip selection
@@ -62,7 +60,6 @@ public class HomeFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         db = AppDatabase.getInstance(requireContext());
-        sharedVm = new ViewModelProvider(requireActivity()).get(SharedViewModel.class);
 
         bindViews(view);
         setupClickListeners();
@@ -100,7 +97,7 @@ public class HomeFragment extends Fragment {
                 else if (id == R.id.chipMonth) { timeRangeMs = 30L * 86400_000L;        timeRangeLabel = "30 Days"; }
                 else if (id == R.id.chipYear)  { timeRangeMs = 365L * 86400_000L;       timeRangeLabel = "This Year"; }
                 if (tvPeriodLabel != null) tvPeriodLabel.setText(timeRangeLabel);
-                // Refresh stats with new window — data already in SharedViewModel
+                // Refresh stats with new window from current DB snapshot
                 AppExecutors.db().execute(() -> {
                     if (!isAdded()) return;
                     List<Transaction> all = db.transactionDao().getAllSync();
@@ -158,8 +155,7 @@ public class HomeFragment extends Fragment {
     }
 
     private void observeData() {
-        // Shared LiveData — no extra DB hit
-        sharedVm.getAllTransactions().observe(getViewLifecycleOwner(), list -> {
+        db.transactionDao().getRecent(5000).observe(getViewLifecycleOwner(), list -> {
             if (list == null) return;
             List<Transaction> recent = list.size() > 6 ? list.subList(0, 6) : list;
             adapter.setTransactions(recent);
