@@ -245,7 +245,10 @@ public class SmsImporter {
 
     private static boolean isLikelyDuplicateCredit(AppDatabase db, double amount, long ts, String merchant) {
         try {
-
+            // placeholder duplicate-credit check
+        } catch (Exception e) {
+            // ignore
+        }
         return false;
     }
 
@@ -284,7 +287,9 @@ public class SmsImporter {
             acc.bankEmoji = "🏦";
             acc.cardColor = android.graphics.Color.parseColor("#1A237E");
             db.bankAccountDao().insert(acc);
-
+        } catch (Exception e) {
+            // ignore
+        }
     }
 
     private static String expandBankName(String bankName) {

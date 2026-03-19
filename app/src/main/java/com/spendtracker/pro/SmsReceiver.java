@@ -189,7 +189,10 @@ public class SmsReceiver extends BroadcastReceiver {
 
     private boolean isLikelyDuplicateCredit(AppDatabase db, double amount, long ts, String merchant) {
         try {
-
+            // placeholder duplicate-credit check
+        } catch (Exception e) {
+            // ignore
+        }
         return false;
     }
 
