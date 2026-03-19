@@ -43,6 +43,10 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
+    <!-- P5: OCR receipt scanning -->
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-feature android:name="android.hardware.camera" android:required="false" />
+
     <application
         android:networkSecurityConfig="@xml/network_security_config"
         android:allowBackup="false"
@@ -130,6 +134,18 @@
             android:exported="false"
             android:parentActivityName=".MainActivity" />
 
+        <!-- P5: OCR Receipt Scanner -->
+        <activity
+            android:name=".OcrScanActivity"
+            android:exported="false"
+            android:screenOrientation="portrait" />
+
+        <!-- P5: Split Expenses -->
+        <activity
+            android:name=".SplitExpenseActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+
         <!-- SMS Receiver — permission attr ensures only the system can trigger it -->
         <receiver
             android:name=".SmsReceiver"
@@ -158,6 +174,19 @@
         <receiver
             android:name=".ReminderReceiver"
             android:exported="false" />
+
+        <!-- P4: Home screen widget -->
+        <receiver
+            android:name=".SpendWidgetProvider"
+            android:exported="true"
+            android:label="SpendTracker Widget">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE"/>
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_info"/>
+        </receiver>
 
         <!-- File Provider -->
         <provider

@@ -26,7 +26,8 @@ public class HomeFragment extends Fragment {
 
     private TextView tvGreeting, tvDate, tvTodayAmt, tvMonthAmt, tvBudgetLeft,
             tvTopCat, tvTransCount, tvHealthScore, tvImportStatus, tvPrediction,
-            tvCreditCardSpent, tvTotalBankBalance, tvBillsBadge, tvPeriodLabel;
+            tvCreditCardSpent, tvTotalBankBalance, tvBillsBadge, tvPeriodLabel,
+            tvStreakLabel, tvStreakDetail, tvStreakBest;
     private RecyclerView rvRecent;
     private TransactionAdapter adapter;
     private ProgressBar progressBar;
@@ -85,6 +86,9 @@ public class HomeFragment extends Fragment {
         progressBar    = v.findViewById(R.id.progressBar);
         btnScan        = v.findViewById(R.id.btnScan);
         rvRecent       = v.findViewById(R.id.rvRecent);
+        tvStreakLabel  = v.findViewById(R.id.tvStreakLabel);
+        tvStreakDetail = v.findViewById(R.id.tvStreakDetail);
+        tvStreakBest   = v.findViewById(R.id.tvStreakBest);
 
         // Time range chip toggle
         ChipGroup chipTimeRange = v.findViewById(R.id.chipTimeRange);
@@ -294,6 +298,10 @@ public class HomeFragment extends Fragment {
         final String topCatFinal = topCat;
         final String periodLbl = timeRangeLabel;
 
+        // P5: streak computation
+        StreakManager.StreakResult streak = StreakManager.compute(list, budgets);
+        final StreakManager.StreakResult fStreak = streak;
+
         if (!isAdded()) return;
         requireActivity().runOnUiThread(() -> {
             if (!isAdded()) return;
@@ -317,6 +325,17 @@ public class HomeFragment extends Fragment {
                 tvHealthScore.setText(InsightEngine.getHealthScoreLabel(score) + " · " + score + "/100");
                 int color = score >= 70 ? 0xFF10B981 : score >= 40 ? 0xFFF59E0B : 0xFFEF4444;
                 tvHealthScore.setTextColor(color);
+            }
+            // P5: streak card
+            if (tvStreakLabel != null) tvStreakLabel.setText(fStreak.label);
+            if (tvStreakDetail != null) {
+                String detail = fStreak.todayOnTrack
+                        ? String.format("Today: ₹%.0f / ₹%.0f ✅", fStreak.todaySpend, fStreak.dailyLimit)
+                        : String.format("Today: ₹%.0f / ₹%.0f ⚠️", fStreak.todaySpend, fStreak.dailyLimit);
+                tvStreakDetail.setText(detail);
+            }
+            if (tvStreakBest != null && fStreak.longestStreak > 0) {
+                tvStreakBest.setText("Best: " + fStreak.longestStreak + "d");
             }
         });
     }
