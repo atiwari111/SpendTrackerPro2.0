@@ -11,8 +11,6 @@ import java.util.List;
 /**
  * SharedViewModel
  *
- * Single source of truth for transactions across the app.
- * Uses AndroidViewModel to safely access database without manual init.
  */
 public class SharedViewModel extends AndroidViewModel {
 
@@ -22,11 +20,10 @@ public class SharedViewModel extends AndroidViewModel {
         super(app);
         AppDatabase db = AppDatabase.getInstance(app);
 
-        // Use recent limit for performance (avoid loading huge dataset)
         allTransactions = db.transactionDao().getRecent(5000);
     }
 
     public LiveData<List<Transaction>> getAllTransactions() {
         return allTransactions;
     }
-}
+
