@@ -45,6 +45,9 @@ public class BillSmsDetector {
         "please pay", "last date", "outstanding amount",
         "recharge due", "subscription due", "premium due",
         "emi", "payable by", "pay before",
+        // Fix 2.7: HDFC/bank credit card bill SMS keywords
+        "amount due", "total due", "min.due", "pay instantly",
+        "credit card statement", "statement:", "pay by",
     };
 
     // ── Keywords for paid confirmation ────────────────────────────────────────
@@ -56,6 +59,10 @@ public class BillSmsDetector {
 
     private static final Pattern AMOUNT_PAT = Pattern.compile(
             "(?i)(?:rs\\.?|inr|₹)\\s*([0-9,]+(?:\\.[0-9]{1,2})?)");
+
+    // Fix 2.7: prefer "Total due" amount over first-found amount in CC statements
+    private static final Pattern TOTAL_DUE_PAT = Pattern.compile(
+            "(?i)total\\s+due[:\\s]*(?:Rs\\.?|INR|₹)?\\s*([0-9,]+(?:\\.[0-9]{1,2})?)");
 
     // Matches: "due on 25-03", "due by 25 Mar", "due date: 25/03/2026"
     private static final Pattern DUE_DATE_PAT = Pattern.compile(
@@ -102,12 +109,18 @@ public class BillSmsDetector {
 
         if (!isPaid && !isBillDue) return null;
 
-        // Extract amount
-        Matcher amtM = AMOUNT_PAT.matcher(body);
-        if (!amtM.find()) return null;
+        // Extract amount — prefer "Total due" for CC statements
         double amount;
-        try { amount = Double.parseDouble(amtM.group(1).replace(",", "")); }
-        catch (Exception e) { return null; }
+        try {
+            Matcher totalM = TOTAL_DUE_PAT.matcher(body);
+            if (totalM.find()) {
+                amount = Double.parseDouble(totalM.group(1).replace(",", ""));
+            } else {
+                Matcher amtM = AMOUNT_PAT.matcher(body);
+                if (!amtM.find()) return null;
+                amount = Double.parseDouble(amtM.group(1).replace(",", ""));
+            }
+        } catch (Exception e) { return null; }
         if (amount <= 0) return null;
 
         // Identify biller

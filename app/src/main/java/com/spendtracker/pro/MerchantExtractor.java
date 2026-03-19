@@ -28,6 +28,8 @@ public class MerchantExtractor {
         Pattern.compile("(?i)Info[:\\s]+([A-Za-z][A-Za-z0-9&'./\\-\\s]{1,35}?)(?:\\.|Avail|$)"),
         // "merchant: MERCHANT"
         Pattern.compile("(?i)merchant[:\\s]+([A-Za-z][A-Za-z0-9&'./\\-\\s]{1,35}?)(?:\\s+Ref|\\.|,|$)"),
+        // Fix 2.2: NEFT/IMPS credit — "by ABHICL CLAIMS PAYMENTS A C"
+        Pattern.compile("(?i)\\bby\\s+([A-Z][A-Z0-9&'./\\-\\s]{1,35}?)\\s*(?:,|\\.|\\s+INFO|\\s+A/C|\\s+CLAIMS|$)"),
         // Generic " at MERCHANT" (keep as last resort — prone to false positives)
         Pattern.compile("(?i)\\bat\\s+([A-Za-z][A-Za-z0-9&'./\\-\\s]{1,25}?)(?:\\s+(?:on|Ref|via)|\\.|,|$)"),
     };

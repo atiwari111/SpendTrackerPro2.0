@@ -17,9 +17,10 @@ import androidx.room.migration.Migration;
                 NetWorthItem.class,
                 Bill.class,
                 CreditCard.class,
-                BankAccount.class
+                BankAccount.class,
+                SplitEntry.class      // P5: split expenses
         },
-        version = 4,
+        version = 5,
         exportSchema = false
 )
 public abstract class AppDatabase extends RoomDatabase {
@@ -111,6 +112,23 @@ public abstract class AppDatabase extends RoomDatabase {
         }
     };
 
+    static final Migration MIGRATION_4_5 = new Migration(4, 5) {
+        @Override
+        public void migrate(@NonNull SupportSQLiteDatabase db) {
+            db.execSQL("CREATE TABLE IF NOT EXISTS `split_entries` ("
+                    + "`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,"
+                    + "`transactionId` INTEGER NOT NULL DEFAULT 0,"
+                    + "`contactName` TEXT,"
+                    + "`amountOwed` REAL NOT NULL DEFAULT 0,"
+                    + "`isPaid` INTEGER NOT NULL DEFAULT 0,"
+                    + "`createdAt` INTEGER NOT NULL DEFAULT 0,"
+                    + "`paidAt` INTEGER NOT NULL DEFAULT 0,"
+                    + "`notes` TEXT)");
+            db.execSQL("CREATE INDEX IF NOT EXISTS `index_split_entries_transactionId`"
+                    + " ON `split_entries` (`transactionId`)");
+        }
+    };
+
     private static volatile AppDatabase INSTANCE;
 
     public abstract TransactionDao transactionDao();
@@ -120,6 +138,7 @@ public abstract class AppDatabase extends RoomDatabase {
     public abstract BillDao billDao();
     public abstract CreditCardDao creditCardDao();
     public abstract BankAccountDao bankAccountDao();
+    public abstract SplitEntryDao splitEntryDao();   // P5
 
     public static AppDatabase getInstance(Context context) {
         if (INSTANCE == null) {
@@ -130,7 +149,7 @@ public abstract class AppDatabase extends RoomDatabase {
                             AppDatabase.class,
                             "spendtracker.db"
                     )
-                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
+                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5)
                     .build();
                 }
             }

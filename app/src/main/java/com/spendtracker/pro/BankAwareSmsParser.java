@@ -2,6 +2,17 @@ package com.spendtracker.pro;
 
 import java.util.regex.*;
 
+/**
+ * BankAwareSmsParser — bank-specific SMS parser with confidence scoring.
+ *
+ * Confidence scoring (inspired by RegexOptimizer pattern):
+ *   Each Pattern is paired with a confidence weight (0.0–1.0).
+ *   ALL patterns for the detected bank are tried; the highest-confidence
+ *   match wins — not the first match. This eliminates wrong merchant
+ *   extractions caused by a weaker pattern matching before a stronger one.
+ *
+ * Bank coverage: HDFC, SBI, ICICI, AXIS, KOTAK, PNB, YES, IDFC, BOB, CANARA.
+ */
 public class BankAwareSmsParser {
 
     public static class ParseResult {
@@ -12,9 +23,11 @@ public class BankAwareSmsParser {
         public final String  category;
         public final String  bankName;
         public final boolean isUpi;
+        public final double  confidence;
 
         ParseResult(double amount, String merchant, String paymentMethod,
-                    String paymentDetail, String category, String bankName, boolean isUpi) {
+                    String paymentDetail, String category, String bankName,
+                    boolean isUpi, double confidence) {
             this.amount        = amount;
             this.merchant      = merchant != null ? merchant : "Unknown";
             this.paymentMethod = paymentMethod != null ? paymentMethod : "BANK";
@@ -22,64 +35,125 @@ public class BankAwareSmsParser {
             this.category      = category != null ? category : "Others";
             this.bankName      = bankName != null ? bankName : "";
             this.isUpi         = isUpi;
+            this.confidence    = confidence;
+        }
+    }
+
+    private static class WeightedPattern {
+        final Pattern pattern;
+        final double  confidence;
+        WeightedPattern(String regex, double confidence) {
+            this.pattern    = safeCompile(regex, Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
+            this.confidence = confidence;
         }
     }
 
     // ── HDFC ──────────────────────────────────────────────────────
-    private static final Pattern HDFC_DEBIT = safeCompile(
-        "(?:Rs\\\\.?|INR|\\u20b9)\\s*([0-9,]+(?:\\.[0-9]{1,2})?)\\s*(?:has been\\s*)?debited.*?to\\s+([A-Za-z0-9&'./\\-\\s]{2,40}?)\\s*(?:via|Ref|Avbl|$)",
-        Pattern.CASE_INSENSITIVE);
-
-    private static final Pattern HDFC_INFO = safeCompile(
-        "(?:Rs\\\\.?|INR|\\u20b9)\\s*([0-9,]+(?:\\.[0-9]{1,2})?)\\s*debited.*?Info:([A-Za-z0-9&'./\\-\\s]{2,40})",
-        Pattern.CASE_INSENSITIVE);
-
-    // HDFC Card SMS: "Txn Rs.30.00\nOn HDFC Bank Card 7235\nAt paytmqr@ptys\nby UPI"
-    private static final Pattern HDFC_TXN_AT = safeCompile(
-        "(?i)(?:Txn)\\s+(?:Rs\\\\.?|INR|\\u20b9)\\s*([0-9,]+(?:\\.[0-9]{1,2})?)[\\s\\S]{0,120}?At\\s+([A-Za-z0-9@&'./\\-]{2,50})",
-        Pattern.CASE_INSENSITIVE);
+    private static final WeightedPattern[] HDFC = {
+        new WeightedPattern(
+            "(?i)Txn\\s+(?:Rs\\.?|INR|\\u20b9)\\s*([0-9,]+(?:\\.[0-9]{1,2})?)[\\s\\S]{0,120}?At\\s+([A-Za-z0-9@&'./\\-]{2,50})",
+            0.95),
+        new WeightedPattern(
+            "(?:Rs\\.?|INR|\\u20b9)\\s*([0-9,]+(?:\\.[0-9]{1,2})?)\\s*(?:has been\\s*)?debited.*?to\\s+([A-Za-z0-9&'./\\-\\s]{2,40}?)\\s*(?:via|Ref|Avbl|$)",
+            0.90),
+        new WeightedPattern(
+            "(?:Rs\\.?|INR|\\u20b9)\\s*([0-9,]+(?:\\.[0-9]{1,2})?)\\s*debited.*?Info:\\s*([A-Za-z0-9&'./\\-\\s]{2,40})",
+            0.90),
+    };
 
     // ── SBI ───────────────────────────────────────────────────────
-    private static final Pattern SBI_SPENT = safeCompile(
-        "(?:INR|Rs\\\\.?|\\u20b9)\\s*([0-9,]+(?:\\.[0-9]{1,2})?)\\s*(?:spent|debited).*?(?:at|to|merchant:?)\\s+([A-Za-z0-9&'./\\-\\s]{2,40}?)(?:\\s+on|\\s+via|\\s*Ref|\\s*Avl|\\.|,|$)",
-        Pattern.CASE_INSENSITIVE);
-
-    private static final Pattern SBI_UPI = safeCompile(
-        "(?:IMPS|UPI)[/\\s].*?(?:Rs\\\\.?|INR|\\u20b9)\\s*([0-9,]+(?:\\.[0-9]{1,2})?)\\s*debited.*?to\\s+([A-Za-z0-9@&'./\\-\\s]{2,50}?)(?:\\s*\\(|\\s+Ref|\\.|,|$)",
-        Pattern.CASE_INSENSITIVE);
+    private static final WeightedPattern[] SBI = {
+        new WeightedPattern(
+            "(?:IMPS|UPI)[/\\s].*?(?:Rs\\.?|INR|\\u20b9)\\s*([0-9,]+(?:\\.[0-9]{1,2})?)\\s*debited.*?to\\s+([A-Za-z0-9@&'./\\-\\s]{2,50}?)(?:\\s*\\(|\\s+Ref|\\.|,|$)",
+            0.92),
+        new WeightedPattern(
+            "(?:INR|Rs\\.?|\\u20b9)\\s*([0-9,]+(?:\\.[0-9]{1,2})?)\\s*(?:spent|debited).*?(?:at|to|merchant:?)\\s+([A-Za-z0-9&'./\\-\\s]{2,40}?)(?:\\s+on|\\s+via|\\s*Ref|\\s*Avl|\\.|,|$)",
+            0.87),
+    };
 
     // ── ICICI ─────────────────────────────────────────────────────
-    private static final Pattern ICICI_UPI = safeCompile(
-        "UPI\\s+txn\\s+of\\s+(?:Rs\\\\.?|INR|\\u20b9)\\s*([0-9,]+(?:\\.[0-9]{1,2})?)\\s+to\\s+([A-Za-z0-9&'./\\-\\s]{2,40}?)\\s+Ref",
-        Pattern.CASE_INSENSITIVE);
-
-    private static final Pattern ICICI_INFO = safeCompile(
-        "(?:Rs\\\\.?|INR|\\u20b9)\\s*([0-9,]+(?:\\.[0-9]{1,2})?)\\s*debited.*?Info[:\\s]+([A-Za-z0-9&'./\\-\\s]{2,40}?)(?:\\.|Avail|$)",
-        Pattern.CASE_INSENSITIVE);
+    private static final WeightedPattern[] ICICI = {
+        new WeightedPattern(
+            "UPI\\s+txn\\s+of\\s+(?:Rs\\.?|INR|\\u20b9)\\s*([0-9,]+(?:\\.[0-9]{1,2})?)\\s+to\\s+([A-Za-z0-9&'./\\-\\s]{2,40}?)\\s+Ref",
+            0.95),
+        new WeightedPattern(
+            "(?:Rs\\.?|INR|\\u20b9)\\s*([0-9,]+(?:\\.[0-9]{1,2})?)\\s*debited.*?Info[:\\s]+([A-Za-z0-9&'./\\-\\s]{2,40}?)(?:\\.|Avail|$)",
+            0.88),
+    };
 
     // ── AXIS ──────────────────────────────────────────────────────
-    private static final Pattern AXIS_TOWARDS = safeCompile(
-        "(?:INR|Rs\\\\.?|\\u20b9)\\s*([0-9,]+(?:\\.[0-9]{1,2})?)\\s*(?:debited|spent).*?(?:towards|at|to)\\s+([A-Za-z0-9&'./\\-\\s]{2,40}?)\\s+on",
-        Pattern.CASE_INSENSITIVE);
+    private static final WeightedPattern[] AXIS = {
+        new WeightedPattern(
+            "(?:INR|Rs\\.?|\\u20b9)\\s*([0-9,]+(?:\\.[0-9]{1,2})?)\\s*(?:debited|spent).*?(?:towards|at|to)\\s+([A-Za-z0-9&'./\\-\\s]{2,40}?)\\s+on",
+            0.90),
+        new WeightedPattern(
+            "(?:Rs\\.?|INR|\\u20b9)\\s*([0-9,]+(?:\\.[0-9]{1,2})?)\\s*debited.*?(?:to|at)\\s+([A-Za-z0-9&'./\\-\\s]{2,40}?)(?:\\s+Ref|\\s+via|\\.|$)",
+            0.82),
+    };
 
     // ── KOTAK ─────────────────────────────────────────────────────
-    private static final Pattern KOTAK_TO = safeCompile(
-        "(?:Rs\\\\.?|INR|\\u20b9)\\s*([0-9,]+(?:\\.[0-9]{1,2})?)\\s*debited.*?to\\s+([A-Za-z0-9&'./\\-\\s]{2,40}?)(?:\\s+via|\\s+Ref|\\.|$)",
-        Pattern.CASE_INSENSITIVE);
+    private static final WeightedPattern[] KOTAK = {
+        new WeightedPattern(
+            "(?:Rs\\.?|INR|\\u20b9)\\s*([0-9,]+(?:\\.[0-9]{1,2})?)\\s*debited.*?to\\s+([A-Za-z0-9&'./\\-\\s]{2,40}?)(?:\\s+via|\\s+Ref|\\.|$)",
+            0.88),
+    };
 
     // ── PNB ───────────────────────────────────────────────────────
-    private static final Pattern PNB_DEBIT = safeCompile(
-        "(?:INR|Rs\\\\.?|\\u20b9)\\s*([0-9,]+(?:\\.[0-9]{1,2})?)\\s+(?:Dt|on)\\s+[0-9\\-/]+",
-        Pattern.CASE_INSENSITIVE);
+    private static final WeightedPattern[] PNB = {
+        new WeightedPattern(
+            "(?:INR|Rs\\.?|\\u20b9)\\s*([0-9,]+(?:\\.[0-9]{1,2})?).*?(?:to|ben)\\s+([A-Za-z][A-Za-z0-9&'.\\-\\s]{1,35}?)(?:\\s+(?:Ref|A/c|UPI)|\\.|,|$)",
+            0.88),
+        new WeightedPattern(
+            "(?:INR|Rs\\.?|\\u20b9)\\s*([0-9,]+(?:\\.[0-9]{1,2})?)\\s+(?:Dt|on)\\s+[0-9\\-/]+",
+            0.60),
+    };
 
-    private static final Pattern PNB_NEFT = safeCompile(
-        "(?:INR|Rs\\\\.?|\\u20b9)\\s*([0-9,]+(?:\\.[0-9]{1,2})?).*?(?:to|ben)\\s+([A-Za-z][A-Za-z0-9&'.\\-\\s]{1,35}?)(?:\\s+(?:Ref|A/c|UPI)|\\.|,|$)",
-        Pattern.CASE_INSENSITIVE);
+    // ── YES Bank ──────────────────────────────────────────────────
+    private static final WeightedPattern[] YES = {
+        new WeightedPattern(
+            "(?:INR|Rs\\.?|\\u20b9)\\s*([0-9,]+(?:\\.[0-9]{1,2})?)\\s*(?:debited|spent|paid).*?using\\s+card.*?(?:at|to)\\s+([A-Za-z0-9&'./\\-\\s]{2,40}?)(?:\\s+Ref|\\.|,|$)",
+            0.88),
+        new WeightedPattern(
+            "(?:INR|Rs\\.?|\\u20b9)\\s*([0-9,]+(?:\\.[0-9]{1,2})?)\\s*(?:debited|spent|paid).*?(?:to|at)\\s+([A-Za-z0-9&'./\\-\\s]{2,40}?)(?:\\s+via|\\s+Ref|\\s+on|\\.|,|$)",
+            0.82),
+    };
 
-    // ── GENERIC FALLBACK ──────────────────────────────────────────
-    private static final Pattern GENERIC_UPI_TO = safeCompile(
-        "(?:payment|txn|transaction|transfer).*?(?:Rs\\\\.?|INR|\\u20b9)\\s*([0-9,]+(?:\\.[0-9]{1,2})?).*?to\\s+([A-Za-z0-9@&'./\\-\\s]{2,50}?)(?:\\s+Ref|\\s+on|\\.|,|$)",
-        Pattern.CASE_INSENSITIVE);
+    // ── IDFC First ────────────────────────────────────────────────
+    private static final WeightedPattern[] IDFC = {
+        new WeightedPattern(
+            "(?:INR|Rs\\.?|\\u20b9)\\s*([0-9,]+(?:\\.[0-9]{1,2})?)\\s*(?:debited|spent).*?(?:at|to)\\s+([A-Za-z0-9&'./\\-\\s]{2,40}?)(?:\\s+Ref|\\s+on|\\.|,|$)",
+            0.85),
+    };
+
+    // ── Bank of Baroda (BOB) ──────────────────────────────────────
+    private static final WeightedPattern[] BOB = {
+        new WeightedPattern(
+            "(?:INR|Rs\\.?|\\u20b9)\\s*([0-9,]+(?:\\.[0-9]{1,2})?)\\s*(?:debited|spent|paid).*?(?:to|at)\\s+([A-Za-z0-9&'./\\-\\s]{2,40}?)(?:\\s+Ref|\\s+via|\\.|,|$)",
+            0.85),
+        new WeightedPattern(
+            "(?:INR|Rs\\.?|\\u20b9)\\s*([0-9,]+(?:\\.[0-9]{1,2})?).*?(?:to|ben)\\s+([A-Za-z][A-Za-z0-9&'.\\-\\s]{1,35}?)(?:\\s+Ref|\\.|,|$)",
+            0.78),
+    };
+
+    // ── Canara Bank ───────────────────────────────────────────────
+    private static final WeightedPattern[] CANARA = {
+        new WeightedPattern(
+            "(?:INR|Rs\\.?|\\u20b9)\\s*([0-9,]+(?:\\.[0-9]{1,2})?)\\s*(?:debited|dr).*?(?:to|at|towards)\\s+([A-Za-z0-9&'./\\-\\s]{2,40}?)(?:\\s+Ref|\\s+via|\\.|,|$)",
+            0.85),
+        new WeightedPattern(
+            "(?:INR|Rs\\.?|\\u20b9)\\s*([0-9,]+(?:\\.[0-9]{1,2})?).*?(?:to|ben)\\s+([A-Za-z][A-Za-z0-9&'.\\-\\s]{1,35}?)(?:\\s+Ref|\\.|,|$)",
+            0.75),
+    };
+
+    // ── Generic fallback ──────────────────────────────────────────
+    private static final WeightedPattern[] GENERIC = {
+        new WeightedPattern(
+            "(?:payment|txn|transaction|transfer).*?(?:Rs\\.?|INR|\\u20b9)\\s*([0-9,]+(?:\\.[0-9]{1,2})?).*?to\\s+([A-Za-z0-9@&'./\\-\\s]{2,50}?)(?:\\s+Ref|\\s+on|\\.|,|$)",
+            0.65),
+        new WeightedPattern(
+            "(?:Rs\\.?|INR|\\u20b9)\\s*([0-9,]+(?:\\.[0-9]{1,2})?).*?(?:to|at)\\s+([A-Za-z][A-Za-z0-9&'./\\-\\s]{2,35}?)(?:\\s+(?:via|Ref|on)|\\.|,|$)",
+            0.55),
+    };
 
     // ═══════════════════════════════════════════════════════════════
     // PUBLIC API
@@ -87,44 +161,49 @@ public class BankAwareSmsParser {
 
     public static ParseResult parse(String body, String sender) {
         if (body == null || body.isEmpty()) return null;
-
-        // Reject non-transaction SMS (price alerts, OTPs, balance checks, promos)
         if (!SmsParser.isTransactionSms(body, sender)) return null;
 
         try {
             BankDetector.BankInfo bankInfo = BankDetector.detect(sender, body);
-            String bank = bankInfo != null ? bankInfo.name : "";
-            if (bank == null) bank = "";
+            String bank = (bankInfo != null && bankInfo.name != null) ? bankInfo.name : "";
 
-            AmountMerchant am = null;
+            WeightedPattern[] patterns;
             switch (bank) {
-                case "HDFC":  am = tryPatterns(body, HDFC_DEBIT, HDFC_INFO, HDFC_TXN_AT); break;
-                case "SBI":   am = tryPatterns(body, SBI_UPI, SBI_SPENT);                 break;
-                case "ICICI": am = tryPatterns(body, ICICI_UPI, ICICI_INFO);               break;
-                case "AXIS":  am = tryPatterns(body, AXIS_TOWARDS);                        break;
-                case "KOTAK": am = tryPatterns(body, KOTAK_TO);                            break;
-                case "PNB":   am = tryPatterns(body, PNB_NEFT, PNB_DEBIT);                break;
-                default:      am = tryPatterns(body, GENERIC_UPI_TO);                     break;
+                case "HDFC":   patterns = HDFC;   break;
+                case "SBI":    patterns = SBI;    break;
+                case "ICICI":  patterns = ICICI;  break;
+                case "AXIS":   patterns = AXIS;   break;
+                case "KOTAK":  patterns = KOTAK;  break;
+                case "PNB":    patterns = PNB;    break;
+                case "YES":    patterns = YES;    break;
+                case "IDFC":   patterns = IDFC;   break;
+                case "BOB":    patterns = BOB;    break;
+                case "CANARA": patterns = CANARA; break;
+                default:       patterns = GENERIC; break;
             }
 
-            // Fall back to generic SmsParser if bank-specific failed
-            if (am == null || am.amount <= 0) {
+            // Try bank-specific patterns first, then generic as extra fallback
+            AmountMerchant best = bestMatch(body, patterns);
+            if ((best == null || best.amount <= 0) && patterns != GENERIC) {
+                best = bestMatch(body, GENERIC);
+            }
+
+            // Last resort: delegate to SmsParser generic logic
+            if (best == null || best.amount <= 0) {
                 SmsTransaction generic = SmsParser.parse(body, sender);
                 if (generic == null) return null;
-                String detail = buildPaymentDetail(bank, generic.paymentDetail);
                 return new ParseResult(generic.amount, generic.merchant,
-                        generic.paymentMethod, detail, generic.category, bank, isUpi(body));
+                        generic.paymentMethod,
+                        buildPaymentDetail(bank, generic.paymentDetail),
+                        generic.category, bank, isUpi(body), 0.40);
             }
 
-            // Bank-specific result
-            String merchant = am.merchant;
-            // For credit transactions, use income classifier instead of spend classifier
-            String category;
-            if (SmsParser.isCreditTransaction(body)) {
-                category = SmsParser.classifyCreditCategory(body, merchant);
-            } else {
-                category = CategoryEngine.classify(merchant, body);
-            }
+            String merchant = best.merchant;
+            // P2: resolve user-corrected merchant alias before classifying
+            merchant = CategoryEngine.resolveMerchantAlias(merchant);
+            String category = SmsParser.isCreditTransaction(body)
+                    ? SmsParser.classifyCreditCategory(body, merchant)
+                    : CategoryEngine.classify(merchant, body);
             if (category == null) category = "Others";
 
             String paymentMethod = detectPaymentMethod(body);
@@ -132,8 +211,8 @@ public class BankAwareSmsParser {
             String upiId         = UpiDetector.detectUpiId(body);
             if (upiId != null && !upiId.isEmpty()) paymentDetail += " \u00b7 " + upiId;
 
-            return new ParseResult(am.amount, merchant, paymentMethod,
-                    paymentDetail, category, bank, isUpi(body));
+            return new ParseResult(best.amount, merchant, paymentMethod,
+                    paymentDetail, category, bank, isUpi(body), best.confidence);
 
         } catch (Exception e) {
             android.util.Log.e("BankAwareSmsParser", "Parse error: " + e.getMessage());
@@ -142,41 +221,54 @@ public class BankAwareSmsParser {
     }
 
     // ═══════════════════════════════════════════════════════════════
-    // PRIVATE HELPERS
+    // CONFIDENCE-SCORED MATCHING
     // ═══════════════════════════════════════════════════════════════
 
-    private static AmountMerchant tryPatterns(String body, Pattern... patterns) {
-        for (Pattern p : patterns) {
-            if (p == null) continue;
+    /**
+     * Tries ALL weighted patterns; returns the highest-confidence match.
+     * This is the key difference from the old tryPatterns() — first-match
+     * wins was causing weaker patterns to override better ones.
+     */
+    private static AmountMerchant bestMatch(String body, WeightedPattern[] patterns) {
+        AmountMerchant best = null;
+        for (WeightedPattern wp : patterns) {
+            if (wp == null || wp.pattern == null) continue;
             try {
-                Matcher m = p.matcher(body);
-                if (m.find()) {
-                    double amount;
-                    try {
-                        amount = Double.parseDouble(m.group(1).replace(",", ""));
-                    } catch (NumberFormatException nfe) {
-                        continue;
-                    }
-                    if (amount <= 0 || amount >= 10_000_000) continue;
+                Matcher m = wp.pattern.matcher(body);
+                if (!m.find()) continue;
 
-                    // Some patterns (PNB_DEBIT) have only 1 group
-                    String merchant = "";
-                    try {
-                        merchant = m.group(2) != null ? m.group(2).trim() : "";
-                    } catch (IndexOutOfBoundsException ignored) {}
+                double amount;
+                try {
+                    amount = Double.parseDouble(m.group(1).replace(",", ""));
+                } catch (NumberFormatException nfe) { continue; }
+                if (amount <= 0 || amount >= 10_000_000) continue;
 
-                    merchant = cleanMerchant(merchant);
-                    if (amount > 0) {
-                        return new AmountMerchant(amount,
-                                merchant.length() >= 2 ? titleCase(merchant) : "");
+                String merchant = "";
+                try {
+                    if (m.groupCount() >= 2 && m.group(2) != null) {
+                        merchant = m.group(2).trim();
                     }
+                } catch (IndexOutOfBoundsException ignored) {}
+
+                merchant = cleanMerchant(merchant);
+                // Small bonus for a non-empty merchant name
+                double score = wp.confidence + (merchant.length() >= 2 ? 0.05 : 0.0);
+
+                if (best == null || score > best.confidence) {
+                    best = new AmountMerchant(amount,
+                            merchant.length() >= 2 ? titleCase(merchant) : "",
+                            score);
                 }
             } catch (Exception e) {
-                android.util.Log.e("BankAwareSmsParser", "Pattern match error: " + e.getMessage());
+                android.util.Log.e("BankAwareSmsParser", "Pattern error: " + e.getMessage());
             }
         }
-        return null;
+        return best;
     }
+
+    // ═══════════════════════════════════════════════════════════════
+    // HELPERS
+    // ═══════════════════════════════════════════════════════════════
 
     private static Pattern safeCompile(String regex, int flags) {
         try {
@@ -198,9 +290,10 @@ public class BankAwareSmsParser {
     private static String detectPaymentMethod(String body) {
         if (body == null) return "BANK";
         String lower = body.toLowerCase();
-        if (lower.contains("upi"))                                           return "UPI";
+        if (lower.contains("neft") || lower.contains("imps") || lower.contains("rtgs")) return "BANK";
         if (lower.contains("credit card") || lower.contains("credit a/c"))  return "CREDIT_CARD";
         if (lower.contains("debit card")  || lower.contains("debit a/c"))   return "DEBIT_CARD";
+        if (lower.contains("upi"))                                           return "UPI";
         return "BANK";
     }
 
@@ -226,6 +319,30 @@ public class BankAwareSmsParser {
         return body != null && body.toLowerCase().contains("upi");
     }
 
+    // ── Fix 2.5: balance & account extraction ─────────────────────
+
+    private static final Pattern BAL_PATTERN = Pattern.compile(
+        "(?i)Bal(?:ance)?[:\\s]*(?:INR|Rs\\.?|\\u20b9)?\\s*([0-9,]+(?:\\.[0-9]{1,2})?)");
+
+    private static final Pattern ACCT_LAST4_PATTERN = Pattern.compile(
+        "(?i)A/c\\s+[Xx*0-9]{0,8}([0-9]{4})");
+
+    public static double extractBalance(String body) {
+        if (body == null) return -1;
+        Matcher m = BAL_PATTERN.matcher(body);
+        if (m.find()) {
+            try { return Double.parseDouble(m.group(1).replace(",", "")); }
+            catch (Exception ignored) {}
+        }
+        return -1;
+    }
+
+    public static String extractAccountLast4(String body) {
+        if (body == null) return null;
+        Matcher m = ACCT_LAST4_PATTERN.matcher(body);
+        return m.find() ? m.group(1) : null;
+    }
+
     private static String titleCase(String s) {
         if (s == null || s.isEmpty()) return s;
         StringBuilder sb = new StringBuilder();
@@ -242,9 +359,11 @@ public class BankAwareSmsParser {
     private static class AmountMerchant {
         final double amount;
         final String merchant;
-        AmountMerchant(double amount, String merchant) {
-            this.amount   = amount;
-            this.merchant = merchant;
+        final double confidence;
+        AmountMerchant(double amount, String merchant, double confidence) {
+            this.amount     = amount;
+            this.merchant   = merchant;
+            this.confidence = confidence;
         }
     }
 }

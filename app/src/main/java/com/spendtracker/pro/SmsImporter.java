@@ -115,6 +115,13 @@ public class SmsImporter {
 
                 if (cb != null) cb.onComplete(inserted);
 
+                // P2: auto-detect recurring patterns after each import
+                if (inserted > 0) {
+                    try {
+                        RecurringDetector.detectAndInsert(db);
+                    } catch (Exception ignored) {}
+                }
+
             } catch (Exception e) {
 
                 if (cb != null) cb.onError(e.getMessage());

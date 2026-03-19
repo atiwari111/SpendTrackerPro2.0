@@ -62,6 +62,22 @@ public class SmsReceiver extends BroadcastReceiver {
             updateCreditCardSpent(db, body, ts);
         }
 
+        // ── Fix 2.5: auto-update bank balance from SMS ────────────
+        // Extracts "Bal INR 3454.36" and matches to the account by last-4 digits.
+        double smsBalance = BankAwareSmsParser.extractBalance(body);
+        if (smsBalance >= 0) {
+            String last4 = BankAwareSmsParser.extractAccountLast4(body);
+            if (last4 != null && !last4.isEmpty()) {
+                updateBankBalance(db, last4, p.bankName, smsBalance, ts);
+            }
+        }
+
+        // ── Fix 2.7: credit card bill SMS → bills table (dedup by amount) ──
+        BillSmsDetector.BillSmsResult billResult = BillSmsDetector.detect(body, sender);
+        if (billResult != null && billResult.amount > 0) {
+            insertOrUpdateBill(db, billResult);
+        }
+
         // ── Budget recalc ─────────────────────────────────────────
         Calendar cal = Calendar.getInstance();
         cal.setTimeInMillis(ts);
@@ -174,6 +190,55 @@ public class SmsReceiver extends BroadcastReceiver {
             long h1 = text.hashCode();
             long h2 = text.length() * 31L + (text.isEmpty() ? 0 : text.charAt(0));
             return Long.toHexString(h1 ^ (h2 << 17));
+        }
+    }
+
+    /**
+     * Fix 2.5: Finds the bank account matching last4 + bankName and updates its balance.
+     * Matches by lastFour first; if bankName is available, also confirms it matches.
+     */
+    private void updateBankBalance(AppDatabase db, String last4, String bankName,
+                                   double newBalance, long ts) {
+        try {
+            List<BankAccount> accounts = db.bankAccountDao().getAllSync();
+            for (BankAccount acc : accounts) {
+                if (!last4.equals(acc.lastFour)) continue;
+                // If bankName is known, prefer an exact match but don't block on it
+                if (bankName != null && !bankName.isEmpty()
+                        && acc.bankName != null
+                        && !acc.bankName.equalsIgnoreCase(bankName)) continue;
+                db.bankAccountDao().updateBalance(acc.id, newBalance, ts);
+                return; // update only the first matching account
+            }
+        } catch (Exception e) {
+            android.util.Log.e("SmsReceiver", "Bank balance update failed: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Fix 2.7: Inserts a bill or silently skips if an identical pending bill
+     * (same merchant + same amount ±₹1) already exists — prevents duplicate
+     * entries from repeated CC statement SMS.
+     */
+    private void insertOrUpdateBill(AppDatabase db, BillSmsDetector.BillSmsResult result) {
+        try {
+            Bill existing = db.billDao().findByMerchantAndAmount(
+                    result.merchantId, result.amount);
+            if (existing != null) return; // duplicate — skip
+
+            Bill bill = new Bill();
+            bill.name         = result.name;
+            bill.category     = result.category;
+            bill.icon         = result.icon;
+            bill.amount       = result.amount;
+            bill.dueDate      = result.dueDate;
+            bill.status       = result.status;
+            bill.detectedDate = System.currentTimeMillis();
+            bill.isRecurring  = result.isRecurring;
+            bill.merchantId   = result.merchantId;
+            db.billDao().insert(bill);
+        } catch (Exception e) {
+            android.util.Log.e("SmsReceiver", "Bill insert failed: " + e.getMessage());
         }
     }
 

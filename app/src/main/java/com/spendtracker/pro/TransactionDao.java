@@ -56,6 +56,15 @@ public interface TransactionDao {
     @Query("SELECT EXISTS(SELECT 1 FROM transactions WHERE smsHash = :hash)")
     boolean existsHash(String hash);
 
+    /**
+     * P2 recurring auto-detection: returns all non-credit, non-self-transfer transactions
+     * from the last 90 days, ordered by merchant then timestamp.
+     * RecurringDetector groups these in Java to find repeated merchant+amount patterns.
+     */
+    @Query("SELECT * FROM transactions WHERE isCredit = 0 AND isSelfTransfer = 0 " +
+           "AND timestamp >= :since ORDER BY merchant ASC, timestamp DESC")
+    List<Transaction> getNonCreditSince(long since);
+
     /** @deprecated Use existsHash() instead — rawSms is no longer stored. */
     @Deprecated
     @Query("SELECT * FROM transactions WHERE rawSms = :sms LIMIT 1")
