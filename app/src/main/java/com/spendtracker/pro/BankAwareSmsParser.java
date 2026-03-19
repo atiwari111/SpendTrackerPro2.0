@@ -198,9 +198,11 @@ public class BankAwareSmsParser {
     private static String detectPaymentMethod(String body) {
         if (body == null) return "BANK";
         String lower = body.toLowerCase();
-        if (lower.contains("upi"))                                           return "UPI";
+        // Fix 2.3: bank-wire keywords take priority over UPI to avoid false matches
+        if (lower.contains("neft") || lower.contains("imps") || lower.contains("rtgs")) return "BANK";
         if (lower.contains("credit card") || lower.contains("credit a/c"))  return "CREDIT_CARD";
         if (lower.contains("debit card")  || lower.contains("debit a/c"))   return "DEBIT_CARD";
+        if (lower.contains("upi"))                                           return "UPI";
         return "BANK";
     }
 
@@ -224,6 +226,40 @@ public class BankAwareSmsParser {
 
     private static boolean isUpi(String body) {
         return body != null && body.toLowerCase().contains("upi");
+    }
+
+    // ── Fix 2.5: balance extraction ───────────────────────────────────────────
+
+    private static final Pattern BAL_PATTERN = Pattern.compile(
+        "(?i)Bal(?:ance)?[:\\s]*(?:INR|Rs\\.?|₹)?\\s*([0-9,]+(?:\\.[0-9]{1,2})?)",
+        Pattern.CASE_INSENSITIVE);
+
+    private static final Pattern ACCT_LAST4_PATTERN = Pattern.compile(
+        "(?i)A/c\\s+[Xx*0-9]{0,8}([0-9]{4})",
+        Pattern.CASE_INSENSITIVE);
+
+    /**
+     * Extracts the closing balance from an SMS (e.g. "Bal INR 3454.36").
+     * Returns -1 if no balance is found.
+     */
+    public static double extractBalance(String body) {
+        if (body == null) return -1;
+        Matcher m = BAL_PATTERN.matcher(body);
+        if (m.find()) {
+            try { return Double.parseDouble(m.group(1).replace(",", "")); }
+            catch (Exception ignored) {}
+        }
+        return -1;
+    }
+
+    /**
+     * Extracts the last 4 digits of the account number from an SMS
+     * (e.g. "A/c XX4016" → "4016").
+     */
+    public static String extractAccountLast4(String body) {
+        if (body == null) return null;
+        Matcher m = ACCT_LAST4_PATTERN.matcher(body);
+        return m.find() ? m.group(1) : null;
     }
 
     private static String titleCase(String s) {

@@ -26,6 +26,9 @@ public class SmsParser {
         "emi due", "loan amount", "insurance premium due",
         "sim swap", "registered mobile", "kyc", "your account is",
         "missed call", "alert service",
+        // Fix 2.6: future/scheduled debit notices — money has NOT moved yet
+        "will be debited", "will be charged", "would be debited",
+        "scheduled debit", "auto-debit scheduled",
     };
 
     private static final String[] NON_BANK_SENDERS = {
@@ -120,6 +123,10 @@ public class SmsParser {
         if (lower.contains("cashback"))
             return "🎉 Cashback";
 
+        // Fix 2.2: insurance/medical claim credits are refunds
+        if (lower.contains("claim") || lower.contains("reimburs"))
+            return "↩️ Refund";
+
         if (lower.contains("refund") || lower.contains("reversed") ||
             lower.contains("return"))
             return "↩️ Refund";
@@ -139,11 +146,15 @@ public class SmsParser {
     private static String detectPaymentMethod(String sms) {
         if (sms == null) return "BANK";
         String s = sms.toLowerCase();
-        if (s.contains("upi"))     return "UPI";
-        if (s.contains("card"))    return "CARD";
-        if (s.contains("atm"))     return "ATM";
-        if (s.contains("netbank")) return "NETBANKING";
-        if (s.contains("wallet"))  return "WALLET";
+        // Fix 2.3: check bank-wire methods before UPI to avoid false UPI matches
+        if (s.contains("neft") || s.contains("imps") || s.contains("rtgs")) return "BANK";
+        if (s.contains("credit card")) return "CREDIT_CARD";
+        if (s.contains("debit card"))  return "DEBIT_CARD";
+        if (s.contains("upi"))         return "UPI";
+        if (s.contains("card"))        return "CARD";
+        if (s.contains("atm"))         return "ATM";
+        if (s.contains("netbank"))     return "NETBANKING";
+        if (s.contains("wallet"))      return "WALLET";
         return "BANK";
     }
 

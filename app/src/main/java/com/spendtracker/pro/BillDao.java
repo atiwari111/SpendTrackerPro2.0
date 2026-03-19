@@ -30,6 +30,10 @@ public interface BillDao {
     @Query("SELECT * FROM bills WHERE merchantId = :merchantId AND status = 'PENDING' LIMIT 1")
     Bill findPendingByMerchant(String merchantId);
 
+    // Fix 2.7: dedup credit card bills by amount — same card + same amount = same statement
+    @Query("SELECT * FROM bills WHERE merchantId = :merchantId AND ABS(amount - :amount) < 1.0 AND status = 'PENDING' LIMIT 1")
+    Bill findByMerchantAndAmount(String merchantId, double amount);
+
     @Query("SELECT COUNT(*) FROM bills WHERE status = 'PENDING'")
     LiveData<Integer> getPendingCount();
 
