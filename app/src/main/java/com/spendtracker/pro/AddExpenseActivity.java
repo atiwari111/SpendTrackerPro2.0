@@ -5,6 +5,8 @@ import android.os.Bundle;
 import android.text.*;
 import android.view.MenuItem;
 import android.widget.*;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import com.google.android.material.textfield.TextInputEditText;
@@ -35,6 +37,18 @@ public class AddExpenseActivity extends AppCompatActivity {
     // P2: track original values so we can detect changes on edit-save
     private String originalMerchant  = null;
     private String originalCategory  = null;
+
+    // P5: OCR receipt scanner launcher
+    private final ActivityResultLauncher<android.content.Intent> ocrLauncher =
+            registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+                if (result.getResultCode() == RESULT_OK && result.getData() != null) {
+                    double amount = result.getData().getDoubleExtra(OcrScanActivity.EXTRA_AMOUNT, 0);
+                    String merchant = result.getData().getStringExtra(OcrScanActivity.EXTRA_MERCHANT);
+                    if (amount > 0) etAmount.setText(String.format("%.2f", amount));
+                    if (merchant != null && !merchant.isEmpty()) etMerchant.setText(merchant);
+                    Toast.makeText(this, "✅ Receipt scanned — check and save", Toast.LENGTH_SHORT).show();
+                }
+            });
 
     @Override
     protected void onCreate(Bundle s) {
@@ -123,6 +137,10 @@ public class AddExpenseActivity extends AppCompatActivity {
         }
 
         findViewById(R.id.btnSave).setOnClickListener(v -> saveExpense());
+
+        // P5: scan receipt button
+        findViewById(R.id.btnScanReceipt).setOnClickListener(v ->
+                ocrLauncher.launch(new android.content.Intent(this, OcrScanActivity.class)));
     }
 
     // ─────────────────────────────────────────────────────────────
