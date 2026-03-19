@@ -41,7 +41,7 @@ public interface TransactionDao {
     // ── Scoped queries — use these instead of getAllSync() wherever possible ──
 
     /** Non-self-transfer spend transactions from the current month only. */
-    @Query("SELECT * FROM transactions WHERE timestamp BETWEEN :start AND :end AND isSelfTransfer = 0 ORDER BY timestamp DESC")
+    @Query("SELECT * FROM transactions WHERE timestamp BETWEEN :start AND :end AND isSelfTransfer = 0 AND isCredit = 0 ORDER BY timestamp DESC")
     List<Transaction> getSpendingInRange(long start, long end);
 
     /** Recent N transactions in a given category, for anomaly baseline. */

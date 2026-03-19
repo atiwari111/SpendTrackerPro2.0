@@ -60,7 +60,8 @@ public class BankAccountActivity extends AppCompatActivity {
 
         observeAccounts();
 
-        findViewById(R.id.fabAddAccount).setOnClickListener(v -> showAddAccountDialog());
+        View fab = findViewById(R.id.fabAddAccount);
+        if (fab != null) fab.setVisibility(View.GONE);
     }
 
     private void observeAccounts() {

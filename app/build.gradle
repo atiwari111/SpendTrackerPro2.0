@@ -50,8 +50,6 @@ android {
         warningsAsErrors false
 
         // Suppress cosmetic/intentional warnings and issues handled in code
-        disable 'SetTextI18n'                           // ₹ rupee symbol — intentional
-        disable 'HardcodedText'                         // UI label strings — intentional
         disable 'NotifyDataSetChanged'                  // acceptable adapter pattern
         disable 'ScheduleExactAlarm'                    // handled in BootReceiver with canScheduleExactAlarms() check
         disable 'PermissionImpliesUnsupportedChromeOsHardware' // uses-feature required="false" added to manifest

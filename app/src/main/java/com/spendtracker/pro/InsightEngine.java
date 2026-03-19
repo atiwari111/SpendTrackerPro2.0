@@ -21,7 +21,7 @@ public class InsightEngine {
         double thisTotal = 0, lastTotal = 0;
 
         for (Transaction t : allTransactions) {
-            if (t.isSelfTransfer) continue;
+            if (t.isSelfTransfer || t.isCredit) continue;
             if (t.timestamp >= thisMonthStart) {
                 thisMonth.merge(t.category != null ? t.category : "Others", t.amount, Double::sum);
                 merchantMap.merge(t.merchant != null ? t.merchant : "Unknown", t.amount, Double::sum);
@@ -157,7 +157,7 @@ public class InsightEngine {
         // Fewer spike days = more consistent = better score
         Map<Integer, Double> dayMap = new HashMap<>();
         for (Transaction t : txns) {
-            if (t.isSelfTransfer) continue;
+            if (t.isSelfTransfer || t.isCredit) continue;
             Calendar c = Calendar.getInstance(); c.setTimeInMillis(t.timestamp);
             dayMap.merge(c.get(Calendar.DAY_OF_YEAR), t.amount, Double::sum);
         }
@@ -172,7 +172,7 @@ public class InsightEngine {
         // ── 3. Month-over-month improvement (0–20 pts) ────────────
         double thisTotal = 0, lastTotal = 0;
         for (Transaction t : txns) {
-            if (t.isSelfTransfer) continue;
+            if (t.isSelfTransfer || t.isCredit) continue;
             if (t.timestamp >= thisMonthStart)                                  thisTotal += t.amount;
             if (t.timestamp >= lastMonthStart && t.timestamp <= lastMonthEnd)   lastTotal += t.amount;
         }
@@ -190,7 +190,7 @@ public class InsightEngine {
         // ── 4. Category diversity (0–10 pts) ─────────────────────
         Set<String> thisMonthCats = new HashSet<>();
         for (Transaction t : txns) {
-            if (!t.isSelfTransfer && t.timestamp >= thisMonthStart && t.category != null)
+            if (!t.isSelfTransfer && !t.isCredit && t.timestamp >= thisMonthStart && t.category != null)
                 thisMonthCats.add(t.category);
         }
         // Reward if spending spread across 3+ categories (balanced lifestyle)
@@ -201,7 +201,7 @@ public class InsightEngine {
 
         // ── 5. Investment presence (0–10 pts) ─────────────────────
         boolean hasInvestment = txns.stream().anyMatch(t ->
-                !t.isSelfTransfer && t.timestamp >= thisMonthStart
+                !t.isSelfTransfer && !t.isCredit && t.timestamp >= thisMonthStart
                 && "💰 Investment".equals(t.category));
         if (hasInvestment) score += 10;
 
