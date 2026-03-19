@@ -11,8 +11,8 @@ import java.util.List;
 /**
  * SharedViewModel
  *
- * Shares the full transactions stream across Activity/Fragment screens so we
- * avoid duplicate observers/queries and keep dashboard widgets in sync.
+ * Single source of truth for transactions across the app.
+ * Uses AndroidViewModel to safely access database without manual init.
  */
 public class SharedViewModel extends AndroidViewModel {
 
@@ -21,6 +21,8 @@ public class SharedViewModel extends AndroidViewModel {
     public SharedViewModel(@NonNull Application app) {
         super(app);
         AppDatabase db = AppDatabase.getInstance(app);
+
+        // Use recent limit for performance (avoid loading huge dataset)
         allTransactions = db.transactionDao().getRecent(5000);
     }
 
