@@ -381,8 +381,9 @@ public class MainActivity extends AppCompatActivity {
     private void loadDashboard() {
 
         AppExecutors.db().execute(() -> {
-
-            List<Transaction> all = db.transactionDao().getAllSync();
+            long now = System.currentTimeMillis();
+            long monthStart = getMonthStart(now);
+            List<Transaction> all = db.transactionDao().getSpendingInRange(monthStart, now);
 
             if (all != null) updateStats(all);
         });
@@ -404,6 +405,7 @@ public class MainActivity extends AppCompatActivity {
 
         for (Transaction t : list) {
             if (t.isSelfTransfer) continue;
+            if (t.isCredit) continue;
             if (t.timestamp >= todayStart)  todayTotal  += t.amount;
             if (t.timestamp >= monthStart) {
                 monthTotal += t.amount;

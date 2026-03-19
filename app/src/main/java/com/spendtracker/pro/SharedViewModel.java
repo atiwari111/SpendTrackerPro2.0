@@ -17,5 +17,3 @@ import java.util.List;
     public LiveData<List<Transaction>> getAllTransactions() {
         return allTransactions;
     }
-
-}

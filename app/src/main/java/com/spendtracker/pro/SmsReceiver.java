@@ -197,7 +197,7 @@ public class SmsReceiver extends BroadcastReceiver {
                 if (merchant == null || merchant.isEmpty() || t.merchant == null || t.merchant.isEmpty()) return true;
                 if (merchant.equalsIgnoreCase(t.merchant)) return true;
             }
-        } catch (Exception ignored) {}
+
         return false;
     }
 

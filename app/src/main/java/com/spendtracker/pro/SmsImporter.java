@@ -131,7 +131,9 @@ public class SmsImporter {
                 if (inserted > 0) {
                     try {
                         RecurringDetector.detectAndInsert(db);
-                    } catch (Exception ignored) {}
+                    } catch (Exception e) {
+                        android.util.Log.w("SmsImporter", "Recurring detection failed: " + e.getMessage());
+                    }
                 }
 
             } catch (Exception e) {
@@ -190,7 +192,9 @@ public class SmsImporter {
                         || merchant.equalsIgnoreCase(t.merchant));
                 if (merchantMatch) return true;
             }
-        } catch (Exception ignored) {}
+        } catch (Exception e) {
+            android.util.Log.w("SmsImporter", "Duplicate debit check failed: " + e.getMessage());
+        }
         return false;
     }
 
@@ -249,7 +253,7 @@ public class SmsImporter {
                 if (merchant == null || merchant.isEmpty() || t.merchant == null || t.merchant.isEmpty()) return true;
                 if (merchant.equalsIgnoreCase(t.merchant)) return true;
             }
-        } catch (Exception ignored) {}
+
         return false;
     }
 
@@ -288,7 +292,7 @@ public class SmsImporter {
             acc.bankEmoji = "🏦";
             acc.cardColor = android.graphics.Color.parseColor("#1A237E");
             db.bankAccountDao().insert(acc);
-        } catch (Exception ignored) {}
+
     }
 
     private static String expandBankName(String bankName) {
