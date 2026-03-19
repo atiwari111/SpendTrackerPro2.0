@@ -155,7 +155,7 @@ public class BackupManager {
 
                 cb.onSuccess("Restore successful. Please restart the app.");
 
-            } catch (BadPaddingException | AEADBadTagException e) {
+            } catch (BadPaddingException e) {
                 cb.onError("Backup file is corrupted or from a different device.");
             } catch (Exception e) {
                 cb.onError("Restore failed: " + e.getMessage());

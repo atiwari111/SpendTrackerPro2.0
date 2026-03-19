@@ -232,7 +232,7 @@ public class AnalyticsFragment extends Fragment {
                 incomeEntries.add(new BarEntry(idx, (float) inc));
                 expenseEntries.add(new BarEntry(idx, (float) exp));
                 monthLabels.add(new java.text.SimpleDateFormat("MMM", Locale.getDefault())
-                        .format(mc.getTime() - 1));
+                        .format(new Date(mc.getTimeInMillis() - 1)));
             }
 
             // Merchant breakdown text
