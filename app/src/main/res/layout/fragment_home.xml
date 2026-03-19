@@ -1,0 +1,359 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Home tab content — extracted from activity_main.xml for HomeFragment -->
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/bg_dark">
+
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:clipToPadding="false"
+        android:paddingBottom="80dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <!-- HEADER -->
+            <LinearLayout
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:orientation="vertical" android:padding="20dp"
+                android:background="#1A7C3AED">
+
+                <LinearLayout
+                    android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:orientation="horizontal" android:gravity="center_vertical">
+                    <LinearLayout
+                        android:layout_width="0dp" android:layout_height="wrap_content"
+                        android:layout_weight="1" android:orientation="vertical">
+                        <TextView android:id="@+id/tvGreeting"
+                            android:layout_width="wrap_content" android:layout_height="wrap_content"
+                            android:text="Good Morning ☀️" android:textSize="20sp"
+                            android:textStyle="bold" android:textColor="@color/white"/>
+                        <TextView android:id="@+id/tvDate"
+                            android:layout_width="wrap_content" android:layout_height="wrap_content"
+                            android:textSize="12sp" android:textColor="@color/white_50"
+                            android:layout_marginTop="2dp"/>
+                    </LinearLayout>
+                    <TextView android:id="@+id/tvHealthScore"
+                        android:layout_width="wrap_content" android:layout_height="wrap_content"
+                        android:text="--/100" android:textSize="13sp" android:textStyle="bold"
+                        android:textColor="@color/green" android:background="#2210B981"
+                        android:padding="8dp"/>
+                </LinearLayout>
+
+                <TextView android:id="@+id/tvPrediction"
+                    android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp" android:padding="10dp"
+                    android:background="#1A10B981"
+                    android:text="🔮 Projected month-end: calculating..."
+                    android:textColor="#FF10B981" android:textSize="12sp"
+                    android:gravity="center"/>
+
+                <!-- Time range toggle chips -->
+                <com.google.android.material.chip.ChipGroup
+                    android:id="@+id/chipTimeRange"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    app:singleSelection="true"
+                    app:selectionRequired="true">
+
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/chipToday"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Today"
+                        android:checkable="true"
+                        android:checked="true"
+                        style="@style/Widget.MaterialComponents.Chip.Filter"
+                        android:textColor="@color/white"
+                        app:chipBackgroundColor="#33A78BFA"
+                        app:checkedIconVisible="false"/>
+
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/chipWeek"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Week"
+                        android:checkable="true"
+                        style="@style/Widget.MaterialComponents.Chip.Filter"
+                        android:textColor="@color/white"
+                        app:chipBackgroundColor="#33A78BFA"
+                        app:checkedIconVisible="false"/>
+
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/chipMonth"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Month"
+                        android:checkable="true"
+                        style="@style/Widget.MaterialComponents.Chip.Filter"
+                        android:textColor="@color/white"
+                        app:chipBackgroundColor="#33A78BFA"
+                        app:checkedIconVisible="false"/>
+
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/chipYear"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Year"
+                        android:checkable="true"
+                        style="@style/Widget.MaterialComponents.Chip.Filter"
+                        android:textColor="@color/white"
+                        app:chipBackgroundColor="#33A78BFA"
+                        app:checkedIconVisible="false"/>
+
+                </com.google.android.material.chip.ChipGroup>
+
+                <!-- Today + Month row -->
+                <LinearLayout
+                    android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:orientation="horizontal" android:layout_marginTop="20dp">
+
+                    <androidx.cardview.widget.CardView
+                        android:id="@+id/cardToday"
+                        android:layout_width="0dp" android:layout_height="wrap_content"
+                        android:layout_weight="1" android:layout_marginEnd="8dp"
+                        android:clickable="true" android:focusable="true"
+                        app:cardBackgroundColor="#221E293B" app:cardCornerRadius="12dp">
+                        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                            android:orientation="vertical" android:padding="14dp">
+                            <TextView android:id="@+id/tvPeriodLabel"
+                                android:layout_width="wrap_content" android:layout_height="wrap_content"
+                                android:text="Today" android:textSize="11sp" android:textColor="@color/white_50"/>
+                            <TextView android:id="@+id/tvTodayAmt"
+                                android:layout_width="wrap_content" android:layout_height="wrap_content"
+                                android:text="₹0" android:textSize="20sp" android:textStyle="bold"
+                                android:textColor="@color/white" android:layout_marginTop="4dp"/>
+                        </LinearLayout>
+                    </androidx.cardview.widget.CardView>
+
+                    <androidx.cardview.widget.CardView
+                        android:id="@+id/cardMonth"
+                        android:layout_width="0dp" android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:clickable="true" android:focusable="true"
+                        app:cardBackgroundColor="#221E293B" app:cardCornerRadius="12dp">
+                        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                            android:orientation="vertical" android:padding="14dp">
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                                android:text="Month Total" android:textSize="11sp" android:textColor="@color/white_50"/>
+                            <TextView android:id="@+id/tvMonthAmt"
+                                android:layout_width="wrap_content" android:layout_height="wrap_content"
+                                android:text="₹0" android:textSize="20sp" android:textStyle="bold"
+                                android:textColor="@color/purple_light" android:layout_marginTop="4dp"/>
+                        </LinearLayout>
+                    </androidx.cardview.widget.CardView>
+                </LinearLayout>
+
+                <!-- Budget + Top Cat row -->
+                <LinearLayout
+                    android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:orientation="horizontal" android:layout_marginTop="8dp">
+
+                    <androidx.cardview.widget.CardView
+                        android:id="@+id/cardBudgetLeft"
+                        android:layout_width="0dp" android:layout_height="wrap_content"
+                        android:layout_weight="1" android:layout_marginEnd="8dp"
+                        android:clickable="true" android:focusable="true"
+                        app:cardBackgroundColor="#221E293B" app:cardCornerRadius="12dp">
+                        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                            android:orientation="vertical" android:padding="14dp">
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                                android:text="Budget Left" android:textSize="11sp" android:textColor="@color/white_50"/>
+                            <TextView android:id="@+id/tvBudgetLeft"
+                                android:layout_width="wrap_content" android:layout_height="wrap_content"
+                                android:text="Set budget" android:textSize="13sp" android:textStyle="bold"
+                                android:textColor="@color/amber" android:layout_marginTop="4dp"/>
+                        </LinearLayout>
+                    </androidx.cardview.widget.CardView>
+
+                    <androidx.cardview.widget.CardView
+                        android:id="@+id/cardTopCat"
+                        android:layout_width="0dp" android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:clickable="true" android:focusable="true"
+                        app:cardBackgroundColor="#221E293B" app:cardCornerRadius="12dp">
+                        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                            android:orientation="vertical" android:padding="14dp">
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                                android:text="Top Category" android:textSize="11sp" android:textColor="@color/white_50"/>
+                            <TextView android:id="@+id/tvTopCat"
+                                android:layout_width="wrap_content" android:layout_height="wrap_content"
+                                android:text="—" android:textSize="11sp" android:textStyle="bold"
+                                android:textColor="@color/teal" android:layout_marginTop="4dp"
+                                android:maxLines="1" android:ellipsize="end"/>
+                        </LinearLayout>
+                    </androidx.cardview.widget.CardView>
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- SCAN BUTTON -->
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:orientation="vertical" android:padding="16dp">
+                <Button android:id="@+id/btnScan"
+                    android:layout_width="match_parent" android:layout_height="52dp"
+                    android:text="🔍  Scan SMS for Transactions"
+                    android:textSize="15sp" android:textStyle="bold"
+                    android:backgroundTint="@color/purple_main" android:textColor="@color/white"/>
+                <ProgressBar android:id="@+id/progressBar"
+                    android:layout_width="match_parent" android:layout_height="4dp"
+                    android:layout_marginTop="8dp" android:indeterminate="true"
+                    android:indeterminateTint="@color/purple_light" android:visibility="gone"
+                    style="@style/Widget.AppCompat.ProgressBar.Horizontal"/>
+                <TextView android:id="@+id/tvImportStatus"
+                    android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:text="" android:textSize="12sp" android:textColor="@color/white_50"
+                    android:layout_marginTop="4dp" android:visibility="gone"/>
+            </LinearLayout>
+
+            <!-- QUICK ACTIONS row 1 -->
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:orientation="horizontal" android:paddingHorizontal="16dp" android:paddingBottom="8dp">
+
+                <androidx.cardview.widget.CardView android:id="@+id/cardInsights"
+                    android:clickable="true" android:focusable="true"
+                    android:layout_width="0dp" android:layout_height="wrap_content"
+                    android:layout_weight="1" android:layout_marginEnd="8dp"
+                    app:cardBackgroundColor="@color/bg_card" app:cardCornerRadius="12dp">
+                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                        android:orientation="vertical" android:padding="14dp" android:gravity="center">
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                            android:text="📊" android:textSize="24sp"/>
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                            android:text="Analytics" android:textSize="11sp" android:textColor="@color/white_70"
+                            android:layout_marginTop="4dp"/>
+                    </LinearLayout>
+                </androidx.cardview.widget.CardView>
+
+                <androidx.cardview.widget.CardView android:id="@+id/cardBudget"
+                    android:clickable="true" android:focusable="true"
+                    android:layout_width="0dp" android:layout_height="wrap_content"
+                    android:layout_weight="1" android:layout_marginEnd="8dp"
+                    app:cardBackgroundColor="@color/bg_card" app:cardCornerRadius="12dp">
+                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                        android:orientation="vertical" android:padding="14dp" android:gravity="center">
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                            android:text="📋" android:textSize="24sp"/>
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                            android:text="Budget" android:textSize="11sp" android:textColor="@color/white_70"
+                            android:layout_marginTop="4dp"/>
+                    </LinearLayout>
+                </androidx.cardview.widget.CardView>
+
+                <androidx.cardview.widget.CardView android:id="@+id/cardNetWorth"
+                    android:layout_width="0dp" android:layout_height="wrap_content"
+                    android:layout_weight="1" android:layout_marginEnd="8dp"
+                    app:cardBackgroundColor="@color/bg_card" app:cardCornerRadius="12dp">
+                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                        android:orientation="vertical" android:padding="14dp" android:gravity="center">
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                            android:text="🏦" android:textSize="24sp"/>
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                            android:text="Net Worth" android:textSize="11sp" android:textColor="@color/white_70"
+                            android:layout_marginTop="4dp"/>
+                    </LinearLayout>
+                </androidx.cardview.widget.CardView>
+
+                <androidx.cardview.widget.CardView android:id="@+id/cardBills"
+                    android:layout_width="0dp" android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:clickable="true" android:focusable="true"
+                    app:cardBackgroundColor="@color/bg_card" app:cardCornerRadius="12dp">
+                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                        android:orientation="vertical" android:padding="14dp" android:gravity="center">
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                            android:text="📋" android:textSize="24sp"/>
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                            android:text="Bills" android:textSize="11sp" android:textColor="@color/white_70"
+                            android:layout_marginTop="4dp"/>
+                        <TextView android:id="@+id/tvBillsBadge"
+                            android:layout_width="wrap_content" android:layout_height="wrap_content"
+                            android:textSize="9sp" android:textColor="@color/amber"
+                            android:visibility="gone"/>
+                    </LinearLayout>
+                </androidx.cardview.widget.CardView>
+            </LinearLayout>
+
+            <!-- QUICK ACTIONS row 2 -->
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:orientation="horizontal" android:paddingHorizontal="16dp"
+                android:layout_marginTop="8dp" android:layout_marginBottom="4dp">
+
+                <androidx.cardview.widget.CardView android:id="@+id/cardCreditCards"
+                    android:layout_width="0dp" android:layout_height="wrap_content"
+                    android:layout_weight="1" android:layout_marginEnd="8dp"
+                    android:clickable="true" android:focusable="true"
+                    app:cardBackgroundColor="@color/bg_card" app:cardCornerRadius="12dp">
+                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                        android:orientation="vertical" android:padding="14dp" android:gravity="center">
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                            android:text="💳" android:textSize="24sp"/>
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                            android:text="Cards" android:textSize="11sp" android:textColor="@color/white_70"
+                            android:layout_marginTop="4dp"/>
+                        <TextView android:id="@+id/tvCreditCardSpent"
+                            android:layout_width="wrap_content" android:layout_height="wrap_content"
+                            android:textSize="9sp" android:textColor="@color/purple_light"
+                            android:visibility="gone"/>
+                    </LinearLayout>
+                </androidx.cardview.widget.CardView>
+
+                <androidx.cardview.widget.CardView android:id="@+id/cardBankAccounts"
+                    android:layout_width="0dp" android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:clickable="true" android:focusable="true"
+                    app:cardBackgroundColor="@color/bg_card" app:cardCornerRadius="12dp">
+                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                        android:orientation="vertical" android:padding="14dp" android:gravity="center">
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                            android:text="🏦" android:textSize="24sp"/>
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                            android:text="Accounts" android:textSize="11sp" android:textColor="@color/white_70"
+                            android:layout_marginTop="4dp"/>
+                        <TextView android:id="@+id/tvTotalBankBalance"
+                            android:layout_width="wrap_content" android:layout_height="wrap_content"
+                            android:textSize="9sp" android:textColor="@color/green"
+                            android:visibility="gone"/>
+                    </LinearLayout>
+                </androidx.cardview.widget.CardView>
+            </LinearLayout>
+
+            <!-- RECENT TRANSACTIONS -->
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:orientation="vertical" android:paddingHorizontal="16dp">
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:orientation="horizontal" android:gravity="center_vertical">
+                    <TextView android:layout_width="0dp" android:layout_height="wrap_content"
+                        android:layout_weight="1" android:text="Recent Transactions"
+                        android:textSize="16sp" android:textStyle="bold" android:textColor="@color/white"/>
+                    <TextView android:id="@+id/tvTransCount"
+                        android:layout_width="wrap_content" android:layout_height="wrap_content"
+                        android:textSize="12sp" android:textColor="@color/white_50"/>
+                </LinearLayout>
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rvRecent"
+                    android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp" android:nestedScrollingEnabled="false"/>
+            </LinearLayout>
+
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+
+    <!-- FAB — 72dp margin to clear bottom nav -->
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fabAdd"
+        android:layout_width="wrap_content" android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_marginBottom="72dp"
+        android:layout_marginEnd="16dp"
+        android:src="@android:drawable/ic_input_add"
+        app:backgroundTint="@color/purple_main"
+        app:tint="@color/white"/>
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>
