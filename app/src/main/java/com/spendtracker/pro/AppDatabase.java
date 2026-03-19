@@ -40,24 +40,35 @@ public abstract class AppDatabase extends RoomDatabase {
         @Override
         public void migrate(@NonNull SupportSQLiteDatabase db) {
             // ── Add new columns (safe — ignored if column already exists) ──
-            try { db.execSQL("ALTER TABLE transactions ADD COLUMN isSelfTransfer INTEGER NOT NULL DEFAULT 0"); } catch (Exception ignored) {}
-            try { db.execSQL("ALTER TABLE transactions ADD COLUMN categoryIcon TEXT"); } catch (Exception ignored) {}
-            try { db.execSQL("ALTER TABLE transactions ADD COLUMN smsHash TEXT"); } catch (Exception ignored) {}
-            try { db.execSQL("ALTER TABLE transactions ADD COLUMN smsAddress TEXT"); } catch (Exception ignored) {}
-            try { db.execSQL("ALTER TABLE transactions ADD COLUMN rawSms TEXT"); } catch (Exception ignored) {}
-            try { db.execSQL("ALTER TABLE transactions ADD COLUMN paymentDetail TEXT"); } catch (Exception ignored) {}
-            try { db.execSQL("ALTER TABLE transactions ADD COLUMN notes TEXT"); } catch (Exception ignored) {}
+            try { db.execSQL("ALTER TABLE transactions ADD COLUMN isSelfTransfer INTEGER NOT NULL DEFAULT 0"); }
+            catch (Exception e) { android.util.Log.w("AppDatabase", "MIGRATION_1_2 isSelfTransfer: " + e.getMessage()); }
+            try { db.execSQL("ALTER TABLE transactions ADD COLUMN categoryIcon TEXT"); }
+            catch (Exception e) { android.util.Log.w("AppDatabase", "MIGRATION_1_2 categoryIcon: " + e.getMessage()); }
+            try { db.execSQL("ALTER TABLE transactions ADD COLUMN smsHash TEXT"); }
+            catch (Exception e) { android.util.Log.w("AppDatabase", "MIGRATION_1_2 smsHash: " + e.getMessage()); }
+            try { db.execSQL("ALTER TABLE transactions ADD COLUMN smsAddress TEXT"); }
+            catch (Exception e) { android.util.Log.w("AppDatabase", "MIGRATION_1_2 smsAddress: " + e.getMessage()); }
+            try { db.execSQL("ALTER TABLE transactions ADD COLUMN rawSms TEXT"); }
+            catch (Exception e) { android.util.Log.w("AppDatabase", "MIGRATION_1_2 rawSms: " + e.getMessage()); }
+            try { db.execSQL("ALTER TABLE transactions ADD COLUMN paymentDetail TEXT"); }
+            catch (Exception e) { android.util.Log.w("AppDatabase", "MIGRATION_1_2 paymentDetail: " + e.getMessage()); }
+            try { db.execSQL("ALTER TABLE transactions ADD COLUMN notes TEXT"); }
+            catch (Exception e) { android.util.Log.w("AppDatabase", "MIGRATION_1_2 notes: " + e.getMessage()); }
 
             // ── Create indices that Room @Entity declares ──────────────────
             // These MUST match the index names Room auto-generates:
             // format: index_<tableName>_<columnName>
             try {
                 db.execSQL("CREATE INDEX IF NOT EXISTS `index_transactions_timestamp` ON `transactions` (`timestamp`)");
-            } catch (Exception ignored) {}
+            } catch (Exception e) {
+                android.util.Log.w("AppDatabase", "MIGRATION_1_2 index timestamp: " + e.getMessage());
+            }
 
             try {
                 db.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS `index_transactions_smsHash` ON `transactions` (`smsHash`)");
-            } catch (Exception ignored) {}
+            } catch (Exception e) {
+                android.util.Log.w("AppDatabase", "MIGRATION_1_2 unique smsHash index: " + e.getMessage());
+            }
         }
     };
 
@@ -75,7 +86,9 @@ public abstract class AppDatabase extends RoomDatabase {
                     + "`frequency` TEXT, `merchantId` TEXT)");
             // Add isCredit field to transactions
             try { db.execSQL("ALTER TABLE transactions ADD COLUMN isCredit INTEGER NOT NULL DEFAULT 0"); }
-            catch (Exception ignored) {}
+            catch (Exception e) {
+                android.util.Log.w("AppDatabase", "MIGRATION_2_3 isCredit: " + e.getMessage());
+            }
         }
     };
 

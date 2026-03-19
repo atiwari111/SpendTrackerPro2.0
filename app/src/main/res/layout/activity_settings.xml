@@ -12,17 +12,11 @@
         <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
             android:orientation="vertical" android:padding="16dp">
 
-            <!-- ══ ACCOUNT ══ -->
-            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                android:text="ACCOUNT" android:textSize="11sp" android:textStyle="bold"
-                android:textColor="@color/purple_main" android:letterSpacing="0.1"
-                android:layout_marginBottom="8dp" android:layout_marginTop="4dp"/>
-
             <!-- ══ SECURITY ══ -->
             <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
                 android:text="SECURITY" android:textSize="11sp" android:textStyle="bold"
                 android:textColor="@color/purple_main" android:letterSpacing="0.1"
-                android:layout_marginTop="16dp" android:layout_marginBottom="8dp"/>
+                android:layout_marginTop="4dp" android:layout_marginBottom="8dp"/>
 
             <androidx.cardview.widget.CardView android:layout_width="match_parent"
                 android:layout_height="wrap_content" android:layout_marginBottom="8dp"
@@ -40,6 +34,54 @@
                     <Switch android:id="@+id/swBiometric" android:layout_width="wrap_content"
                         android:layout_height="wrap_content" android:thumbTint="@color/purple_main"/>
                 </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
+            <!-- ══ APPEARANCE ══ -->
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:text="APPEARANCE" android:textSize="11sp" android:textStyle="bold"
+                android:textColor="@color/purple_main" android:letterSpacing="0.1"
+                android:layout_marginTop="16dp" android:layout_marginBottom="8dp"/>
+
+            <androidx.cardview.widget.CardView android:layout_width="match_parent"
+                android:layout_height="wrap_content" android:layout_marginBottom="8dp"
+                app:cardBackgroundColor="@color/bg_card" app:cardCornerRadius="12dp">
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:orientation="horizontal" android:padding="16dp" android:gravity="center_vertical">
+                    <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content"
+                        android:layout_weight="1" android:orientation="vertical">
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                            android:text="Dark Theme" android:textColor="@color/white" android:textSize="15sp"/>
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                            android:text="Use dark mode across the app"
+                            android:textColor="@color/white_50" android:textSize="12sp" android:layout_marginTop="2dp"/>
+                    </LinearLayout>
+                    <RadioGroup
+                        android:id="@+id/rgTheme"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+                        <RadioButton
+                            android:id="@+id/rbThemeLight"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Light"
+                            android:textColor="@color/text_primary"/>
+                        <RadioButton
+                            android:id="@+id/rbThemeDark"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="8dp"
+                            android:text="Dark"
+                            android:textColor="@color/text_primary"/>
+                    </RadioGroup>
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
+    <!-- ══ NOTIFICATIONS ══ -->
+    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+        android:text="NOTIFICATIONS" android:textSize="11sp" android:textStyle="bold"
+        android:textColor="@color/purple_main" android:letterSpacing="0.1"
+        android:layout_marginTop="16dp" android:layout_marginBottom="8dp"/>
 
     <!-- Daily Spend Summary Notification -->
     <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
@@ -63,7 +105,6 @@
             android:thumbTint="@color/purple_main"
             android:trackTint="@color/purple_dim"/>
     </LinearLayout>
-            </androidx.cardview.widget.CardView>
 
             <!-- ══ DATA ══ -->
             <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
@@ -142,11 +183,11 @@
                 <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
                     android:orientation="vertical" android:padding="16dp">
                     <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
-                        android:text="This permanently deletes all local data. Your cloud backup (if synced) will not be affected."
+                        android:text="This permanently deletes local transactions only. Your budgets, cards, accounts and cloud backup remain unchanged."
                         android:textColor="@color/white_50" android:textSize="12sp" android:layout_marginBottom="12dp"/>
                     <Button android:id="@+id/btnClearData"
                         android:layout_width="match_parent" android:layout_height="44dp"
-                        android:text="Delete All Local Data"
+                        android:text="Delete Local Transactions"
                         android:backgroundTint="#EF4444" android:textColor="@color/white"
                         android:textSize="13sp"/>
                 </LinearLayout>
