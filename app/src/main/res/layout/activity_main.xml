@@ -15,7 +15,7 @@
             <!-- HEADER -->
             <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
                 android:orientation="vertical" android:padding="20dp"
-                android:background="#1A7C3AED">
+                android:background="@drawable/bg_header_gradient">
 
                 <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
                     android:orientation="horizontal" android:gravity="center_vertical">
@@ -40,7 +40,7 @@
                     android:layout_marginTop="12dp"
                     android:padding="10dp"
                     android:background="#1A10B981"
-                    android:text="🔮 Projected month-end: calculating..."
+                    android:text="Projected month-end: calculating..."
                     android:textColor="#FF10B981"
                     android:textSize="12sp"
                     android:gravity="center"/>
@@ -53,7 +53,7 @@
                         android:layout_weight="1" android:layout_marginEnd="8dp"
                         android:id="@+id/cardToday"
                         android:clickable="true" android:focusable="true"
-                        app:cardBackgroundColor="#221E293B" app:cardCornerRadius="12dp">
+                        style="@style/Card.SurfaceAccent">
                         <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
                             android:orientation="vertical" android:padding="14dp">
                             <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
@@ -69,7 +69,7 @@
                         android:layout_weight="1"
                         android:id="@+id/cardMonth"
                         android:clickable="true" android:focusable="true"
-                        app:cardBackgroundColor="#221E293B" app:cardCornerRadius="12dp">
+                        style="@style/Card.SurfaceAccent">
                         <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
                             android:orientation="vertical" android:padding="14dp">
                             <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
@@ -90,7 +90,7 @@
                         android:layout_weight="1" android:layout_marginEnd="8dp"
                         android:id="@+id/cardBudgetLeft"
                         android:clickable="true" android:focusable="true"
-                        app:cardBackgroundColor="#221E293B" app:cardCornerRadius="12dp">
+                        style="@style/Card.SurfaceAccent">
                         <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
                             android:orientation="vertical" android:padding="14dp">
                             <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
@@ -106,7 +106,7 @@
                         android:layout_weight="1"
                         android:id="@+id/cardTopCat"
                         android:clickable="true" android:focusable="true"
-                        app:cardBackgroundColor="#221E293B" app:cardCornerRadius="12dp">
+                        style="@style/Card.SurfaceAccent">
                         <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
                             android:orientation="vertical" android:padding="14dp">
                             <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
@@ -126,9 +126,12 @@
 
                 <Button android:id="@+id/btnScan"
                     android:layout_width="match_parent" android:layout_height="52dp"
-                    android:text="🔍  Scan SMS for Transactions"
+                    android:text="Scan SMS Transactions"
+                    android:drawableStart="@drawable/ic_ui_scan"
+                    android:drawablePadding="8dp"
                     android:textSize="15sp" android:textStyle="bold"
-                    android:backgroundTint="@color/purple_main" android:textColor="@color/white"/>
+                    android:backgroundTint="@color/purple_main" android:textColor="@color/white"
+                    android:stateListAnimator="@animator/press_scale"/>
 
                 <ProgressBar android:id="@+id/progressBar"
                     android:layout_width="match_parent" android:layout_height="4dp"
@@ -152,11 +155,12 @@
                     android:clickable="true" android:focusable="true"
                     android:layout_width="0dp" android:layout_height="wrap_content"
                     android:layout_weight="1" android:layout_marginEnd="8dp"
-                    app:cardBackgroundColor="@color/bg_card" app:cardCornerRadius="12dp">
+                    style="@style/Card.Surface">
                     <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
                         android:orientation="vertical" android:padding="14dp" android:gravity="center">
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                            android:text="📊" android:textSize="24sp"/>
+                        <ImageView android:layout_width="22dp" android:layout_height="22dp"
+                            android:src="@drawable/ic_nav_analytics"
+                            android:contentDescription="@null"/>
                         <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
                             android:text="Analytics" android:textSize="11sp" android:textColor="@color/white_70"
                             android:layout_marginTop="4dp"/>
@@ -167,11 +171,12 @@
                     android:clickable="true" android:focusable="true"
                     android:layout_width="0dp" android:layout_height="wrap_content"
                     android:layout_weight="1" android:layout_marginEnd="8dp"
-                    app:cardBackgroundColor="@color/bg_card" app:cardCornerRadius="12dp">
+                    style="@style/Card.Surface">
                     <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
                         android:orientation="vertical" android:padding="14dp" android:gravity="center">
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                            android:text="📋" android:textSize="24sp"/>
+                        <ImageView android:layout_width="22dp" android:layout_height="22dp"
+                            android:src="@drawable/ic_nav_budget"
+                            android:contentDescription="@null"/>
                         <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
                             android:text="Budget" android:textSize="11sp" android:textColor="@color/white_70"
                             android:layout_marginTop="4dp"/>
@@ -181,11 +186,12 @@
                 <androidx.cardview.widget.CardView android:id="@+id/cardNetWorth"
                     android:layout_width="0dp" android:layout_height="wrap_content"
                     android:layout_weight="1" android:layout_marginEnd="8dp"
-                    app:cardBackgroundColor="@color/bg_card" app:cardCornerRadius="12dp">
+                    style="@style/Card.Surface">
                     <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
                         android:orientation="vertical" android:padding="14dp" android:gravity="center">
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                            android:text="🏦" android:textSize="24sp"/>
+                        <ImageView android:layout_width="22dp" android:layout_height="22dp"
+                            android:src="@drawable/ic_ui_networth"
+                            android:contentDescription="@null"/>
                         <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
                             android:text="Net Worth" android:textSize="11sp" android:textColor="@color/white_70"
                             android:layout_marginTop="4dp"/>
@@ -196,11 +202,12 @@
                     android:layout_width="0dp" android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:clickable="true" android:focusable="true"
-                    app:cardBackgroundColor="@color/bg_card" app:cardCornerRadius="12dp">
+                    style="@style/Card.Surface">
                     <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
                         android:orientation="vertical" android:padding="14dp" android:gravity="center">
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                            android:text="📋" android:textSize="24sp"/>
+                        <ImageView android:layout_width="22dp" android:layout_height="22dp"
+                            android:src="@drawable/ic_ui_receipt"
+                            android:contentDescription="@null"/>
                         <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
                             android:text="Bills" android:textSize="11sp" android:textColor="@color/white_70"
                             android:layout_marginTop="4dp"/>
@@ -222,11 +229,12 @@
                     android:layout_width="0dp" android:layout_height="wrap_content"
                     android:layout_weight="1" android:layout_marginEnd="8dp"
                     android:clickable="true" android:focusable="true"
-                    app:cardBackgroundColor="@color/bg_card" app:cardCornerRadius="12dp">
+                    style="@style/Card.Surface">
                     <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
                         android:orientation="vertical" android:padding="14dp" android:gravity="center">
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                            android:text="💳" android:textSize="24sp"/>
+                        <ImageView android:layout_width="22dp" android:layout_height="22dp"
+                            android:src="@drawable/ic_ui_cards"
+                            android:contentDescription="@null"/>
                         <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
                             android:text="Cards" android:textSize="11sp" android:textColor="@color/white_70"
                             android:layout_marginTop="4dp"/>
@@ -241,11 +249,12 @@
                     android:layout_width="0dp" android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:clickable="true" android:focusable="true"
-                    app:cardBackgroundColor="@color/bg_card" app:cardCornerRadius="12dp">
+                    style="@style/Card.Surface">
                     <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
                         android:orientation="vertical" android:padding="14dp" android:gravity="center">
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                            android:text="🏦" android:textSize="24sp"/>
+                        <ImageView android:layout_width="22dp" android:layout_height="22dp"
+                            android:src="@drawable/ic_ui_bank"
+                            android:contentDescription="@null"/>
                         <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
                             android:text="Accounts" android:textSize="11sp" android:textColor="@color/white_70"
                             android:layout_marginTop="4dp"/>

@@ -6,6 +6,7 @@ import android.os.Handler;
 import android.os.Looper;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatDelegate;
 import androidx.biometric.*;
 import androidx.core.content.ContextCompat;
 
@@ -13,6 +14,12 @@ public class SplashActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle s) {
+        SharedPreferences prefs = getSharedPreferences("stp_prefs", MODE_PRIVATE);
+        String mode = prefs.getString("theme_mode",
+                prefs.getBoolean("dark_theme_enabled", true) ? "dark" : "light");
+        boolean dark = !"light".equals(mode);
+        AppCompatDelegate.setDefaultNightMode(
+                dark ? AppCompatDelegate.MODE_NIGHT_YES : AppCompatDelegate.MODE_NIGHT_NO);
         super.onCreate(s);
         setContentView(R.layout.activity_splash);
 

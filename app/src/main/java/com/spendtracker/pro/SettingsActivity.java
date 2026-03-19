@@ -4,10 +4,12 @@ import android.content.*;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.*;
 import androidx.activity.result.*;
 import androidx.activity.result.contract.*;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatDelegate;
 import androidx.appcompat.widget.Toolbar;
 import java.io.File;
 import java.util.List;
@@ -17,6 +19,7 @@ public class SettingsActivity extends AppCompatActivity {
     private Switch swBiometric;
     private AppDatabase db;
     private ActivityResultLauncher<String[]> csvPicker;
+    private boolean csvAccessPromptShown;
 
     @Override
     protected void onCreate(Bundle s) {
@@ -53,19 +56,83 @@ public class SettingsActivity extends AppCompatActivity {
             });
         }
 
+        // Theme mode selector (Light / Dark)
+        RadioGroup rgTheme = findViewById(R.id.rgTheme);
+        RadioButton rbLight = findViewById(R.id.rbThemeLight);
+        RadioButton rbDark  = findViewById(R.id.rbThemeDark);
+        if (rgTheme != null && rbLight != null && rbDark != null) {
+            String mode = prefs.getString("theme_mode", "dark");
+            if ("light".equals(mode)) rbLight.setChecked(true); else rbDark.setChecked(true);
+            rgTheme.setOnCheckedChangeListener((group, checkedId) -> {
+                boolean dark = checkedId == R.id.rbThemeDark;
+                prefs.edit()
+                        .putString("theme_mode", dark ? "dark" : "light")
+                        .putBoolean("dark_theme_enabled", dark) // backward compatibility
+                        .apply();
+                AppCompatDelegate.setDefaultNightMode(
+                        dark ? AppCompatDelegate.MODE_NIGHT_YES : AppCompatDelegate.MODE_NIGHT_NO);
+            });
+        }
+
         findViewById(R.id.btnExportCsv).setOnClickListener(v -> exportCsv());
-        findViewById(R.id.btnCsvImport).setOnClickListener(v ->
-                csvPicker.launch(new String[]{"text/csv", "text/comma-separated-values",
-                        "application/csv", "text/plain", "*/*"}));
+        findViewById(R.id.btnCsvImport).setOnClickListener(v -> requestCsvPicker());
         findViewById(R.id.btnRecurring).setOnClickListener(v ->
                 startActivity(new Intent(this, RecurringActivity.class)));
         findViewById(R.id.btnNetWorth).setOnClickListener(v ->
                 startActivity(new Intent(this, NetWorthActivity.class)));
         findViewById(R.id.btnCreditCards).setOnClickListener(v ->
                 startActivity(new Intent(this, CreditCardActivity.class)));
-        findViewById(R.id.btnBankAccounts).setOnClickListener(v ->
-                startActivity(new Intent(this, BankAccountActivity.class)));
+        View btnBankAccounts = findViewById(R.id.btnBankAccounts);
+        if (btnBankAccounts != null) btnBankAccounts.setVisibility(View.GONE);
         findViewById(R.id.btnClearData).setOnClickListener(v -> confirmClear());
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        refreshCreditCardSpent();
+    }
+
+    private void requestCsvPicker() {
+        if (prefs.getBoolean("csv_access_prompt_seen", false) || csvAccessPromptShown) {
+            launchCsvPicker();
+            return;
+        }
+        csvAccessPromptShown = true;
+        new androidx.appcompat.app.AlertDialog.Builder(this, R.style.AlertDialogDark)
+                .setTitle("Allow file access")
+                .setMessage("To import CSV, choose a file from your device storage.")
+                .setPositiveButton("Continue", (d, w) -> {
+                    prefs.edit().putBoolean("csv_access_prompt_seen", true).apply();
+                    launchCsvPicker();
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
+    }
+
+    private void launchCsvPicker() {
+        csvPicker.launch(new String[]{"text/csv", "text/comma-separated-values",
+                "application/csv", "text/plain", "*/*"});
+    }
+
+    /** Recompute credit card spend from transactions so totals stay updated from Settings flow too. */
+    private void refreshCreditCardSpent() {
+        AppExecutors.db().execute(() -> {
+            List<CreditCard> cards = db.creditCardDao().getAllSync();
+            long now = System.currentTimeMillis();
+            java.util.Calendar c = java.util.Calendar.getInstance();
+            c.set(java.util.Calendar.DAY_OF_MONTH, 1);
+            c.set(java.util.Calendar.HOUR_OF_DAY, 0);
+            c.set(java.util.Calendar.MINUTE, 0);
+            c.set(java.util.Calendar.SECOND, 0);
+            c.set(java.util.Calendar.MILLISECOND, 0);
+            long monthStart = c.getTimeInMillis();
+            for (CreditCard card : cards) {
+                long cycleStart = card.billingCycleStart > 0 ? card.billingCycleStart : monthStart;
+                double spent = db.creditCardDao().getCreditSpendInRange(cycleStart, now);
+                db.creditCardDao().updateSpent(card.id, spent, now);
+            }
+        });
     }
 
     private void exportCsv() {
@@ -132,13 +199,13 @@ public class SettingsActivity extends AppCompatActivity {
 
     private void confirmClear() {
         new androidx.appcompat.app.AlertDialog.Builder(this)
-                .setTitle("Clear All Data")
-                .setMessage("This will permanently delete all transactions. Are you sure?")
-                .setPositiveButton("Delete All", (d, w) ->
+                .setTitle("Clear Transactions")
+                .setMessage("This will permanently delete all transactions on this device. Are you sure?")
+                .setPositiveButton("Delete Transactions", (d, w) ->
                         AppExecutors.db().execute(() -> {
                             db.transactionDao().deleteAll();
                             runOnUiThread(() -> Toast.makeText(this,
-                                    "All data cleared", Toast.LENGTH_SHORT).show());
+                                    "All transactions cleared", Toast.LENGTH_SHORT).show());
                         }))
                 .setNegativeButton("Cancel", null)
                 .show();
