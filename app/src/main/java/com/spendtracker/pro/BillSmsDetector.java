@@ -63,6 +63,10 @@ public class BillSmsDetector {
     // Fix 2.7: prefer "Total due" amount over first-found amount in CC statements
     private static final Pattern TOTAL_DUE_PAT = Pattern.compile(
             "(?i)total\\s+due[:\\s]*(?:Rs\\.?|INR|₹)?\\s*([0-9,]+(?:\\.[0-9]{1,2})?)");
+    private static final Pattern AMOUNT_DUE_PAT = Pattern.compile(
+            "(?i)amount\\s+due[:\\s]*(?:Rs\\.?|INR|₹)?\\s*([0-9,]+(?:\\.[0-9]{1,2})?)");
+    private static final Pattern CARD_LAST4_PAT = Pattern.compile(
+            "(?i)(?:credit\\s*card|card)\\s*(?:xx|x{1,4})?\\s*([0-9]{4})");
 
     // Matches: "due on 25-03", "due by 25 Mar", "due date: 25/03/2026"
     private static final Pattern DUE_DATE_PAT = Pattern.compile(
@@ -116,9 +120,14 @@ public class BillSmsDetector {
             if (totalM.find()) {
                 amount = Double.parseDouble(totalM.group(1).replace(",", ""));
             } else {
+                Matcher dueM = AMOUNT_DUE_PAT.matcher(body);
+                if (dueM.find()) {
+                    amount = Double.parseDouble(dueM.group(1).replace(",", ""));
+                } else {
                 Matcher amtM = AMOUNT_PAT.matcher(body);
                 if (!amtM.find()) return null;
                 amount = Double.parseDouble(amtM.group(1).replace(",", ""));
+                }
             }
         } catch (Exception e) { return null; }
         if (amount <= 0) return null;
@@ -139,6 +148,17 @@ public class BillSmsDetector {
             // Try to extract from sender
             name = extractBillerFromSender(sender);
             if (name == null) name = "Bill Payment";
+        }
+
+        // Enrich credit-card bill name with bank + last4 when available.
+        if (lower.contains("credit card")) {
+            Matcher card4 = CARD_LAST4_PAT.matcher(body);
+            String last4 = card4.find() ? card4.group(1) : "";
+            if (lower.contains("hdfc")) {
+                name = last4.isEmpty() ? "HDFC Credit Card Bill" : "HDFC Credit Card " + last4;
+            } else if (!last4.isEmpty()) {
+                name = "Credit Card " + last4;
+            }
         }
 
         // Extract due date

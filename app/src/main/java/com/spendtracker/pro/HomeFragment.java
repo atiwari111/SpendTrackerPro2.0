@@ -15,7 +15,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.chip.Chip;
@@ -34,7 +33,6 @@ public class HomeFragment extends Fragment {
     private ProgressBar progressBar;
     private Button btnScan;
     private AppDatabase db;
-    private SharedViewModel sharedVm;
 
     // Time range for the summary stat cards — default to today
     private long timeRangeMs = 0; // 0 = today, set on chip selection
@@ -63,7 +61,6 @@ public class HomeFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         db = AppDatabase.getInstance(requireContext());
-        sharedVm = new ViewModelProvider(requireActivity()).get(SharedViewModel.class);
 
         bindViews(view);
         setupClickListeners();
@@ -104,12 +101,8 @@ public class HomeFragment extends Fragment {
                 else if (id == R.id.chipMonth) { timeRangeMs = 30L * 86400_000L;        timeRangeLabel = "30 Days"; }
                 else if (id == R.id.chipYear)  { timeRangeMs = 365L * 86400_000L;       timeRangeLabel = "This Year"; }
                 if (tvPeriodLabel != null) tvPeriodLabel.setText(timeRangeLabel);
-                // Refresh stats with new window — data already in SharedViewModel
-                AppExecutors.db().execute(() -> {
-                    if (!isAdded()) return;
-                    List<Transaction> all = db.transactionDao().getAllSync();
-                    if (all != null) updateStats(all);
-                });
+                // Refresh stats from scoped spend query
+                loadSpendingStats();
             });
         }
 
@@ -162,16 +155,11 @@ public class HomeFragment extends Fragment {
     }
 
     private void observeData() {
-        // Shared LiveData — no extra DB hit
-        sharedVm.getAllTransactions().observe(getViewLifecycleOwner(), list -> {
+        db.transactionDao().getRecent(5000).observe(getViewLifecycleOwner(), list -> {
             if (list == null) return;
             List<Transaction> recent = list.size() > 6 ? list.subList(0, 6) : list;
             adapter.setTransactions(recent);
-            AppExecutors.db().execute(() -> {
-                if (!isAdded()) return;
-                List<Transaction> all = db.transactionDao().getAllSync();
-                if (all != null) updateStats(all);
-            });
+            loadSpendingStats();
         });
 
         db.transactionDao().getTotalCount().observe(getViewLifecycleOwner(),
@@ -207,6 +195,22 @@ public class HomeFragment extends Fragment {
             } else {
                 tvTotalBankBalance.setVisibility(View.GONE);
             }
+        });
+    }
+
+    /**
+     * Loads only spending transactions for the largest currently visible summary window.
+     * This avoids full-table scans during dashboard refreshes.
+     */
+    private void loadSpendingStats() {
+        AppExecutors.db().execute(() -> {
+            if (!isAdded()) return;
+            long now = System.currentTimeMillis();
+            long monthStart = getMonthStart(now);
+            long primaryStart = (timeRangeMs == 0) ? getDayStart(now) : now - timeRangeMs;
+            long queryStart = Math.min(primaryStart, monthStart);
+            List<Transaction> spendOnly = db.transactionDao().getSpendingInRange(queryStart, now);
+            updateStats(spendOnly);
         });
     }
 
@@ -272,6 +276,7 @@ public class HomeFragment extends Fragment {
 
         for (Transaction t : list) {
             if (t.isSelfTransfer) continue;
+            if (t.isCredit) continue;
             if (t.timestamp >= primaryStart) primaryTotal += t.amount;
             if (t.timestamp >= monthStart) {
                 monthTotal += t.amount;

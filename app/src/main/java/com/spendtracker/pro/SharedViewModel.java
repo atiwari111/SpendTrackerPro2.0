@@ -1,34 +1,32 @@
 package com.spendtracker.pro;
 
+import android.app.Application;
+
+import androidx.annotation.NonNull;
+import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
-import androidx.lifecycle.ViewModel;
+
 import java.util.List;
 
 /**
- * SharedViewModel — P3 single source of truth for transaction list.
+ * SharedViewModel
  *
- * Fragments call getAllTransactions().observe(getViewLifecycleOwner(), ...)
- * so the Room LiveData pipeline is shared across tabs with no duplicate DB hits.
- * The ViewModel survives config changes so the list is never re-fetched on rotation.
+ * Single source of truth for transactions across the app.
+ * Uses AndroidViewModel to safely access database without manual init.
  */
-public class SharedViewModel extends ViewModel {
+public class SharedViewModel extends AndroidViewModel {
 
-    private LiveData<List<Transaction>> allTransactions;
-    private AppDatabase db;
+    private final LiveData<List<Transaction>> allTransactions;
 
-    /** Called once from MainActivity before fragments are attached. */
-    public void init(AppDatabase db) {
-        if (this.db == null) this.db = db;
+    public SharedViewModel(@NonNull Application app) {
+        super(app);
+        AppDatabase db = AppDatabase.getInstance(app);
+
+        // Use recent limit for performance (avoid loading huge dataset)
+        allTransactions = db.transactionDao().getRecent(5000);
     }
 
-    /**
-     * Returns the single Room-backed LiveData for all transactions.
-     * Lazily initialised on first call so init() must be called first.
-     */
     public LiveData<List<Transaction>> getAllTransactions() {
-        if (allTransactions == null && db != null) {
-            allTransactions = db.transactionDao().getAll();
-        }
         return allTransactions;
     }
 }
