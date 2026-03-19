@@ -51,12 +51,14 @@ public class AnalyticsActivity extends AppCompatActivity {
 
     private void loadData() {
         AppExecutors.db().execute(() -> {
-            List<Transaction> all = db.transactionDao().getAllSync();
-            if (all.isEmpty()) { runOnUiThread(() -> tvInsights.setText("No data yet. Scan your SMS!")); return; }
-
             long now = System.currentTimeMillis();
             long week = now - 7L * 86400000L;
             long monthStart = getMonthStart(now);
+            long month30 = now - 30L * 86400000L;
+            // Query only spending rows needed for current analytics windows.
+            List<Transaction> all = db.transactionDao().getSpendingInRange(month30, now);
+            if (all.isEmpty()) { runOnUiThread(() -> tvInsights.setText("No data yet. Scan your SMS!")); return; }
+
             SimpleDateFormat dayFmt = new SimpleDateFormat("MM/dd", Locale.getDefault());
 
             // Daily bar data (last 7 days)
@@ -91,7 +93,6 @@ public class AnalyticsActivity extends AppCompatActivity {
                 Calendar c = Calendar.getInstance(); c.add(Calendar.DAY_OF_YEAR, -i);
                 last30.put(d30.format(c.getTime()), 0.0);
             }
-            long month30 = now - 30L * 86400000L;
             for (Transaction t : all) {
                 if (!t.isSelfTransfer && !t.isCredit && t.timestamp >= month30)
                     last30.merge(d30.format(new Date(t.timestamp)), t.amount, Double::sum);

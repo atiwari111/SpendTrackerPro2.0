@@ -97,12 +97,8 @@ public class HomeFragment extends Fragment {
                 else if (id == R.id.chipMonth) { timeRangeMs = 30L * 86400_000L;        timeRangeLabel = "30 Days"; }
                 else if (id == R.id.chipYear)  { timeRangeMs = 365L * 86400_000L;       timeRangeLabel = "This Year"; }
                 if (tvPeriodLabel != null) tvPeriodLabel.setText(timeRangeLabel);
-                // Refresh stats with new window from current DB snapshot
-                AppExecutors.db().execute(() -> {
-                    if (!isAdded()) return;
-                    List<Transaction> all = db.transactionDao().getAllSync();
-                    if (all != null) updateStats(all);
-                });
+                // Refresh stats from scoped spend query
+                loadSpendingStats();
             });
         }
 
@@ -159,11 +155,7 @@ public class HomeFragment extends Fragment {
             if (list == null) return;
             List<Transaction> recent = list.size() > 6 ? list.subList(0, 6) : list;
             adapter.setTransactions(recent);
-            AppExecutors.db().execute(() -> {
-                if (!isAdded()) return;
-                List<Transaction> all = db.transactionDao().getAllSync();
-                if (all != null) updateStats(all);
-            });
+            loadSpendingStats();
         });
 
         db.transactionDao().getTotalCount().observe(getViewLifecycleOwner(),
@@ -199,6 +191,22 @@ public class HomeFragment extends Fragment {
             } else {
                 tvTotalBankBalance.setVisibility(View.GONE);
             }
+        });
+    }
+
+    /**
+     * Loads only spending transactions for the largest currently visible summary window.
+     * This avoids full-table scans during dashboard refreshes.
+     */
+    private void loadSpendingStats() {
+        AppExecutors.db().execute(() -> {
+            if (!isAdded()) return;
+            long now = System.currentTimeMillis();
+            long monthStart = getMonthStart(now);
+            long primaryStart = (timeRangeMs == 0) ? getDayStart(now) : now - timeRangeMs;
+            long queryStart = Math.min(primaryStart, monthStart);
+            List<Transaction> spendOnly = db.transactionDao().getSpendingInRange(queryStart, now);
+            updateStats(spendOnly);
         });
     }
 
@@ -264,6 +272,7 @@ public class HomeFragment extends Fragment {
 
         for (Transaction t : list) {
             if (t.isSelfTransfer) continue;
+            if (t.isCredit) continue;
             if (t.timestamp >= primaryStart) primaryTotal += t.amount;
             if (t.timestamp >= monthStart) {
                 monthTotal += t.amount;
