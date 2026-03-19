@@ -81,6 +81,7 @@ public class SmsImporter {
                             BankAwareSmsParser.parse(body, sender);
 
                     if (parsed == null) continue;
+                    if (isCardBlockMessage(body)) continue;
 
                     // ── PNB bare UPI debit deduplication ─────────────────────────
                     // PNB sends: (1) advance notice with merchant name, then
@@ -93,7 +94,7 @@ public class SmsImporter {
 
                     Transaction t = new Transaction();
                     t.amount         = parsed.amount;
-                    t.merchant       = parsed.merchant;
+                    t.merchant       = normalizeMerchant(parsed.merchant, sender, parsed.bankName, body);
                     t.category       = parsed.category;
                     t.categoryIcon   = CategoryEngine.getInfo(parsed.category).icon;
                     t.timestamp      = date;
@@ -109,8 +110,19 @@ public class SmsImporter {
                     t.smsAddress     = redactSender(sender);
                     t.isManual       = false;
 
+                    if (t.isCredit && isLikelyDuplicateCredit(db, t.amount, date, t.merchant)) {
+                        continue;
+                    }
+
                     db.transactionDao().insert(t);
                     inserted++;
+
+                    // Auto-create/update bank account from SMS balance signals.
+                    double smsBalance = BankAwareSmsParser.extractBalance(body);
+                    String last4 = BankAwareSmsParser.extractAccountLast4(body);
+                    if (smsBalance >= 0 && last4 != null && last4.length() == 4) {
+                        autoUpsertBankAccount(db, parsed.bankName, last4, smsBalance, date);
+                    }
                 }
 
                 if (cb != null) cb.onComplete(inserted);
@@ -119,7 +131,9 @@ public class SmsImporter {
                 if (inserted > 0) {
                     try {
                         RecurringDetector.detectAndInsert(db);
-                    } catch (Exception ignored) {}
+                    } catch (Exception e) {
+                        android.util.Log.w("SmsImporter", "Recurring detection failed: " + e.getMessage());
+                    }
                 }
 
             } catch (Exception e) {
@@ -178,7 +192,9 @@ public class SmsImporter {
                         || merchant.equalsIgnoreCase(t.merchant));
                 if (merchantMatch) return true;
             }
-        } catch (Exception ignored) {}
+        } catch (Exception e) {
+            android.util.Log.w("SmsImporter", "Duplicate debit check failed: " + e.getMessage());
+        }
         return false;
     }
 
@@ -218,5 +234,80 @@ public class SmsImporter {
         if (sender.matches("[A-Za-z0-9\\-]{2,20}")) return sender;
         if (sender.length() > 4) return sender.substring(0, 4) + "****";
         return "****";
+    }
+
+    private static boolean isCardBlockMessage(String body) {
+        if (body == null) return false;
+        String b = body.toLowerCase();
+        return (b.contains("block") || b.contains("blocked") || b.contains("hotlist"))
+                && !b.contains("debited") && !b.contains("spent") && !b.contains("credited");
+    }
+
+    private static boolean isLikelyDuplicateCredit(AppDatabase db, double amount, long ts, String merchant) {
+        try {
+            final long windowMs = 2L * 60 * 1000; // ±2 min
+            java.util.List<Transaction> nearby = db.transactionDao().getByDateRange(ts - windowMs, ts + windowMs);
+            for (Transaction t : nearby) {
+                if (!t.isCredit) continue;
+                if (Math.abs(t.amount - amount) > 0.01) continue;
+                if (merchant == null || merchant.isEmpty() || t.merchant == null || t.merchant.isEmpty()) {
+                    return true;
+                }
+                if (merchant.equalsIgnoreCase(t.merchant)) return true;
+            }
+        } catch (Exception e) {
+            android.util.Log.w("SmsImporter", "Duplicate credit check failed: " + e.getMessage());
+        }
+        return false;
+    }
+
+    private static String normalizeMerchant(String merchant, String sender, String bankName, String body) {
+        String m = merchant == null ? "" : merchant.trim();
+        String s = sender == null ? "" : sender.trim().toUpperCase();
+        if (m.matches("(?i)^[A-Z]{2}-[A-Z0-9]{4,}(?:-[A-Z])?$")) m = "";
+        if (!s.isEmpty() && m.equalsIgnoreCase(s)) m = "";
+        if (m.matches("(?i).*(hdfcbk|sbipsg|sbiinb|icicib|axisbk|kotakb).*")) m = "";
+        if ("block".equalsIgnoreCase(m) || "blocked".equalsIgnoreCase(m) || isCardBlockMessage(body)) m = "";
+        if (m.isEmpty()) {
+            if (bankName != null && !bankName.trim().isEmpty()) return bankName + " Transfer";
+            return "Bank Transfer";
+        }
+        return m;
+    }
+
+    private static void autoUpsertBankAccount(AppDatabase db, String bankName, String last4,
+                                              double balance, long ts) {
+        try {
+            java.util.List<BankAccount> accounts = db.bankAccountDao().getAllSync();
+            for (BankAccount a : accounts) {
+                if (last4.equals(a.lastFour)) {
+                    db.bankAccountDao().updateBalance(a.id, balance, ts);
+                    return;
+                }
+            }
+            BankAccount acc = new BankAccount();
+            acc.lastFour = last4;
+            acc.bankName = expandBankName(bankName);
+            acc.accountType = "SAVINGS";
+            acc.accountLabel = acc.bankName + " A/c " + last4;
+            acc.balance = balance;
+            acc.updatedAt = ts;
+            acc.isActive = true;
+            acc.bankEmoji = "🏦";
+            acc.cardColor = android.graphics.Color.parseColor("#1A237E");
+            db.bankAccountDao().insert(acc);
+        } catch (Exception e) {
+            android.util.Log.w("SmsImporter", "Bank auto-upsert failed: " + e.getMessage());
+        }
+    }
+
+    private static String expandBankName(String bankName) {
+        String b = bankName != null ? bankName.trim().toUpperCase() : "";
+        if ("PNB".equals(b)) return "Punjab National Bank";
+        if ("SBI".equals(b)) return "State Bank of India";
+        if ("HDFC".equals(b)) return "HDFC Bank";
+        if ("ICICI".equals(b)) return "ICICI Bank";
+        if ("AXIS".equals(b)) return "Axis Bank";
+        return b.isEmpty() ? "Bank Account" : b;
     }
 }
