@@ -189,19 +189,7 @@ public class SmsReceiver extends BroadcastReceiver {
 
     private boolean isLikelyDuplicateCredit(AppDatabase db, double amount, long ts, String merchant) {
         try {
-            final long windowMs = 2L * 60 * 1000;
-            List<Transaction> nearby = db.transactionDao().getByDateRange(ts - windowMs, ts + windowMs);
-            for (Transaction t : nearby) {
-                if (!t.isCredit) continue;
-                if (Math.abs(t.amount - amount) > 0.01) continue;
-                if (merchant == null || merchant.isEmpty() || t.merchant == null || t.merchant.isEmpty()) {
-                    return true;
-                }
-                if (merchant.equalsIgnoreCase(t.merchant)) return true;
-            }
-        } catch (Exception e) {
-            android.util.Log.w("SmsReceiver", "Duplicate credit check failed: " + e.getMessage());
-        }
+
         return false;
     }
 

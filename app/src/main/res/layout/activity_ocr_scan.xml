@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent" android:layout_height="match_parent"
+    android:orientation="vertical" android:background="@color/bg_dark">
+
+    <androidx.appcompat.widget.Toolbar android:id="@+id/toolbar"
+        android:layout_width="match_parent" android:layout_height="?attr/actionBarSize"
+        android:background="@color/bg_card" app:titleTextColor="@color/white"/>
+
+    <!-- Camera preview fills remaining space -->
+    <androidx.camera.view.PreviewView
+        android:id="@+id/previewView"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"/>
+
+    <!-- Bottom control bar -->
+    <LinearLayout
+        android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:background="@color/bg_card" android:padding="16dp">
+
+        <!-- Extracted result preview -->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/cardResult"
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:layout_marginBottom="12dp" android:visibility="gone"
+            app:cardBackgroundColor="#221E293B" app:cardCornerRadius="10dp">
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:orientation="vertical" android:padding="12dp">
+                <TextView android:id="@+id/tvOcrAmount"
+                    android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:text="Amount: —" android:textSize="16sp"
+                    android:textStyle="bold" android:textColor="@color/white"/>
+                <TextView android:id="@+id/tvOcrMerchant"
+                    android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:text="Merchant: —" android:textSize="13sp"
+                    android:textColor="@color/white_70" android:layout_marginTop="4dp"/>
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <Button android:id="@+id/btnCapture"
+                android:layout_width="0dp" android:layout_height="52dp"
+                android:layout_weight="1" android:layout_marginEnd="8dp"
+                android:text="📷  Scan Receipt"
+                android:backgroundTint="@color/purple_main" android:textColor="@color/white"/>
+
+            <Button android:id="@+id/btnUseResult"
+                android:layout_width="0dp" android:layout_height="52dp"
+                android:layout_weight="1" android:visibility="gone"
+                android:text="✅  Use This"
+                android:backgroundTint="#10B981" android:textColor="@color/white"/>
+        </LinearLayout>
+
+        <TextView android:id="@+id/tvOcrHint"
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:text="Point at a receipt and tap Scan"
+            android:textSize="11sp" android:textColor="@color/white_50"
+            android:gravity="center" android:layout_marginTop="8dp"/>
+    </LinearLayout>
+
+</LinearLayout>

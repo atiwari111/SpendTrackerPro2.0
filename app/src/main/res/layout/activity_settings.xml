@@ -193,6 +193,34 @@
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
 
+            <!-- P4: Backup & Restore -->
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" android:layout_marginBottom="16dp"
+                app:cardBackgroundColor="@color/bg_card" app:cardCornerRadius="12dp">
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:orientation="vertical" android:padding="16dp">
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                        android:text="🔒 Backup &amp; Restore"
+                        android:textSize="14sp" android:textStyle="bold"
+                        android:textColor="@color/white" android:layout_marginBottom="4dp"/>
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                        android:text="Encrypted with AES-256-GCM · Bound to this device"
+                        android:textSize="11sp" android:textColor="@color/white_50"
+                        android:layout_marginBottom="12dp"/>
+                    <Button android:id="@+id/btnBackup"
+                        android:layout_width="match_parent" android:layout_height="44dp"
+                        android:text="📤  Create Backup"
+                        android:backgroundTint="@color/purple_main" android:textColor="@color/white"
+                        android:textSize="13sp" android:layout_marginBottom="8dp"/>
+                    <Button android:id="@+id/btnRestore"
+                        android:layout_width="match_parent" android:layout_height="44dp"
+                        android:text="📥  Restore from Backup"
+                        android:backgroundTint="@color/bg_card" android:textColor="@color/white"
+                        android:textSize="13sp"/>
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
             <!-- App version -->
             <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
                 android:id="@+id/tvAppInfo" android:text="SpendTracker Pro v2.0\nBuilt with 🔒 AES-256 encryption"

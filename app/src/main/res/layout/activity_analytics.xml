@@ -8,6 +8,35 @@
         android:layout_width="match_parent" android:layout_height="?attr/actionBarSize"
         android:background="@color/bg_card" app:titleTextColor="@color/white"/>
 
+    <!-- P4: Month selector row -->
+    <LinearLayout
+        android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:orientation="horizontal" android:gravity="center_vertical"
+        android:background="@color/bg_card" android:paddingHorizontal="12dp"
+        android:paddingVertical="6dp">
+
+        <ImageButton android:id="@+id/btnPrevMonth"
+            android:layout_width="36dp" android:layout_height="36dp"
+            android:src="@android:drawable/ic_media_previous"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:tint="@color/white_70"
+            android:contentDescription="Previous month"/>
+
+        <TextView android:id="@+id/tvSelectedMonth"
+            android:layout_width="0dp" android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="This Month" android:textSize="15sp"
+            android:textStyle="bold" android:textColor="@color/white"
+            android:gravity="center"/>
+
+        <ImageButton android:id="@+id/btnNextMonth"
+            android:layout_width="36dp" android:layout_height="36dp"
+            android:src="@android:drawable/ic_media_next"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:tint="@color/white_70"
+            android:contentDescription="Next month"/>
+    </LinearLayout>
+
     <ScrollView android:layout_width="match_parent" android:layout_height="match_parent">
         <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
             android:orientation="vertical" android:padding="16dp">
@@ -85,6 +114,53 @@
                         android:layout_height="wrap_content" android:layout_weight="1"
                         android:textSize="13sp" android:textStyle="bold" android:textColor="@color/amber"
                         android:gravity="end"/>
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
+            <!-- P4: Income vs Expense grouped bar chart -->
+            <androidx.cardview.widget.CardView android:layout_width="match_parent"
+                android:layout_height="wrap_content" android:layout_marginBottom="12dp"
+                app:cardBackgroundColor="@color/bg_card" app:cardCornerRadius="12dp">
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:orientation="vertical" android:padding="16dp">
+                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                        android:orientation="horizontal" android:gravity="center_vertical"
+                        android:layout_marginBottom="8dp">
+                        <TextView android:layout_width="0dp" android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="💰 Income vs Expense"
+                            android:textSize="14sp" android:textStyle="bold" android:textColor="@color/white"/>
+                        <!-- Legend -->
+                        <View android:layout_width="10dp" android:layout_height="10dp"
+                            android:background="#FF10B981" android:layout_marginEnd="4dp"/>
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                            android:text="Income" android:textSize="11sp" android:textColor="@color/white_70"
+                            android:layout_marginEnd="8dp"/>
+                        <View android:layout_width="10dp" android:layout_height="10dp"
+                            android:background="#FFEF4444" android:layout_marginEnd="4dp"/>
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                            android:text="Expense" android:textSize="11sp" android:textColor="@color/white_70"/>
+                    </LinearLayout>
+                    <com.github.mikephil.charting.charts.BarChart
+                        android:id="@+id/barChartIncomeExpense"
+                        android:layout_width="match_parent" android:layout_height="200dp"/>
+                    <!-- Net summary row -->
+                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                        android:orientation="horizontal" android:layout_marginTop="8dp">
+                        <TextView android:id="@+id/tvTotalIncome"
+                            android:layout_width="0dp" android:layout_height="wrap_content"
+                            android:layout_weight="1" android:textSize="12sp"
+                            android:textColor="#FF10B981" android:gravity="center"/>
+                        <TextView android:id="@+id/tvTotalExpense"
+                            android:layout_width="0dp" android:layout_height="wrap_content"
+                            android:layout_weight="1" android:textSize="12sp"
+                            android:textColor="#FFEF4444" android:gravity="center"/>
+                        <TextView android:id="@+id/tvNetSavings"
+                            android:layout_width="0dp" android:layout_height="wrap_content"
+                            android:layout_weight="1" android:textSize="12sp"
+                            android:textColor="@color/white" android:gravity="center"
+                            android:textStyle="bold"/>
+                    </LinearLayout>
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
 

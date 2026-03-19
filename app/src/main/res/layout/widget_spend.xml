@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Home screen widget layout — must use RemoteViews-compatible views only -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent" android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@drawable/widget_background"
+    android:padding="12dp">
+
+    <TextView
+        android:id="@+id/tvWidgetTitle"
+        android:layout_width="wrap_content" android:layout_height="wrap_content"
+        android:text="SpendTracker Pro"
+        android:textSize="11sp" android:textColor="#99FFFFFF"
+        android:layout_marginBottom="4dp"/>
+
+    <!-- Today spend -->
+    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:orientation="horizontal" android:gravity="center_vertical"
+        android:layout_marginBottom="6dp">
+        <TextView android:layout_width="0dp" android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Today" android:textSize="12sp" android:textColor="#AAFFFFFF"/>
+        <TextView android:id="@+id/tvWidgetToday"
+            android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:text="₹0" android:textSize="18sp"
+            android:textStyle="bold" android:textColor="#FFFFFFFF"/>
+    </LinearLayout>
+
+    <!-- Bank balance -->
+    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:orientation="horizontal" android:gravity="center_vertical"
+        android:layout_marginBottom="6dp">
+        <TextView android:layout_width="0dp" android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Bank Balance" android:textSize="12sp" android:textColor="#AAFFFFFF"/>
+        <TextView android:id="@+id/tvWidgetBalance"
+            android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:text="₹—" android:textSize="16sp"
+            android:textStyle="bold" android:textColor="#FF10B981"/>
+    </LinearLayout>
+
+    <!-- Divider -->
+    <View android:layout_width="match_parent" android:layout_height="0.5dp"
+        android:background="#33FFFFFF" android:layout_marginVertical="4dp"/>
+
+    <!-- Month spend -->
+    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:orientation="horizontal" android:gravity="center_vertical">
+        <TextView android:layout_width="0dp" android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="This Month" android:textSize="12sp" android:textColor="#AAFFFFFF"/>
+        <TextView android:id="@+id/tvWidgetMonth"
+            android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:text="₹0" android:textSize="14sp"
+            android:textColor="#FFA78BFA"/>
+    </LinearLayout>
+
+</LinearLayout>

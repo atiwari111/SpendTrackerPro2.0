@@ -107,6 +107,14 @@
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
 
+            <!-- P5: OCR scan receipt button -->
+            <Button android:id="@+id/btnScanReceipt"
+                android:layout_width="match_parent" android:layout_height="48dp"
+                android:layout_marginTop="16dp"
+                android:text="📷  Scan Receipt to Auto-fill"
+                android:backgroundTint="#221E293B" android:textColor="@color/purple_light"
+                android:textSize="13sp"/>
+
             <Button android:id="@+id/btnSave"
                 android:layout_width="match_parent" android:layout_height="56dp"
                 android:layout_marginTop="24dp" android:text="Save Expense"
