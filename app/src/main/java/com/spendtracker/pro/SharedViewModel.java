@@ -9,11 +9,11 @@ import androidx.lifecycle.LiveData;
 import java.util.List;
 
 /**
- * SharedViewModel
- *
+
         allTransactions = db.transactionDao().getRecent(5000);
     }
 
     public LiveData<List<Transaction>> getAllTransactions() {
         return allTransactions;
     }
+

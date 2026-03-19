@@ -245,14 +245,6 @@ public class SmsImporter {
 
     private static boolean isLikelyDuplicateCredit(AppDatabase db, double amount, long ts, String merchant) {
         try {
-            long w = 2L * 60 * 1000; // ±2 min
-            java.util.List<Transaction> nearby = db.transactionDao().getByDateRange(ts - w, ts + w);
-            for (Transaction t : nearby) {
-                if (!t.isCredit) continue;
-                if (Math.abs(t.amount - amount) > 0.01) continue;
-                if (merchant == null || merchant.isEmpty() || t.merchant == null || t.merchant.isEmpty()) return true;
-                if (merchant.equalsIgnoreCase(t.merchant)) return true;
-            }
 
         return false;
     }
