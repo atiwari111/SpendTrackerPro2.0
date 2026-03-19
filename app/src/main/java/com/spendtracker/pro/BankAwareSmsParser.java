@@ -199,6 +199,8 @@ public class BankAwareSmsParser {
             }
 
             String merchant = best.merchant;
+            // P2: resolve user-corrected merchant alias before classifying
+            merchant = CategoryEngine.resolveMerchantAlias(merchant);
             String category = SmsParser.isCreditTransaction(body)
                     ? SmsParser.classifyCreditCategory(body, merchant)
                     : CategoryEngine.classify(merchant, body);

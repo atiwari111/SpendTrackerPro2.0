@@ -301,13 +301,17 @@ public class CategoryEngine {
     // ────────────────────────────────────────────────────────────────
     // MERCHANT LEARNING (user overrides)
     // ────────────────────────────────────────────────────────────────
-    private static final String PREFS_NAME = "merchant_learning";
+    private static final String PREFS_NAME   = "merchant_learning";
+    private static final String ALIAS_PREFS  = "merchant_aliases";   // P2: name corrections
     private static SharedPreferences learningPrefs;
+    private static SharedPreferences aliasPrefs;
 
     public static void init(Context ctx) {
-        learningPrefs = ctx.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        learningPrefs = ctx.getSharedPreferences(PREFS_NAME,  Context.MODE_PRIVATE);
+        aliasPrefs    = ctx.getSharedPreferences(ALIAS_PREFS, Context.MODE_PRIVATE);
     }
 
+    /** P2: Store category correction — "swiggy" → "🍔 Food" */
     public static void learnMerchant(String merchant, String category) {
         if (learningPrefs == null || merchant == null || category == null) return;
         learningPrefs.edit().putString(merchant.toLowerCase().trim(), category).apply();
@@ -316,6 +320,27 @@ public class CategoryEngine {
     private static String getLearnedCategory(String merchant) {
         if (learningPrefs == null || merchant == null) return null;
         return learningPrefs.getString(merchant.toLowerCase().trim(), null);
+    }
+
+    /**
+     * P2: Store merchant name alias — maps garbled SMS merchant to user-friendly name.
+     * e.g. learnMerchantAlias("HDFC0001234 UPI", "Amazon")
+     */
+    public static void learnMerchantAlias(String rawName, String displayName) {
+        if (aliasPrefs == null || rawName == null || displayName == null) return;
+        if (rawName.trim().equalsIgnoreCase(displayName.trim())) return; // nothing to correct
+        aliasPrefs.edit().putString(rawName.toLowerCase().trim(), displayName.trim()).apply();
+    }
+
+    /**
+     * P2: Resolve a raw merchant name to its user-corrected display name.
+     * Returns displayName if an alias exists, otherwise returns rawName unchanged.
+     * Called from BankAwareSmsParser after extraction so corrections apply to new SMS.
+     */
+    public static String resolveMerchantAlias(String rawName) {
+        if (aliasPrefs == null || rawName == null) return rawName;
+        String alias = aliasPrefs.getString(rawName.toLowerCase().trim(), null);
+        return alias != null ? alias : rawName;
     }
 
     // ────────────────────────────────────────────────────────────────

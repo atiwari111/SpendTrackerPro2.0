@@ -32,6 +32,9 @@ public class AddExpenseActivity extends AppCompatActivity {
     // Track what auto-category suggested vs what user actually picked
     private String autoSuggestedCategory = null;
     private boolean userOverrodeCategory  = false;
+    // P2: track original values so we can detect changes on edit-save
+    private String originalMerchant  = null;
+    private String originalCategory  = null;
 
     @Override
     protected void onCreate(Bundle s) {
@@ -140,6 +143,9 @@ public class AddExpenseActivity extends AppCompatActivity {
                 selectedDate = t.timestamp;
                 updateDateLabel();
                 swSelfTransfer.setChecked(t.isSelfTransfer);
+                // P2: capture originals so save can detect what changed
+                originalMerchant = t.merchant;
+                originalCategory = t.category;
 
                 String[] catList = CategoryEngine.getCategoryNames();
                 for (int i = 0; i < catList.length; i++) {
@@ -179,8 +185,20 @@ public class AddExpenseActivity extends AppCompatActivity {
         String notes  = etNotes.getText() != null ? etNotes.getText().toString().trim() : "";
         boolean isSelf = swSelfTransfer.isChecked();
 
-        // ── Merchant learning: save correction if user overrode auto-category ──
+        // ── P2: Merchant learning — runs for BOTH new saves and edits ──────
+        // New save: user overrode auto-suggested category → learn it
         if (userOverrodeCategory && !merchant.equals("Manual Entry")) {
+            CategoryEngine.learnMerchant(merchant, category);
+        }
+        // Edit save: save alias if merchant name was corrected
+        if (editingTransaction != null && originalMerchant != null
+                && !originalMerchant.equalsIgnoreCase(merchant)) {
+            CategoryEngine.learnMerchantAlias(originalMerchant, merchant);
+        }
+        // Edit save: save category if it was changed on an existing transaction
+        if (editingTransaction != null && originalCategory != null
+                && !originalCategory.equals(category)
+                && !merchant.equals("Manual Entry")) {
             CategoryEngine.learnMerchant(merchant, category);
         }
 
