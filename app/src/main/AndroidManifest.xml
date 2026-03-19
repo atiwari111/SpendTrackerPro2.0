@@ -159,6 +159,19 @@
             android:name=".ReminderReceiver"
             android:exported="false" />
 
+        <!-- P4: Home screen widget -->
+        <receiver
+            android:name=".SpendWidgetProvider"
+            android:exported="true"
+            android:label="SpendTracker Widget">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE"/>
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_info"/>
+        </receiver>
+
         <!-- File Provider -->
         <provider
             android:name="androidx.core.content.FileProvider"
