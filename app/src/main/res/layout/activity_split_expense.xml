@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent" android:layout_height="match_parent"
+    android:orientation="vertical" android:background="@color/bg_dark">
+
+    <androidx.appcompat.widget.Toolbar android:id="@+id/toolbar"
+        android:layout_width="match_parent" android:layout_height="?attr/actionBarSize"
+        android:background="@color/bg_card" app:titleTextColor="@color/white"/>
+
+    <ScrollView android:layout_width="match_parent" android:layout_height="match_parent">
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:orientation="vertical" android:padding="16dp">
+
+            <!-- Transaction summary card -->
+            <androidx.cardview.widget.CardView android:layout_width="match_parent"
+                android:layout_height="wrap_content" android:layout_marginBottom="16dp"
+                app:cardBackgroundColor="@color/bg_card" app:cardCornerRadius="12dp">
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:orientation="vertical" android:padding="16dp">
+                    <TextView android:id="@+id/tvTxnSummary"
+                        android:layout_width="wrap_content" android:layout_height="wrap_content"
+                        android:textSize="16sp" android:textStyle="bold" android:textColor="@color/white"/>
+                    <TextView android:id="@+id/tvTxnAmount"
+                        android:layout_width="wrap_content" android:layout_height="wrap_content"
+                        android:textSize="28sp" android:textStyle="bold"
+                        android:textColor="@color/purple_light" android:layout_marginTop="4dp"/>
+                    <TextView android:id="@+id/tvYourShare"
+                        android:layout_width="wrap_content" android:layout_height="wrap_content"
+                        android:textSize="13sp" android:textColor="@color/white_50"
+                        android:layout_marginTop="4dp"/>
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
+            <!-- Add split person -->
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:text="Split with" android:textColor="@color/white_70"
+                android:textSize="13sp" android:layout_marginBottom="8dp"/>
+
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:orientation="horizontal">
+                <com.google.android.material.textfield.TextInputLayout
+                    android:layout_width="0dp" android:layout_height="wrap_content"
+                    android:layout_weight="1" android:layout_marginEnd="8dp"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                    app:boxStrokeColor="@color/purple_main">
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/etContactName"
+                        android:layout_width="match_parent" android:layout_height="wrap_content"
+                        android:hint="Name or phone" android:textColor="@color/white"
+                        android:inputType="textCapWords"/>
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:layout_width="0dp" android:layout_height="wrap_content"
+                    android:layout_weight="1" android:layout_marginEnd="8dp"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                    app:boxStrokeColor="@color/purple_main">
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/etSplitAmount"
+                        android:layout_width="match_parent" android:layout_height="wrap_content"
+                        android:hint="Amount" android:textColor="@color/white"
+                        android:inputType="numberDecimal"/>
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <Button android:id="@+id/btnAddSplit"
+                    android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:text="Add"
+                    android:backgroundTint="@color/purple_main" android:textColor="@color/white"/>
+            </LinearLayout>
+
+            <!-- Equal split shortcut -->
+            <Button android:id="@+id/btnEqualSplit"
+                android:layout_width="match_parent" android:layout_height="44dp"
+                android:layout_marginTop="8dp" android:layout_marginBottom="16dp"
+                android:text="⚖️  Equal Split (fill amount automatically)"
+                android:backgroundTint="#221E293B" android:textColor="@color/white_70"
+                android:textSize="12sp"/>
+
+            <!-- Splits list -->
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:text="Who owes what" android:textColor="@color/white_70"
+                android:textSize="13sp" android:layout_marginBottom="8dp"/>
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvSplits"
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:nestedScrollingEnabled="false"/>
+
+            <!-- Total owed summary -->
+            <androidx.cardview.widget.CardView android:layout_width="match_parent"
+                android:layout_height="wrap_content" android:layout_marginTop="12dp"
+                app:cardBackgroundColor="#221E293B" app:cardCornerRadius="10dp">
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:orientation="horizontal" android:padding="14dp"
+                    android:gravity="center_vertical">
+                    <TextView android:layout_width="0dp" android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Total owed to you" android:textSize="13sp"
+                        android:textColor="@color/white_70"/>
+                    <TextView android:id="@+id/tvTotalOwed"
+                        android:layout_width="wrap_content" android:layout_height="wrap_content"
+                        android:text="₹0" android:textSize="18sp"
+                        android:textStyle="bold" android:textColor="#FF10B981"/>
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
+        </LinearLayout>
+    </ScrollView>
+</LinearLayout>
