@@ -124,7 +124,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="120dp"
                 android:gravity="center"
-                android:text="No bank accounts added yet\nTap + to add one"
+                android:text="No bank accounts detected yet\nScan SMS to auto-detect accounts"
                 android:textColor="@color/text_hint"
                 android:textSize="14sp"
                 android:visibility="gone" />
@@ -132,7 +132,7 @@
         </LinearLayout>
     </ScrollView>
 
-    <!-- FAB -->
+    <!-- FAB hidden in code (manual add removed) -->
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fabAddAccount"
         android:layout_width="wrap_content"

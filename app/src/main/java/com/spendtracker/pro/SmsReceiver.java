@@ -28,6 +28,7 @@ public class SmsReceiver extends BroadcastReceiver {
         // the generic SmsParser if no bank-specific pattern matches.
         BankAwareSmsParser.ParseResult p = BankAwareSmsParser.parse(body, sender);
         if (p == null) return;
+        if (isCardBlockMessage(body)) return;
 
         AppDatabase db = AppDatabase.getInstance(ctx);
         // SECURITY FIX: dedup via indexed smsHash — never query by raw SMS body
@@ -36,7 +37,7 @@ public class SmsReceiver extends BroadcastReceiver {
 
         // ── Save transaction ──────────────────────────────────────
         Transaction tx       = new Transaction();
-        tx.merchant          = p.merchant;
+        tx.merchant          = normalizeMerchant(p.merchant, sender, p.bankName, body);
         tx.amount            = p.amount;
         tx.paymentMethod     = p.paymentMethod;
         tx.paymentDetail     = p.paymentDetail;
@@ -51,6 +52,7 @@ public class SmsReceiver extends BroadcastReceiver {
         tx.isManual          = false;
         tx.categoryIcon      = CategoryEngine.getInfo(p.category).icon;
         tx.isCredit          = SmsParser.isCreditTransaction(body);
+        if (tx.isCredit && isLikelyDuplicateCredit(db, tx.amount, ts, tx.merchant)) return;
         // Detect self-transfers (own account moves) — exclude from spending totals
         tx.isSelfTransfer    = isSelfTransfer(body);
         db.transactionDao().insert(tx);
@@ -178,6 +180,43 @@ public class SmsReceiver extends BroadcastReceiver {
                 || b.contains("current account to");
     }
 
+    private boolean isCardBlockMessage(String body) {
+        if (body == null) return false;
+        String b = body.toLowerCase();
+        return (b.contains("block") || b.contains("blocked") || b.contains("hotlist"))
+                && !b.contains("debited") && !b.contains("spent") && !b.contains("credited");
+    }
+
+    private boolean isLikelyDuplicateCredit(AppDatabase db, double amount, long ts, String merchant) {
+        try {
+            long w = 2L * 60 * 1000;
+            List<Transaction> nearby = db.transactionDao().getByDateRange(ts - w, ts + w);
+            for (Transaction t : nearby) {
+                if (!t.isCredit) continue;
+                if (Math.abs(t.amount - amount) > 0.01) continue;
+                if (merchant == null || merchant.isEmpty() || t.merchant == null || t.merchant.isEmpty()) return true;
+                if (merchant.equalsIgnoreCase(t.merchant)) return true;
+            }
+        } catch (Exception e) {
+            android.util.Log.w("SmsReceiver", "Duplicate credit check failed: " + e.getMessage());
+        }
+        return false;
+    }
+
+    private String normalizeMerchant(String merchant, String sender, String bankName, String body) {
+        String m = merchant == null ? "" : merchant.trim();
+        String s = sender == null ? "" : sender.trim().toUpperCase();
+        if (m.matches("(?i)^[A-Z]{2}-[A-Z0-9]{4,}(?:-[A-Z])?$")) m = "";
+        if (!s.isEmpty() && m.equalsIgnoreCase(s)) m = "";
+        if (m.matches("(?i).*(hdfcbk|sbipsg|sbiinb|icicib|axisbk|kotakb).*")) m = "";
+        if ("block".equalsIgnoreCase(m) || "blocked".equalsIgnoreCase(m) || isCardBlockMessage(body)) m = "";
+        if (m.isEmpty()) {
+            if (bankName != null && !bankName.trim().isEmpty()) return bankName + " Transfer";
+            return "Bank Transfer";
+        }
+        return m;
+    }
+
     /** SHA-256 of (body + timestamp) — used as a stable, collision-resistant dedup key. */
     private static String sha1(String text) {
         try {
@@ -210,9 +249,42 @@ public class SmsReceiver extends BroadcastReceiver {
                 db.bankAccountDao().updateBalance(acc.id, newBalance, ts);
                 return; // update only the first matching account
             }
+
+            // Auto-create account from SMS when no existing account matches.
+            BankAccount auto = new BankAccount();
+            auto.lastFour = last4;
+            auto.bankName = expandBankName(bankName);
+            auto.accountType = "SAVINGS";
+            auto.accountLabel = auto.bankName + " A/c " + last4;
+            auto.balance = newBalance;
+            auto.updatedAt = ts;
+            auto.isActive = true;
+            auto.bankEmoji = "🏦";
+            auto.cardColor = bankColor(auto.bankName);
+            db.bankAccountDao().insert(auto);
         } catch (Exception e) {
             android.util.Log.e("SmsReceiver", "Bank balance update failed: " + e.getMessage());
         }
+    }
+
+    private String expandBankName(String bankName) {
+        String b = bankName != null ? bankName.trim().toUpperCase() : "";
+        if ("PNB".equals(b)) return "Punjab National Bank";
+        if ("SBI".equals(b)) return "State Bank of India";
+        if ("HDFC".equals(b)) return "HDFC Bank";
+        if ("ICICI".equals(b)) return "ICICI Bank";
+        if ("AXIS".equals(b)) return "Axis Bank";
+        if (!b.isEmpty()) return b;
+        return "Bank Account";
+    }
+
+    private int bankColor(String bank) {
+        String b = bank != null ? bank.toLowerCase() : "";
+        if (b.contains("sbi")) return android.graphics.Color.parseColor("#1565C0");
+        if (b.contains("pnb")) return android.graphics.Color.parseColor("#880E4F");
+        if (b.contains("hdfc")) return android.graphics.Color.parseColor("#1A237E");
+        if (b.contains("icici")) return android.graphics.Color.parseColor("#B71C1C");
+        return android.graphics.Color.parseColor("#1B5E20");
     }
 
     /**
