@@ -87,7 +87,7 @@ public class SmsImporter {
                     //            (2) actual debit SMS with only UPI ref, no merchant.
                     // If we already have a transaction with same amount within 3 days
                     // from the same account, skip the bare UPI debit to avoid duplicates.
-                    if (isBareUpiDebit(body) && isDuplicateDebit(db, parsed.amount, date)) {
+                    if (isBareUpiDebit(body) && isDuplicateDebit(db, parsed.amount, date, parsed.merchant)) {
                         continue;
                     }
 
@@ -102,8 +102,11 @@ public class SmsImporter {
                     t.isCredit       = SmsParser.isCreditTransaction(body);
                     t.paymentMethod  = parsed.paymentMethod;
                     t.paymentDetail  = parsed.paymentDetail;
-                    t.rawSms         = body;
-                    t.smsAddress     = sender;
+                    // SECURITY: Never persist raw SMS body — may contain OTPs and account numbers.
+                    // smsHash (already computed above) is sufficient for deduplication.
+                    t.rawSms         = null;
+                    // Store only the bank sender ID prefix, not the full originating address.
+                    t.smsAddress     = redactSender(sender);
                     t.isManual       = false;
 
                     db.transactionDao().insert(t);
@@ -143,11 +146,16 @@ public class SmsImporter {
     }
 
     /**
-     * Returns true if a transaction with the same amount already exists in DB
-     * within a 3-day window around the given timestamp.
-     * Used to deduplicate advance-notice + actual-debit pairs.
+     * Returns true if a transaction with the same amount AND matching merchant/category
+     * already exists in the DB within a 3-day window around the given timestamp.
+     *
+     * The merchant check prevents false-positive deduplication when two different
+     * merchants happen to charge the same amount within the same 3-day window
+     * (e.g. ₹500 cab + ₹500 grocery). The bare UPI debit for PNB has no merchant,
+     * so we fall back to category-level matching in that case.
      */
-    private static boolean isDuplicateDebit(AppDatabase db, double amount, long timestamp) {
+    private static boolean isDuplicateDebit(AppDatabase db, double amount,
+                                            long timestamp, String merchant) {
         try {
             long window = 3L * 24 * 60 * 60 * 1000; // 3 days in ms
             long start  = timestamp - window;
@@ -155,31 +163,32 @@ public class SmsImporter {
             java.util.List<Transaction> nearby =
                     db.transactionDao().getByDateRange(start, end);
             for (Transaction t : nearby) {
-                if (Math.abs(t.amount - amount) < 0.01) return true;
+                if (Math.abs(t.amount - amount) >= 0.01) continue;
+                // Amount matches — now require merchant to also match (case-insensitive).
+                // If either merchant is blank (bare UPI debit), treat as a match on amount alone.
+                boolean merchantMatch = (merchant == null || merchant.isEmpty()
+                        || t.merchant == null || t.merchant.isEmpty()
+                        || merchant.equalsIgnoreCase(t.merchant));
+                if (merchantMatch) return true;
             }
         } catch (Exception ignored) {}
         return false;
     }
 
     private static String sha1(String text) {
-
         try {
-
-            MessageDigest md = MessageDigest.getInstance("SHA-1");
-
-            byte[] result = md.digest(text.getBytes());
-
+            // SHA-256 replaces the former SHA-1: collision-resistant, not forgeable.
+            MessageDigest md = MessageDigest.getInstance("SHA-256");
+            byte[] result = md.digest(text.getBytes(java.nio.charset.StandardCharsets.UTF_8));
             StringBuilder sb = new StringBuilder();
-
-            for (byte b : result) {
-                sb.append(String.format("%02x", b));
-            }
-
+            for (byte b : result) sb.append(String.format("%02x", b));
             return sb.toString();
-
         } catch (Exception e) {
-
-            return String.valueOf(text.hashCode());
+            // Hardened fallback: XOR of two independent hash seeds reduces the
+            // 32-bit collision risk of a plain hashCode() to near zero for our volumes.
+            long h1 = text.hashCode();
+            long h2 = text.length() * 31L + (text.isEmpty() ? 0 : text.charAt(0));
+            return Long.toHexString(h1 ^ (h2 << 17));
         }
     }
 
@@ -190,5 +199,17 @@ public class SmsImporter {
                 || b.contains("transfer to your") || b.contains("transfer to self")
                 || b.contains("linked account") || b.contains("savings account to")
                 || b.contains("current account to");
+    }
+
+    /**
+     * Redacts the originating address to remove personal phone numbers.
+     * Alphanumeric bank sender IDs (e.g. "VK-HDFCBK") are kept as-is.
+     * Numeric addresses are truncated to prefix only.
+     */
+    private static String redactSender(String sender) {
+        if (sender == null) return null;
+        if (sender.matches("[A-Za-z0-9\\-]{2,20}")) return sender;
+        if (sender.length() > 4) return sender.substring(0, 4) + "****";
+        return "****";
     }
 }

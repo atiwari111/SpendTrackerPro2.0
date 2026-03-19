@@ -15,9 +15,11 @@ import androidx.room.migration.Migration;
                 Budget.class,
                 RecurringTransaction.class,
                 NetWorthItem.class,
-                Bill.class
+                Bill.class,
+                CreditCard.class,
+                BankAccount.class
         },
-        version = 3,
+        version = 4,
         exportSchema = false
 )
 public abstract class AppDatabase extends RoomDatabase {
@@ -76,6 +78,39 @@ public abstract class AppDatabase extends RoomDatabase {
         }
     };
 
+    static final Migration MIGRATION_3_4 = new Migration(3, 4) {
+        @Override
+        public void migrate(@NonNull SupportSQLiteDatabase db) {
+            // ── credit_cards table ────────────────────────────────────────
+            db.execSQL("CREATE TABLE IF NOT EXISTS `credit_cards` ("
+                    + "`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,"
+                    + "`bankName` TEXT,"
+                    + "`cardLabel` TEXT,"
+                    + "`lastFour` TEXT,"
+                    + "`network` TEXT,"
+                    + "`creditLimit` REAL NOT NULL DEFAULT 0,"
+                    + "`currentSpent` REAL NOT NULL DEFAULT 0,"
+                    + "`statementAmount` REAL NOT NULL DEFAULT 0,"
+                    + "`billingDay` INTEGER NOT NULL DEFAULT 0,"
+                    + "`billingCycleStart` INTEGER NOT NULL DEFAULT 0,"
+                    + "`updatedAt` INTEGER NOT NULL DEFAULT 0,"
+                    + "`cardColor` INTEGER NOT NULL DEFAULT 0)");
+
+            // ── bank_accounts table ───────────────────────────────────────
+            db.execSQL("CREATE TABLE IF NOT EXISTS `bank_accounts` ("
+                    + "`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,"
+                    + "`bankName` TEXT,"
+                    + "`accountLabel` TEXT,"
+                    + "`lastFour` TEXT,"
+                    + "`accountType` TEXT,"
+                    + "`balance` REAL NOT NULL DEFAULT 0,"
+                    + "`updatedAt` INTEGER NOT NULL DEFAULT 0,"
+                    + "`cardColor` INTEGER NOT NULL DEFAULT 0,"
+                    + "`isActive` INTEGER NOT NULL DEFAULT 1,"
+                    + "`bankEmoji` TEXT)");
+        }
+    };
+
     private static volatile AppDatabase INSTANCE;
 
     public abstract TransactionDao transactionDao();
@@ -83,6 +118,8 @@ public abstract class AppDatabase extends RoomDatabase {
     public abstract RecurringDao recurringDao();
     public abstract NetWorthDao netWorthDao();
     public abstract BillDao billDao();
+    public abstract CreditCardDao creditCardDao();
+    public abstract BankAccountDao bankAccountDao();
 
     public static AppDatabase getInstance(Context context) {
         if (INSTANCE == null) {
@@ -93,7 +130,7 @@ public abstract class AppDatabase extends RoomDatabase {
                             AppDatabase.class,
                             "spendtracker.db"
                     )
-                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
+                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
                     .build();
                 }
             }

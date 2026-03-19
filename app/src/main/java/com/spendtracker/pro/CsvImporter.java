@@ -34,9 +34,12 @@ public class CsvImporter {
     };
 
     public static void importFromUri(Context ctx, Uri fileUri, Callback cb) {
-        new Thread(() -> {
+        // Use the shared IO executor — avoids untracked thread creation and Context leaks.
+        // The ApplicationContext is captured so Activity destruction doesn't leak memory.
+        final Context appCtx = ctx.getApplicationContext();
+        AppExecutors.io().execute(() -> {
             try {
-                InputStream is = ctx.getContentResolver().openInputStream(fileUri);
+                InputStream is = appCtx.getContentResolver().openInputStream(fileUri);
                 if (is == null) { cb.onError("Cannot open file"); return; }
 
                 BufferedReader reader = new BufferedReader(new InputStreamReader(is));
@@ -62,7 +65,7 @@ public class CsvImporter {
                 }
                 reader.close();
 
-                AppDatabase db = AppDatabase.getInstance(ctx);
+                AppDatabase db = AppDatabase.getInstance(appCtx);
                 int imported = 0, skipped = 0;
                 final int total = rows.size();
                 final int[] cm = colMap != null ? colMap : new int[]{0, 1, 2, 3, 4, 5};
@@ -133,7 +136,7 @@ public class CsvImporter {
             } catch (Exception e) {
                 if (cb != null) cb.onError("Import failed: " + e.getMessage());
             }
-        }).start();
+        });
     }
 
     /** Detect header row and map column names → indices */

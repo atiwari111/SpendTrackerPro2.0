@@ -10,12 +10,26 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 import androidx.core.app.TaskStackBuilder;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class NotificationHelper {
     public static final String CH_ALERTS   = "stp_alerts";
     public static final String CH_BILLS    = "stp_bills";
     public static final String CH_BUDGET   = "stp_budget";
     public static final String CH_INSIGHTS = "stp_insights";
+
+    // Monotonically increasing counter — eliminates timestamp-based ID collisions.
+    // Transient IDs (spend alerts, anomaly alerts) use nextId().
+    // Stable IDs (budget, bill) use a deterministic offset so tapping always opens
+    // the right notification even if the counter resets after process death.
+    private static final AtomicInteger ID_COUNTER = new AtomicInteger(1);
+    private static int nextId() { return ID_COUNTER.getAndIncrement(); }
+
+    // Stable ID ranges — must not overlap with each other or with nextId() range.
+    // Bills:   bill.id + 50000  (max ~65535 bills before wraparound, safe in practice)
+    // Budgets: budget.id + 2000
+    // Insight: fixed 9999
+    // Daily summary: fixed 7001 (in DailySummaryWorker)
 
     public static void createChannels(Context ctx) {
         if (Build.VERSION.SDK_INT < 26) return;
@@ -36,7 +50,7 @@ public class NotificationHelper {
                     android.Manifest.permission.POST_NOTIFICATIONS)
                     == PackageManager.PERMISSION_GRANTED;
         }
-        return true; // permission not required below API 33
+        return true;
     }
 
     /**
@@ -61,11 +75,12 @@ public class NotificationHelper {
         String msg = pct >= 100
                 ? String.format("You've exceeded your ₹%.0f budget! Spent: ₹%.0f", limit, used)
                 : String.format("You've used %d%% of your ₹%.0f budget. Spent: ₹%.0f", pct, limit, used);
-        send(ctx, CH_BUDGET, notifId + 2000, title, msg, makeStackedIntent(ctx, BudgetActivity.class, notifId + 2000));
+        int id = notifId + 2000; // stable: one per budget row
+        send(ctx, CH_BUDGET, id, title, msg, makeStackedIntent(ctx, BudgetActivity.class, id));
     }
 
     public static void sendSpendAlert(Context ctx, String merchant, double amount, String category) {
-        int id = (int)(System.currentTimeMillis() % 100000);
+        int id = nextId(); // transient: each SMS gets its own unique slot
         send(ctx, CH_ALERTS, id,
                 "💸 New Transaction",
                 String.format("₹%.0f at %s · %s", amount, merchant, category),
@@ -73,7 +88,7 @@ public class NotificationHelper {
     }
 
     public static void sendBillReminder(Context ctx, String name, double amount, String dueDate) {
-        int id = (int)(System.currentTimeMillis() % 100000) + 10000;
+        int id = nextId(); // transient reminder
         send(ctx, CH_BILLS, id,
                 "📅 Bill Due: " + name,
                 String.format("₹%.0f due on %s", amount, dueDate),
@@ -95,12 +110,12 @@ public class NotificationHelper {
                 bill.amount,
                 days <= 0 ? "NOW" : "on " + new java.text.SimpleDateFormat("dd MMM", java.util.Locale.getDefault())
                         .format(new java.util.Date(bill.dueDate)));
-        send(ctx, CH_BILLS, bill.id + 50000, title, msg,
-                makeStackedIntent(ctx, BillActivity.class, bill.id + 50000));
+        int id = bill.id + 50000; // stable: one per bill row
+        send(ctx, CH_BILLS, id, title, msg, makeStackedIntent(ctx, BillActivity.class, id));
     }
 
     public static void sendAnomalyAlert(Context ctx, String merchant, double amount, String category, String reason) {
-        int id = (int)(System.currentTimeMillis() % 100000);
+        int id = nextId(); // transient: each anomaly event is unique
         send(ctx, CH_ALERTS, id,
                 "⚠️ Unusual Spend Detected",
                 String.format("₹%.0f at %s · %s (%s)", amount, merchant, category, reason),
@@ -108,7 +123,6 @@ public class NotificationHelper {
     }
 
     private static void send(Context ctx, String channel, int id, String title, String msg, PendingIntent pi) {
-        // Guard: POST_NOTIFICATIONS permission required on API 33+ and may be revoked at runtime
         if (!canNotify(ctx)) return;
         try {
             NotificationCompat.Builder b = new NotificationCompat.Builder(ctx, channel)
@@ -121,7 +135,6 @@ public class NotificationHelper {
                     .setPriority(NotificationCompat.PRIORITY_DEFAULT);
             NotificationManagerCompat.from(ctx).notify(id, b.build());
         } catch (SecurityException e) {
-            // Permission was revoked between check and notify — silently ignore
             android.util.Log.w("NotificationHelper", "Notification permission denied: " + e.getMessage());
         } catch (Exception ignored) {}
     }

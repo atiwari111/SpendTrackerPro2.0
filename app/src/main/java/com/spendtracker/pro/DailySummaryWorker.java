@@ -39,10 +39,17 @@ public class DailySummaryWorker extends Worker {
 
             long now        = System.currentTimeMillis();
             long todayStart = getDayStart(now);
-            long weekAgo    = now - (7L * 86400000L);
+            // Scoped query: only the last 8 days — avoids loading entire history
+            long weekAgo    = getDayStart(now - (7L * 86400000L));
 
-            List<Transaction> all = db.transactionDao().getAllSync();
-            if (all == null || all.isEmpty()) return Result.success();
+            List<Transaction> recent = db.transactionDao().getSpendingInRange(weekAgo, now);
+            if (recent == null || recent.isEmpty()) {
+                sendNotification(ctx,
+                        "💚 No spending today!",
+                        "You haven't spent anything today. Keep it up!",
+                        0);
+                return Result.success();
+            }
 
             // ── Today's spend ──────────────────────────────────────
             double todayTotal  = 0;
@@ -50,8 +57,8 @@ public class DailySummaryWorker extends Worker {
             String topMerchant = null;
             Map<String, Double> merchantMap = new HashMap<>();
 
-            for (Transaction t : all) {
-                if (t.isSelfTransfer || t.isCredit) continue;
+            for (Transaction t : recent) {
+                if (t.isCredit) continue;
                 if (t.timestamp >= todayStart) {
                     todayTotal += t.amount;
                     todayCount++;
@@ -61,7 +68,6 @@ public class DailySummaryWorker extends Worker {
             }
 
             if (todayCount == 0) {
-                // No spending today — send a positive message
                 sendNotification(ctx,
                         "💚 No spending today!",
                         "You haven't spent anything today. Keep it up!",
@@ -77,9 +83,8 @@ public class DailySummaryWorker extends Worker {
                 long dayEnd   = dayStart + 86400000L;
                 double daySum = 0;
                 boolean hasData = false;
-                for (Transaction t : all) {
-                    if (!t.isSelfTransfer && !t.isCredit
-                            && t.timestamp >= dayStart && t.timestamp < dayEnd) {
+                for (Transaction t : recent) {
+                    if (!t.isCredit && t.timestamp >= dayStart && t.timestamp < dayEnd) {
                         daySum += t.amount;
                         hasData = true;
                     }

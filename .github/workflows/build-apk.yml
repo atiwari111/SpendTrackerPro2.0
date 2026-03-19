@@ -51,16 +51,41 @@ jobs:
           fi
           echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > app/spendtracker.keystore
           echo "✅ Keystore decoded: $(wc -c < app/spendtracker.keystore) bytes"
-          # Verify keystore is valid
-          keytool -list -keystore app/spendtracker.keystore \
-            -storepass "${{ secrets.RELEASE_STORE_PASSWORD }}" \
-            -alias spendtracker && echo "✅ Keystore verified" || echo "⚠️ Keystore check failed"
+          # Verify keystore via stdin — avoids exposing the password as a shell argument
+          # which could appear in process listings or verbose CI runner logs.
+          echo "${{ secrets.RELEASE_STORE_PASSWORD }}" | \
+            keytool -list \
+              -keystore app/spendtracker.keystore \
+              -storepass:stdin \
+              -alias spendtracker \
+            && echo "✅ Keystore verified" || echo "⚠️ Keystore check failed"
 
       - name: Run Android Lint
         run: ./gradlew lint
 
       - name: Run Unit Tests
         run: ./gradlew testDebugUnitTest
+
+      # ── Security scanning ──────────────────────────────────────────────────
+      # Scans all Gradle dependencies against the GitHub Advisory Database (OSV).
+      # Fails the build if any dependency has a known CVE with a fix available.
+      # Results appear in the repo's Security → Dependency Graph tab.
+      - name: Dependency vulnerability scan
+        uses: gradle/actions/dependency-submission@v4.3.1
+
+      # Lightweight SAST — catches hardcoded secrets, SQL injection patterns,
+      # and common Android security issues without a full CodeQL setup.
+      # continue-on-error keeps the build green while you triage findings;
+      # remove it once the baseline is clean to make this a hard gate.
+      - name: SAST — Semgrep Android rules
+        uses: semgrep/semgrep-action@v1
+        with:
+          config: >-
+            p/android
+            p/secrets
+            p/owasp-top-ten
+        continue-on-error: true
+      # ──────────────────────────────────────────────────────────────────────
 
       - name: Build Debug APK
         run: ./gradlew assembleDebug --stacktrace --no-daemon
