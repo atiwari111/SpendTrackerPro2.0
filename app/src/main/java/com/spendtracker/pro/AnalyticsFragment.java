@@ -136,7 +136,7 @@ public class AnalyticsFragment extends Fragment {
                 return;
             }
 
-            long now = System.currentTimeMillis();
+            // now already declared above for sixMonthsAgo calculation
             long week = now - 7L * 86400000L;
             long[] selectedRange = getSelectedMonthRange();
             long monthStart = selectedRange[0];
