@@ -151,23 +151,7 @@
                         android:textColor="@color/text_primary" android:textSize="14sp" android:gravity="start|center_vertical"
                         android:paddingStart="16dp"/>
 
-                    <View android:layout_width="match_parent" android:layout_height="1dp"
-                        android:background="#22FFFFFF" android:layout_marginStart="16dp"/>
 
-                    <Button android:id="@+id/btnCreditCards"
-                        android:layout_width="match_parent" android:layout_height="50dp"
-                        android:text="💳  Credit Card Spends" android:backgroundTint="@android:color/transparent"
-                        android:textColor="@color/text_primary" android:textSize="14sp" android:gravity="start|center_vertical"
-                        android:paddingStart="16dp"/>
-
-                    <View android:layout_width="match_parent" android:layout_height="1dp"
-                        android:background="#22FFFFFF" android:layout_marginStart="16dp"/>
-
-                    <Button android:id="@+id/btnBankAccounts"
-                        android:layout_width="match_parent" android:layout_height="50dp"
-                        android:text="🏦  Bank Accounts" android:backgroundTint="@android:color/transparent"
-                        android:textColor="@color/text_primary" android:textSize="14sp" android:gravity="start|center_vertical"
-                        android:paddingStart="16dp"/>
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
 
