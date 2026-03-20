@@ -8,9 +8,12 @@
         android:layout_width="match_parent" android:layout_height="?attr/actionBarSize"
         android:background="@color/bg_card" app:titleTextColor="@color/text_primary"/>
 
-    <ScrollView android:layout_width="match_parent" android:layout_height="match_parent">
+    <ScrollView android:layout_width="match_parent" android:layout_height="match_parent"
+        android:clipToPadding="false">
         <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
-            android:orientation="vertical" android:padding="20dp">
+            android:orientation="vertical"
+            android:paddingStart="20dp" android:paddingEnd="20dp"
+            android:paddingTop="20dp" android:paddingBottom="40dp">
 
             <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
                 android:text="Amount (Rs.)" android:textColor="@color/text_secondary" android:textSize="12sp"/>

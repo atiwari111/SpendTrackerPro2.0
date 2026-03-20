@@ -184,10 +184,12 @@
                 android:layout_marginStart="20dp" android:layout_marginTop="20dp"
                 android:layout_marginBottom="10dp"/>
 
-            <!-- QUICK ACTIONS GRID -->
+
+            <!-- QUICK ACTIONS GRID — uniform 3×2, all tiles 84dp × equal weight -->
             <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
                 android:orientation="vertical" android:paddingHorizontal="20dp">
 
+                <!-- Row 1: Analytics | Budget | Net Worth -->
                 <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
                     android:orientation="horizontal">
                     <LinearLayout android:id="@+id/cardInsights"
@@ -228,6 +230,9 @@
                     </LinearLayout>
                 </LinearLayout>
 
+                <!-- Row 2: Bills | Cards | Accounts — same tile size as row 1 -->
+                <!-- Sub-labels (badge, spent, balance) are fixed-height so they never push -->
+                <!-- the tile taller when they become visible.                               -->
                 <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
                     android:orientation="horizontal" android:layout_marginTop="8dp">
                     <LinearLayout android:id="@+id/cardBills"
@@ -237,13 +242,14 @@
                         android:background="@drawable/bg_action_card_amber"
                         android:clickable="true" android:focusable="true">
                         <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                            android:text="🧾" android:textSize="28sp"/>
+                            android:text="🧾" android:textSize="24sp"/>
                         <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
                             android:text="Bills" android:textSize="11sp"
-                            android:textColor="@color/amber" android:layout_marginTop="5dp" android:textStyle="bold"/>
+                            android:textColor="@color/amber" android:layout_marginTop="4dp" android:textStyle="bold"/>
                         <TextView android:id="@+id/tvBillsBadge"
-                            android:layout_width="wrap_content" android:layout_height="wrap_content"
-                            android:textSize="9sp" android:textColor="@color/amber" android:visibility="gone"/>
+                            android:layout_width="wrap_content" android:layout_height="12dp"
+                            android:textSize="9sp" android:textColor="@color/amber"
+                            android:gravity="center" android:visibility="invisible"/>
                     </LinearLayout>
                     <LinearLayout android:id="@+id/cardCreditCards"
                         android:layout_width="0dp" android:layout_height="84dp"
@@ -252,13 +258,14 @@
                         android:background="@drawable/bg_action_card_purple"
                         android:clickable="true" android:focusable="true">
                         <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                            android:text="💳" android:textSize="28sp"/>
+                            android:text="💳" android:textSize="24sp"/>
                         <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
                             android:text="Cards" android:textSize="11sp"
-                            android:textColor="@color/purple_light" android:layout_marginTop="5dp" android:textStyle="bold"/>
+                            android:textColor="@color/purple_light" android:layout_marginTop="4dp" android:textStyle="bold"/>
                         <TextView android:id="@+id/tvCreditCardSpent"
-                            android:layout_width="wrap_content" android:layout_height="wrap_content"
-                            android:textSize="9sp" android:textColor="@color/purple_light" android:visibility="gone"/>
+                            android:layout_width="wrap_content" android:layout_height="12dp"
+                            android:textSize="9sp" android:textColor="@color/purple_light"
+                            android:gravity="center" android:visibility="invisible"/>
                     </LinearLayout>
                     <LinearLayout android:id="@+id/cardBankAccounts"
                         android:layout_width="0dp" android:layout_height="84dp"
@@ -267,32 +274,33 @@
                         android:background="@drawable/bg_action_card_green"
                         android:clickable="true" android:focusable="true">
                         <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                            android:text="🏦" android:textSize="28sp"/>
+                            android:text="🏦" android:textSize="24sp"/>
                         <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
                             android:text="Accounts" android:textSize="11sp"
-                            android:textColor="@color/green" android:layout_marginTop="5dp" android:textStyle="bold"/>
+                            android:textColor="@color/green" android:layout_marginTop="4dp" android:textStyle="bold"/>
                         <TextView android:id="@+id/tvTotalBankBalance"
-                            android:layout_width="wrap_content" android:layout_height="wrap_content"
-                            android:textSize="9sp" android:textColor="@color/green" android:visibility="gone"/>
+                            android:layout_width="wrap_content" android:layout_height="12dp"
+                            android:textSize="9sp" android:textColor="@color/green"
+                            android:gravity="center" android:visibility="invisible"/>
                     </LinearLayout>
                 </LinearLayout>
 
-                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
-                    android:orientation="horizontal" android:layout_marginTop="8dp">
-                    <LinearLayout android:id="@+id/cardScanReceipt"
-                        android:layout_width="0dp" android:layout_height="84dp"
-                        android:layout_weight="1"
-                        android:orientation="vertical" android:gravity="center"
-                        android:background="@drawable/bg_action_card_red"
-                        android:clickable="true" android:focusable="true">
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                            android:text="📷" android:textSize="28sp"/>
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                            android:text="Scan Receipt" android:textSize="11sp"
-                            android:textColor="@color/red" android:layout_marginTop="5dp" android:textStyle="bold"/>
-                    </LinearLayout>
+                <!-- Scan Receipt — full-width CTA row, intentionally different from grid tiles -->
+                <LinearLayout android:id="@+id/cardScanReceipt"
+                    android:layout_width="match_parent" android:layout_height="48dp"
+                    android:layout_marginTop="8dp"
+                    android:orientation="horizontal" android:gravity="center"
+                    android:background="@drawable/bg_action_card_red"
+                    android:clickable="true" android:focusable="true">
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                        android:text="📷" android:textSize="18sp"/>
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                        android:text="  SCAN RECEIPT TO AUTO-FILL" android:textSize="12sp"
+                        android:textColor="@color/red" android:textStyle="bold" android:letterSpacing="0.05"/>
                 </LinearLayout>
+
             </LinearLayout>
+
 
             <!-- STREAK CARD -->
             <LinearLayout android:id="@+id/cardStreak"
