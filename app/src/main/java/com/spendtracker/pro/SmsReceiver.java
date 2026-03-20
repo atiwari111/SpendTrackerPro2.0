@@ -39,7 +39,6 @@ public class SmsReceiver extends BroadcastReceiver {
         Transaction tx       = new Transaction();
         tx.merchant          = normalizeMerchant(p.merchant, sender, p.bankName, body);
         tx.amount            = p.amount;
-        tx.paymentMethod     = p.paymentMethod;
         tx.paymentDetail     = p.paymentDetail;
         tx.category          = p.category;
         tx.timestamp         = ts;
@@ -52,6 +51,10 @@ public class SmsReceiver extends BroadcastReceiver {
         tx.isManual          = false;
         tx.categoryIcon      = CategoryEngine.getInfo(p.category).icon;
         tx.isCredit          = SmsParser.isCreditTransaction(body);
+        // Fix 2.38: credits (salary, cashback, refund) always arrive as bank transfers —
+        // the SMS may mention "UPI" in the description but the money movement is always
+        // a bank credit, so forcing BANK_TRANSFER avoids misleading UPI labels on income.
+        tx.paymentMethod     = tx.isCredit ? "BANK_TRANSFER" : p.paymentMethod;
         if (tx.isCredit && isLikelyDuplicateCredit(db, tx.amount, ts, tx.merchant)) return;
         // Detect self-transfers (own account moves) — exclude from spending totals
         tx.isSelfTransfer    = isSelfTransfer(body);
@@ -226,38 +229,74 @@ public class SmsReceiver extends BroadcastReceiver {
     }
 
     /**
-     * Fix 2.5: Finds the bank account matching last4 + bankName and updates its balance.
-     * Matches by lastFour first; if bankName is available, also confirms it matches.
+     * Fix 2.38: Finds the bank account matching last4 + bankName and updates its balance.
+     *
+     * Root cause of the PNB duplicate bug:
+     *   BankAwareSmsParser.ParseResult.bankName returns the short code ("PNB") but
+     *   auto-created accounts store the expanded name ("Punjab National Bank").
+     *   The old comparison used equalsIgnoreCase("PNB") which never matched
+     *   "Punjab National Bank", so the guard was skipped and a new account was
+     *   inserted on every subsequent PNB SMS.
+     *
+     * Fix: expand the incoming bankName before comparing, and also check whether
+     * either name contains the other as a substring (handles abbreviation vs full name).
      */
     private void updateBankBalance(AppDatabase db, String last4, String bankName,
                                    double newBalance, long ts) {
         try {
+            // Expand abbreviation → full name so comparisons are consistent
+            String expandedIncoming = expandBankName(bankName);
+
             List<BankAccount> accounts = db.bankAccountDao().getAllSync();
             for (BankAccount acc : accounts) {
                 if (!last4.equals(acc.lastFour)) continue;
-                // If bankName is known, prefer an exact match but don't block on it
-                if (bankName != null && !bankName.isEmpty()
-                        && acc.bankName != null
-                        && !acc.bankName.equalsIgnoreCase(bankName)) continue;
+
+                // Name match: accept if either side is blank, names are equal after
+                // expansion, or one name contains the other (e.g. "PNB" ⊂ "Punjab National Bank")
+                if (!bankNamesMatch(acc.bankName, expandedIncoming, bankName)) continue;
+
                 db.bankAccountDao().updateBalance(acc.id, newBalance, ts);
-                return; // update only the first matching account
+                return; // updated — no duplicate needed
             }
 
-            // Auto-create account from SMS when no existing account matches.
+            // No existing account matched — auto-create from SMS
             BankAccount auto = new BankAccount();
-            auto.lastFour = last4;
-            auto.bankName = expandBankName(bankName);
+            auto.lastFour    = last4;
+            auto.bankName    = expandedIncoming;
             auto.accountType = "SAVINGS";
             auto.accountLabel = auto.bankName + " A/c " + last4;
-            auto.balance = newBalance;
-            auto.updatedAt = ts;
-            auto.isActive = true;
-            auto.bankEmoji = "🏦";
-            auto.cardColor = bankColor(auto.bankName);
+            auto.balance     = newBalance;
+            auto.updatedAt   = ts;
+            auto.isActive    = true;
+            auto.bankEmoji   = "🏦";
+            auto.cardColor   = bankColor(auto.bankName);
             db.bankAccountDao().insert(auto);
         } catch (Exception e) {
             android.util.Log.e("SmsReceiver", "Bank balance update failed: " + e.getMessage());
         }
+    }
+
+    /**
+     * Returns true if storedName and incomingExpanded refer to the same bank.
+     * Handles: exact match, abbreviation vs full name, blank values.
+     *
+     * Examples that must return true:
+     *   "Punjab National Bank" vs expanded("PNB") = "Punjab National Bank"  → equal
+     *   "PNB"                  vs expanded("PNB") = "Punjab National Bank"  → stored contains raw
+     *   "Punjab National Bank" vs expanded("Punjab National Bank")           → equal
+     */
+    private boolean bankNamesMatch(String storedName, String expandedIncoming, String rawIncoming) {
+        if (storedName == null || storedName.isEmpty()) return true;  // blank stored = accept any
+        if (expandedIncoming == null || expandedIncoming.isEmpty()) return true; // blank incoming = accept any
+
+        String stored   = storedName.toLowerCase().trim();
+        String expanded = expandedIncoming.toLowerCase().trim();
+        String raw      = rawIncoming != null ? rawIncoming.toLowerCase().trim() : "";
+
+        return stored.equals(expanded)
+                || stored.contains(expanded)
+                || expanded.contains(stored)
+                || (!raw.isEmpty() && (stored.contains(raw) || raw.contains(stored)));
     }
 
     private String expandBankName(String bankName) {

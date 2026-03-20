@@ -60,6 +60,10 @@ public class BankAccountActivity extends AppCompatActivity {
 
         observeAccounts();
 
+        // Fix 2.38: clean up any duplicate rows (same lastFour) that were
+        // inserted before this bug was patched — keeps the highest updatedAt row.
+        AppExecutors.db().execute(() -> db.bankAccountDao().deleteDuplicatesByLastFour());
+
         View fab = findViewById(R.id.fabAddAccount);
         if (fab != null) fab.setVisibility(View.GONE);
     }
