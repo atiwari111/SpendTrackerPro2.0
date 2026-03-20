@@ -3,6 +3,7 @@ package com.spendtracker.pro;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.net.Uri;
+import android.util.Base64;
 import androidx.core.content.FileProvider;
 import java.io.*;
 import java.security.*;
