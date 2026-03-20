@@ -36,13 +36,23 @@
         <item name="android:windowBackground">@color/bg_dark</item>
     </style>
 
-    <!-- Alert dialog -->
-    <style name="AlertDialogDark" parent="Theme.MaterialComponents.Dialog.Alert">
+    <!-- Alert dialog — DayNight parent so it respects light/dark mode automatically -->
+    <style name="AlertDialogDark" parent="Theme.MaterialComponents.DayNight.Dialog.Alert">
+        <!-- Surface = card bg (dark in night mode, light pink in day mode) -->
         <item name="colorSurface">@color/bg_card</item>
         <item name="colorOnSurface">@color/text_primary</item>
         <item name="colorPrimary">@color/purple_main</item>
+        <!-- Explicit text colors so title, message and list items are always readable -->
         <item name="android:textColorPrimary">@color/text_primary</item>
         <item name="android:textColorSecondary">@color/text_secondary</item>
+        <!-- Force dialog window panel background to match card bg -->
+        <item name="android:background">@color/bg_card</item>
+        <item name="android:colorBackground">@color/bg_card</item>
+    </style>
+
+    <!-- Title text style used inside MaterialAlertDialog -->
+    <style name="DialogTitleText" parent="MaterialAlertDialog.MaterialComponents.Title.Text">
+        <item name="android:textColor">@color/text_primary</item>
     </style>
 
     <!-- Bottom navigation style -->
