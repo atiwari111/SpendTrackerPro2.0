@@ -1,39 +1,45 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Light pink palette (day mode) -->
-    <color name="bg_dark">#FFF7FB</color>
-    <color name="bg_card">#FFF0F7</color>
-    <color name="bg_card2">#FFEAF4</color>
-    <color name="bg_nav">#FFE3F1</color>
-    <color name="bg_elevated">#FFEFF8</color>
+    <!-- ═══════════════════════════════════════════════════════════
+         Neo-Banking Light Theme — clean whites/lavender tones
+         ═══════════════════════════════════════════════════════════ -->
+    <color name="bg_dark">#F0F4FF</color>
+    <color name="bg_card">#FFFFFF</color>
+    <color name="bg_card2">#F5F7FF</color>
+    <color name="bg_nav">#FFFFFF</color>
+    <color name="bg_elevated">#EEF2FF</color>
 
+    <!-- Brand -->
     <color name="purple_main">#7C3AED</color>
     <color name="purple_light">#A78BFA</color>
-    <color name="purple_dim">#D6B5EA</color>
+    <color name="purple_dim">#DDD6FE</color>
 
+    <!-- Semantic -->
     <color name="teal">#0EA5E9</color>
     <color name="green">#10B981</color>
-    <color name="green_dim">#D2F5E8</color>
+    <color name="green_dim">#D1FAE5</color>
     <color name="red">#EF4444</color>
-    <color name="red_dim">#FCE2E7</color>
+    <color name="red_dim">#FEE2E2</color>
     <color name="amber">#F59E0B</color>
-    <color name="amber_dim">#FDF1DD</color>
+    <color name="amber_dim">#FEF3C7</color>
+    <color name="cyan">#06B6D4</color>
 
+    <!-- Text — light theme -->
     <color name="white">#FFFFFF</color>
-    <color name="text_primary">#2F123A</color>
-    <color name="text_secondary">#6A5672</color>
-    <color name="text_hint">#907A97</color>
-    <color name="white_70">#B32F123A</color>
-    <color name="white_50">#802F123A</color>
-    <color name="white_30">#4D2F123A</color>
-    <color name="white_10">#1A2F123A</color>
+    <color name="text_primary">#0F172A</color>
+    <color name="text_secondary">#64748B</color>
+    <color name="text_hint">#94A3B8</color>
+    <color name="white_70">#B30F172A</color>
+    <color name="white_50">#800F172A</color>
+    <color name="white_30">#4D0F172A</color>
+    <color name="white_10">#1A0F172A</color>
+    <color name="divider">#E2E8F0</color>
 
-    <color name="divider">#F1DDEB</color>
-
+    <!-- System -->
     <color name="colorPrimary">#7C3AED</color>
     <color name="colorPrimaryDark">#5B21B6</color>
     <color name="colorAccent">#A78BFA</color>
-    <color name="gradient_start">#FFF0F7</color>
-    <color name="gradient_end">#FFE3F1</color>
-    <color name="ic_launcher_background">#F9D8EA</color>
+    <color name="gradient_start">#EEF2FF</color>
+    <color name="gradient_end">#F0F4FF</color>
+    <color name="ic_launcher_background">#7C3AED</color>
 </resources>

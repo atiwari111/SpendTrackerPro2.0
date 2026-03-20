@@ -201,6 +201,11 @@
 
         </provider>
 
+        <!-- Preload Google Fonts (Inter + JetBrains Mono) for Neo-Banking UI -->
+        <meta-data
+            android:name="preloaded_fonts"
+            android:resource="@array/preloaded_fonts"/>
+
     </application>
 
 </manifest>

@@ -3,42 +3,69 @@
 
     <style name="Text.Display" parent="TextAppearance.MaterialComponents.Headline5">
         <item name="android:textSize">28sp</item>
-        <item name="android:lineHeight">32sp</item>
         <item name="android:textColor">@color/text_primary</item>
         <item name="android:textStyle">bold</item>
+        <item name="android:letterSpacing">-0.02</item>
+        <item name="android:fontFamily">@font/inter_bold</item>
+    </style>
+
+    <!-- Hero amounts (₹2599) — JetBrains Mono for fintech number readability -->
+    <style name="Text.HeroAmount" parent="TextAppearance.MaterialComponents.Headline4">
+        <item name="android:textSize">32sp</item>
+        <item name="android:textColor">@color/text_primary</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:letterSpacing">-0.03</item>
+        <item name="android:fontFamily">@font/jetbrains_mono</item>
+    </style>
+
+    <!-- Stat card amounts (₹0, ₹2599) — JetBrains Mono -->
+    <style name="Text.Amount" parent="TextAppearance.MaterialComponents.Headline6">
+        <item name="android:textSize">22sp</item>
+        <item name="android:textColor">@color/text_primary</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:letterSpacing">-0.02</item>
+        <item name="android:fontFamily">@font/jetbrains_mono</item>
     </style>
 
     <style name="Text.Title" parent="TextAppearance.MaterialComponents.Subtitle1">
-        <item name="android:textSize">20sp</item>
-        <item name="android:lineHeight">24sp</item>
+        <item name="android:textSize">18sp</item>
         <item name="android:textColor">@color/text_primary</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:fontFamily">@font/inter_semibold</item>
     </style>
 
     <style name="Text.Body" parent="TextAppearance.MaterialComponents.Body2">
         <item name="android:textSize">14sp</item>
-        <item name="android:lineHeight">20sp</item>
         <item name="android:textColor">@color/text_secondary</item>
+        <item name="android:fontFamily">@font/inter</item>
     </style>
 
     <style name="Text.Label" parent="TextAppearance.MaterialComponents.Caption">
         <item name="android:textSize">12sp</item>
-        <item name="android:lineHeight">16sp</item>
         <item name="android:textColor">@color/text_secondary</item>
+        <item name="android:fontFamily">@font/inter</item>
+    </style>
+
+    <!-- Glass card — used for stat tiles -->
+    <style name="Card.Glass" parent="Widget.MaterialComponents.CardView">
+        <item name="cardBackgroundColor">@color/bg_card</item>
+        <item name="cardCornerRadius">18dp</item>
+        <item name="cardElevation">0dp</item>
     </style>
 
     <style name="Card.Surface" parent="Widget.MaterialComponents.CardView">
         <item name="cardBackgroundColor">@color/bg_card</item>
-        <item name="cardCornerRadius">14dp</item>
-        <item name="cardElevation">2dp</item>
+        <item name="cardCornerRadius">16dp</item>
+        <item name="cardElevation">0dp</item>
     </style>
 
     <style name="Card.SurfaceElevated" parent="Card.Surface">
         <item name="cardBackgroundColor">@color/bg_elevated</item>
-        <item name="cardElevation">6dp</item>
+        <item name="cardElevation">0dp</item>
     </style>
 
-    <style name="Card.SurfaceAccent" parent="Card.SurfaceElevated">
-        <item name="cardBackgroundColor">#1F1E293B</item>
+    <style name="Card.SurfaceAccent" parent="Card.Surface">
+        <item name="cardBackgroundColor">#1F7C3AED</item>
         <item name="cardCornerRadius">16dp</item>
     </style>
 
