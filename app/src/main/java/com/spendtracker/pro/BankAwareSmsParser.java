@@ -321,12 +321,22 @@ public class BankAwareSmsParser {
         return body != null && body.toLowerCase().contains("upi");
     }
 
-    // ── Fix 2.5: balance & account extraction ─────────────────────
-
+    // ── Fix 2.37: balance & account extraction ────────────────────
+    // Root cause of v2.36 bug: the old pattern used [^0-9]{0,30}? which is
+    // non-greedy and stopped at the FIRST digits it encountered — the account
+    // number suffix (e.g. "xxx253") — capturing 253 instead of the real balance.
+    //
+    // SMS that exposed the bug:
+    //   "Avail Bal in A/c xxx253: Rs.\n5204.87 CR -SBI"
+    //                         ^^^--- old pattern captured this
+    //
+    // Fix: replace [^0-9]{0,30}? with [\s\S]{0,80}? (matches any char,
+    // including newlines and digits) and make the currency symbol MANDATORY.
+    // This forces the regex to skip all the way to a Rs./INR/₹ token before
+    // capturing the number, so account-number digits are never mistaken for
+    // a balance, and a newline between "Rs." and the amount is handled cleanly.
     private static final Pattern BAL_PATTERN = Pattern.compile(
-        // Standard: "Bal INR 3454.36" / "Balance: Rs. 5204"
-        // Fix 2.4: also captures "Avail Bal in A/c xxx253: Rs. 5204.87 CR"
-        "(?i)(?:Avail(?:able)?\\s+)?Bal(?:ance)?[^0-9]{0,30}?(?:INR|Rs\\.?|\\u20b9)?\\s*([0-9,]+(?:\\.[0-9]{1,2})?)");
+        "(?i)(?:Avail(?:able)?\\s+)?Bal(?:ance)?[\\s\\S]{0,80}?(?:INR|Rs\\.?|\\u20b9)\\s*([0-9,]+(?:\\.[0-9]{1,2})?)");
 
     private static final Pattern ACCT_LAST4_PATTERN = Pattern.compile(
         // Fix 2.4: support 3-digit suffixes too (e.g. SBI "xxx253") in addition to standard 4-digit

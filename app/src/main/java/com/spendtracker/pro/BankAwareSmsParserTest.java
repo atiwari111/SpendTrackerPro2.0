@@ -110,7 +110,39 @@ public class BankAwareSmsParserTest {
                 r.confidence >= 0.90);
     }
 
-    // ── Edge cases ────────────────────────────────────────────────
+    // ── Fix 2.37 regression ───────────────────────────────────────
+
+    @Test
+    public void extractBalance_sbiNewlineBetweenRsAndAmount() {
+        // Exact SMS that caused the bug: newline between "Rs." and the amount,
+        // with a 3-digit account suffix that the old pattern mistook for the balance.
+        String body = "Avail Bal in A/c xxx253: Rs.\n5204.87 CR -SBI";
+        double balance = BankAwareSmsParser.extractBalance(body);
+        assertEquals("Balance must be 5204.87, not the account suffix 253",
+                5204.87, balance, 0.001);
+    }
+
+    @Test
+    public void extractBalance_standardInlineFormat() {
+        // Ensure non-SBI inline format still works after the pattern change
+        String body = "Your a/c XX1234 debited Rs.1500. Avail Bal INR 8500.00.";
+        double balance = BankAwareSmsParser.extractBalance(body);
+        assertEquals(8500.0, balance, 0.001);
+    }
+
+    @Test
+    public void extractBalance_balanceWithRupeeSymbol() {
+        String body = "Txn done. A/c xx5678. Bal ₹22340.50";
+        double balance = BankAwareSmsParser.extractBalance(body);
+        assertEquals(22340.50, balance, 0.001);
+    }
+
+    @Test
+    public void extractAccountLast4_threedigitSuffix() {
+        String body = "Avail Bal in A/c xxx253: Rs.\n5204.87 CR -SBI";
+        String last4 = BankAwareSmsParser.extractAccountLast4(body);
+        assertEquals("253", last4);
+    }
 
     @Test
     public void returnsNullForUnknownBankFormat() {
