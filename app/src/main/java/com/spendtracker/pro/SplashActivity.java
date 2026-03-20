@@ -24,7 +24,17 @@ public class SplashActivity extends AppCompatActivity {
         setContentView(R.layout.activity_splash);
 
         NotificationHelper.createChannels(this);
-        DailySummaryWorker.schedule(this);
+
+        // Only schedule the daily summary if the user has not disabled it.
+        // Previously this was called unconditionally, so toggling the setting
+        // in SettingsFragment had no effect — the worker was re-enrolled on the
+        // very next app launch.
+        boolean dailySummaryEnabled = prefs.getBoolean("daily_summary_enabled", true);
+        if (dailySummaryEnabled) {
+            DailySummaryWorker.schedule(this);
+        } else {
+            DailySummaryWorker.cancel(this);
+        }
 
         new Handler(Looper.getMainLooper()).postDelayed(this::checkFirstLaunch, 1200);
     }
