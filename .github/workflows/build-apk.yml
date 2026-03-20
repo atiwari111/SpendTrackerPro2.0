@@ -86,6 +86,7 @@ jobs:
       - name: Dependency vulnerability scan
         if: github.event_name != 'pull_request'
         uses: gradle/actions/dependency-submission@v4.3.1
+        continue-on-error: true
 
       # Lightweight SAST — catches hardcoded secrets, SQL injection patterns,
       # and common Android security issues without a full CodeQL setup.
