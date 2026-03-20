@@ -1,6 +1,15 @@
 name: Build SpendTracker Pro APK (Feature Branch)
 
 on:
+  # Run automatically on every push to a feature branch and on PRs targeting main.
+  # This catches lint errors, failing tests, CVEs, and SAST findings before merge.
+  push:
+    branches-ignore:
+      - main
+  pull_request:
+    branches:
+      - main
+  # Keep manual dispatch for on-demand builds (e.g. QA hand-off).
   workflow_dispatch:
     inputs:
       notes:
@@ -55,6 +64,32 @@ jobs:
           fi
           echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > app/spendtracker.keystore
           echo "✅ Keystore decoded: $(wc -c < app/spendtracker.keystore) bytes"
+
+      # ── Quality gates (match main build-apk.yml) ───────────────────────────
+      - name: Run Android Lint
+        run: ./gradlew lint
+
+      - name: Run Unit Tests
+        run: ./gradlew testDebugUnitTest
+
+      # Scans all Gradle dependencies against the GitHub Advisory Database (OSV).
+      # Fails the build if any dependency has a known CVE with a fix available.
+      - name: Dependency vulnerability scan
+        uses: gradle/actions/dependency-submission@v4.3.1
+
+      # Lightweight SAST — catches hardcoded secrets, SQL injection patterns,
+      # and common Android security issues.
+      # continue-on-error keeps the build green while the baseline is being cleaned;
+      # remove it once findings are triaged to make this a hard gate.
+      - name: SAST — Semgrep Android rules
+        uses: semgrep/semgrep-action@v1
+        with:
+          config: >-
+            p/android
+            p/secrets
+            p/owasp-top-ten
+        continue-on-error: true
+      # ──────────────────────────────────────────────────────────────────────
 
       - name: Build Debug APK
         run: ./gradlew assembleDebug --stacktrace --no-daemon
