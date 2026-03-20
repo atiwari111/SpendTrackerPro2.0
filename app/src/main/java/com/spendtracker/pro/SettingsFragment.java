@@ -5,6 +5,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.view.*;
 import android.widget.*;
+import android.widget.RadioGroup;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
@@ -61,6 +62,32 @@ public class SettingsFragment extends Fragment {
         swBiometric.setOnCheckedChangeListener((v, checked) ->
                 prefs.edit().putBoolean("bio_enabled", checked).apply());
 
+        // ── Theme selector ────────────────────────────────────────
+        // Previously the RadioGroup had no listener, so selecting Light/Dark
+        // had no effect — the pref was never written and AppCompatDelegate was
+        // never called.  Fix: restore the saved selection on load, then apply
+        // + persist whenever the user changes it.
+        RadioGroup rgTheme = view.findViewById(R.id.rgTheme);
+        if (rgTheme != null) {
+            // Restore saved selection (default: dark, matching app default)
+            String savedMode = prefs.getString("theme_mode", "dark");
+            rgTheme.check("light".equals(savedMode) ? R.id.rbThemeLight : R.id.rbThemeDark);
+
+            rgTheme.setOnCheckedChangeListener((group, checkedId) -> {
+                boolean isLight = (checkedId == R.id.rbThemeLight);
+                String mode = isLight ? "light" : "dark";
+
+                // Persist immediately so SplashActivity reads the right value on next launch
+                prefs.edit().putString("theme_mode", mode).apply();
+
+                // Apply at runtime — no restart required
+                androidx.appcompat.app.AppCompatDelegate.setDefaultNightMode(
+                        isLight
+                                ? androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_NO
+                                : androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_YES);
+            });
+        }
+
         Switch swDailySummary = view.findViewById(R.id.swDailySummary);
         if (swDailySummary != null) {
             swDailySummary.setChecked(prefs.getBoolean("daily_summary_enabled", true));
@@ -79,10 +106,6 @@ public class SettingsFragment extends Fragment {
                 startActivity(new Intent(requireContext(), RecurringActivity.class)));
         view.findViewById(R.id.btnNetWorth).setOnClickListener(v ->
                 startActivity(new Intent(requireContext(), NetWorthActivity.class)));
-        view.findViewById(R.id.btnCreditCards).setOnClickListener(v ->
-                startActivity(new Intent(requireContext(), CreditCardActivity.class)));
-        view.findViewById(R.id.btnBankAccounts).setOnClickListener(v ->
-                startActivity(new Intent(requireContext(), BankAccountActivity.class)));
         view.findViewById(R.id.btnClearData).setOnClickListener(v -> confirmClear());
 
         // P4: Backup & Restore
