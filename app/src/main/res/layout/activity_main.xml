@@ -130,7 +130,7 @@
                     android:drawableStart="@drawable/ic_ui_scan"
                     android:drawablePadding="8dp"
                     android:textSize="15sp" android:textStyle="bold"
-                    android:backgroundTint="@color/purple_main" android:textColor="@color/text_primary"
+                    android:backgroundTint="@color/purple_main" android:textColor="@color/white"
                     android:stateListAnimator="@animator/press_scale"/>
 
                 <ProgressBar android:id="@+id/progressBar"
