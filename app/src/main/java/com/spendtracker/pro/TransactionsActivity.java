@@ -85,7 +85,7 @@ public class TransactionsActivity extends AppCompatActivity {
             Chip chip = new Chip(this);
             chip.setText(f[0]); chip.setCheckable(true); chip.setChecked(f[1].isEmpty());
             chip.setChipBackgroundColorResource(R.color.bg_card);
-            chip.setTextColor(getResources().getColor(R.color.white, null));
+            chip.setTextColor(getResources().getColor(R.color.text_primary, null));
             chip.setOnClickListener(v -> { currentMethod = f[1]; applyFilter(); });
             chipPayment.addView(chip);
         }
@@ -96,7 +96,7 @@ public class TransactionsActivity extends AppCompatActivity {
         Chip allChip = new Chip(this);
         allChip.setText("All Categories"); allChip.setCheckable(true); allChip.setChecked(true);
         allChip.setChipBackgroundColorResource(R.color.bg_card);
-        allChip.setTextColor(getResources().getColor(R.color.white, null));
+        allChip.setTextColor(getResources().getColor(R.color.text_primary, null));
         allChip.setOnClickListener(v -> { currentCat = ""; applyFilter(); });
         chipCategory.addView(allChip);
 
@@ -104,7 +104,7 @@ public class TransactionsActivity extends AppCompatActivity {
             Chip chip = new Chip(this);
             chip.setText(cat); chip.setCheckable(true);
             chip.setChipBackgroundColorResource(R.color.bg_card);
-            chip.setTextColor(getResources().getColor(R.color.white, null));
+            chip.setTextColor(getResources().getColor(R.color.text_primary, null));
             chip.setOnClickListener(v -> { currentCat = cat; applyFilter(); });
             chipCategory.addView(chip);
         }
