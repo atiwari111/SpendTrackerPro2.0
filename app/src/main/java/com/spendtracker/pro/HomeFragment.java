@@ -140,6 +140,9 @@ public class HomeFragment extends Fragment {
                 startActivity(new Intent(requireContext(), CreditCardActivity.class)));
         requireView().findViewById(R.id.cardBankAccounts).setOnClickListener(v ->
                 startActivity(new Intent(requireContext(), BankAccountActivity.class)));
+        // Fix 2.7: Scan Receipt entry point on home page
+        requireView().findViewById(R.id.cardScanReceipt).setOnClickListener(v ->
+                startActivity(new Intent(requireContext(), OcrScanActivity.class)));
         tvHealthScore.setOnClickListener(v ->
                 startActivity(new Intent(requireContext(), AnalyticsActivity.class)));
         tvPrediction.setOnClickListener(v ->
@@ -315,7 +318,7 @@ public class HomeFragment extends Fragment {
             if (tvBudgetLeft != null) {
                 if (fLimit <= 0) {
                     tvBudgetLeft.setText("No budget set");
-                    tvBudgetLeft.setTextColor(0xFFB0BEC5);
+                    tvBudgetLeft.setTextColor(ContextCompat.getColor(requireContext(), R.color.text_hint));
                 } else {
                     tvBudgetLeft.setText(String.format("₹%.0f left", fLeft));
                     tvBudgetLeft.setTextColor(fLeft >= 0 ? 0xFF10B981 : 0xFFEF4444);

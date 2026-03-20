@@ -17,17 +17,17 @@
             android:layout_weight="1" android:orientation="vertical" android:layout_marginStart="12dp">
             <TextView android:id="@+id/tvName" android:layout_width="wrap_content"
                 android:layout_height="wrap_content" android:textSize="14sp"
-                android:textStyle="bold" android:textColor="@color/white"/>
+                android:textStyle="bold" android:textColor="@color/text_primary"/>
             <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content"
                 android:orientation="horizontal" android:layout_marginTop="2dp">
                 <TextView android:id="@+id/tvFreq" android:layout_width="wrap_content"
                     android:layout_height="wrap_content" android:textSize="11sp"
                     android:textColor="@color/purple_light"/>
                 <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                    android:text=" · " android:textSize="11sp" android:textColor="@color/white_30"/>
+                    android:text=" · " android:textSize="11sp" android:textColor="@color/text_hint"/>
                 <TextView android:id="@+id/tvDue" android:layout_width="wrap_content"
                     android:layout_height="wrap_content" android:textSize="11sp"
-                    android:textColor="@color/white_50"/>
+                    android:textColor="@color/text_secondary"/>
             </LinearLayout>
             <TextView android:id="@+id/tvDaysLeft" android:layout_width="wrap_content"
                 android:layout_height="wrap_content" android:textSize="11sp"

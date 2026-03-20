@@ -42,4 +42,14 @@ public interface BankAccountDao {
 
     @Query("SELECT COUNT(*) FROM bank_accounts")
     int getTotalCount();
+
+    /**
+     * Fix 2.29: Delete duplicate BankAccount rows that share the same lastFour,
+     * keeping only the row with the latest updatedAt per lastFour group.
+     */
+    @Query("DELETE FROM bank_accounts WHERE id NOT IN (" +
+           "SELECT id FROM bank_accounts b1 WHERE updatedAt = (" +
+           "  SELECT MAX(updatedAt) FROM bank_accounts b2 WHERE b2.lastFour = b1.lastFour)" +
+           ")")
+    void deleteDuplicatesByLastFour();
 }

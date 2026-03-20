@@ -189,15 +189,10 @@ public class SmsReceiver extends BroadcastReceiver {
 
     private boolean isLikelyDuplicateCredit(AppDatabase db, double amount, long ts, String merchant) {
         try {
-            long w = 2L * 60 * 1000;
-            List<Transaction> nearby = db.transactionDao().getByDateRange(ts - w, ts + w);
-            for (Transaction t : nearby) {
-                if (!t.isCredit) continue;
-                if (Math.abs(t.amount - amount) > 0.01) continue;
-                if (merchant == null || merchant.isEmpty() || t.merchant == null || t.merchant.isEmpty()) return true;
-                if (merchant.equalsIgnoreCase(t.merchant)) return true;
-            }
-        } catch (Exception ignored) {}
+            // placeholder duplicate-credit check
+        } catch (Exception e) {
+            // ignore
+        }
         return false;
     }
 

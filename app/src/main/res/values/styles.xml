@@ -23,7 +23,7 @@
     <style name="Text.Label" parent="TextAppearance.MaterialComponents.Caption">
         <item name="android:textSize">12sp</item>
         <item name="android:lineHeight">16sp</item>
-        <item name="android:textColor">@color/white_70</item>
+        <item name="android:textColor">@color/text_secondary</item>
     </style>
 
     <style name="Card.Surface" parent="Widget.MaterialComponents.CardView">

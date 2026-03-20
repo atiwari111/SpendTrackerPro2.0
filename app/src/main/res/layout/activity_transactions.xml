@@ -9,19 +9,19 @@
 
         <androidx.appcompat.widget.Toolbar android:id="@+id/toolbar"
             android:layout_width="match_parent" android:layout_height="?attr/actionBarSize"
-            android:background="@color/bg_card" app:titleTextColor="@color/white"/>
+            android:background="@color/bg_card" app:titleTextColor="@color/text_primary"/>
 
         <!-- Search box -->
         <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent" android:layout_height="wrap_content"
             android:layout_marginHorizontal="12dp" android:layout_marginTop="8dp"
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-            app:boxStrokeColor="@color/purple_main" app:hintTextColor="@color/white_50"
+            app:boxStrokeColor="@color/purple_main" app:hintTextColor="@color/text_secondary"
             android:hint="Search merchant, category...">
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/etSearch" android:layout_width="match_parent"
                 android:layout_height="wrap_content" android:inputType="text"
-                android:textColor="@color/white" android:singleLine="true"/>
+                android:textColor="@color/text_primary" android:singleLine="true"/>
         </com.google.android.material.textfield.TextInputLayout>
 
         <!-- Merchant filter spinner -->
@@ -63,7 +63,7 @@
                 android:layout_height="wrap_content" android:layout_weight="1"
                 android:textColor="#94A3B8" android:textSize="12sp"/>
             <TextView android:id="@+id/tvTotal" android:layout_width="wrap_content"
-                android:layout_height="wrap_content" android:textColor="@color/white"
+                android:layout_height="wrap_content" android:textColor="@color/text_primary"
                 android:textSize="13sp" android:textStyle="bold"/>
         </LinearLayout>
 

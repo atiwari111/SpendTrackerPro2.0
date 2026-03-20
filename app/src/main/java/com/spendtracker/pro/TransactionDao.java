@@ -65,8 +65,4 @@ public interface TransactionDao {
            "AND timestamp >= :since ORDER BY merchant ASC, timestamp DESC")
     List<Transaction> getNonCreditSince(long since);
 
-    /** @deprecated Use existsHash() instead — rawSms is no longer stored. */
-    @Deprecated
-    @Query("SELECT * FROM transactions WHERE rawSms = :sms LIMIT 1")
-    Transaction findBySms(String sms);
 }

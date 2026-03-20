@@ -6,7 +6,7 @@
 
     <androidx.appcompat.widget.Toolbar android:id="@+id/toolbar"
         android:layout_width="match_parent" android:layout_height="?attr/actionBarSize"
-        android:background="@color/bg_card" app:titleTextColor="@color/white"/>
+        android:background="@color/bg_card" app:titleTextColor="@color/text_primary"/>
 
     <!-- Camera preview fills remaining space -->
     <androidx.camera.view.PreviewView
@@ -32,11 +32,11 @@
                 <TextView android:id="@+id/tvOcrAmount"
                     android:layout_width="wrap_content" android:layout_height="wrap_content"
                     android:text="Amount: —" android:textSize="16sp"
-                    android:textStyle="bold" android:textColor="@color/white"/>
+                    android:textStyle="bold" android:textColor="@color/text_primary"/>
                 <TextView android:id="@+id/tvOcrMerchant"
                     android:layout_width="wrap_content" android:layout_height="wrap_content"
                     android:text="Merchant: —" android:textSize="13sp"
-                    android:textColor="@color/white_70" android:layout_marginTop="4dp"/>
+                    android:textColor="@color/text_secondary" android:layout_marginTop="4dp"/>
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
@@ -47,19 +47,19 @@
                 android:layout_width="0dp" android:layout_height="52dp"
                 android:layout_weight="1" android:layout_marginEnd="8dp"
                 android:text="📷  Scan Receipt"
-                android:backgroundTint="@color/purple_main" android:textColor="@color/white"/>
+                android:backgroundTint="@color/purple_main" android:textColor="@color/text_primary"/>
 
             <Button android:id="@+id/btnUseResult"
                 android:layout_width="0dp" android:layout_height="52dp"
                 android:layout_weight="1" android:visibility="gone"
                 android:text="✅  Use This"
-                android:backgroundTint="#10B981" android:textColor="@color/white"/>
+                android:backgroundTint="#10B981" android:textColor="@color/text_primary"/>
         </LinearLayout>
 
         <TextView android:id="@+id/tvOcrHint"
             android:layout_width="match_parent" android:layout_height="wrap_content"
             android:text="Point at a receipt and tap Scan"
-            android:textSize="11sp" android:textColor="@color/white_50"
+            android:textSize="11sp" android:textColor="@color/text_secondary"
             android:gravity="center" android:layout_marginTop="8dp"/>
     </LinearLayout>
 

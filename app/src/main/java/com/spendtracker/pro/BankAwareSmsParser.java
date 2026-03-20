@@ -322,10 +322,13 @@ public class BankAwareSmsParser {
     // ── Fix 2.5: balance & account extraction ─────────────────────
 
     private static final Pattern BAL_PATTERN = Pattern.compile(
-        "(?i)Bal(?:ance)?[:\\s]*(?:INR|Rs\\.?|\\u20b9)?\\s*([0-9,]+(?:\\.[0-9]{1,2})?)");
+        // Standard: "Bal INR 3454.36" / "Balance: Rs. 5204"
+        // Fix 2.4: also captures "Avail Bal in A/c xxx253: Rs. 5204.87 CR"
+        "(?i)(?:Avail(?:able)?\\s+)?Bal(?:ance)?[^0-9]{0,30}?(?:INR|Rs\\.?|\\u20b9)?\\s*([0-9,]+(?:\\.[0-9]{1,2})?)");
 
     private static final Pattern ACCT_LAST4_PATTERN = Pattern.compile(
-        "(?i)A/c\\s+[Xx*0-9]{0,8}([0-9]{4})");
+        // Fix 2.4: support 3-digit suffixes too (e.g. SBI "xxx253") in addition to standard 4-digit
+        "(?i)A/c\\s+[Xx*0-9]{0,8}([0-9]{3,4})");
 
     public static double extractBalance(String body) {
         if (body == null) return -1;

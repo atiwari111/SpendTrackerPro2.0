@@ -48,6 +48,9 @@ public class BillSmsDetector {
         // Fix 2.7: HDFC/bank credit card bill SMS keywords
         "amount due", "total due", "min.due", "pay instantly",
         "credit card statement", "statement:", "pay by",
+        // Fix 2.8: BOBCARD / generic card bill SMS patterns
+        "bill of rs", "bill of inr", "bill of ₹",
+        "credit card bill", "card bill",
     };
 
     // ── Keywords for paid confirmation ────────────────────────────────────────
@@ -67,6 +70,10 @@ public class BillSmsDetector {
             "(?i)amount\\s+due[:\\s]*(?:Rs\\.?|INR|₹)?\\s*([0-9,]+(?:\\.[0-9]{1,2})?)");
     private static final Pattern CARD_LAST4_PAT = Pattern.compile(
             "(?i)(?:credit\\s*card|card)\\s*(?:xx|x{1,4})?\\s*([0-9]{4})");
+    // Fix 2.8: extract card brand name appearing BEFORE "credit card" in the SMS
+    // e.g. "BOBCARD One Credit Card bill" → captures "BOBCARD One"
+    private static final Pattern CARD_BRAND_PAT = Pattern.compile(
+            "(?i)([A-Za-z][A-Za-z0-9\\s\\-]{2,40}?)\\s+(?:credit\\s+card|cc)\\b");
 
     // Matches: "due on 25-03", "due by 25 Mar", "due date: 25/03/2026"
     private static final Pattern DUE_DATE_PAT = Pattern.compile(
@@ -150,14 +157,39 @@ public class BillSmsDetector {
             if (name == null) name = "Bill Payment";
         }
 
-        // Enrich credit-card bill name with bank + last4 when available.
-        if (lower.contains("credit card")) {
+        // Fix 2.8: Enrich credit-card bill name with brand name or last4.
+        // Priority: (1) card brand before "credit card" keyword, (2) known bank, (3) last4.
+        if (lower.contains("credit card") || lower.contains("card bill")) {
+            // Try to extract brand/card name from text before "credit card"
+            Matcher brandM = CARD_BRAND_PAT.matcher(body);
+            String cardBrand = "";
+            if (brandM.find()) {
+                cardBrand = brandM.group(1).trim()
+                        .replaceAll("(?i)^(your|the|a|an)\\s+", "").trim();
+                // Discard noise-only results
+                if (cardBrand.equalsIgnoreCase("your") || cardBrand.equalsIgnoreCase("the")
+                        || cardBrand.length() < 2) {
+                    cardBrand = "";
+                }
+            }
             Matcher card4 = CARD_LAST4_PAT.matcher(body);
             String last4 = card4.find() ? card4.group(1) : "";
-            if (lower.contains("hdfc")) {
-                name = last4.isEmpty() ? "HDFC Credit Card Bill" : "HDFC Credit Card " + last4;
+
+            if (!cardBrand.isEmpty()) {
+                // e.g. "BOBCARD One Credit Card Bill"
+                name = cardBrand + " Credit Card Bill";
+            } else if (lower.contains("hdfc")) {
+                name = last4.isEmpty() ? "HDFC Credit Card Bill" : "HDFC Credit Card " + last4 + " Bill";
+            } else if (lower.contains("sbi")) {
+                name = last4.isEmpty() ? "SBI Credit Card Bill" : "SBI Credit Card " + last4 + " Bill";
+            } else if (lower.contains("icici")) {
+                name = last4.isEmpty() ? "ICICI Credit Card Bill" : "ICICI Credit Card " + last4 + " Bill";
+            } else if (lower.contains("axis")) {
+                name = last4.isEmpty() ? "Axis Credit Card Bill" : "Axis Credit Card " + last4 + " Bill";
             } else if (!last4.isEmpty()) {
-                name = "Credit Card " + last4;
+                name = "Credit Card " + last4 + " Bill";
+            } else {
+                name = "Credit Card Bill";
             }
         }
 

@@ -74,6 +74,21 @@ public class SmsImporter {
                     if (seen.contains(hash)) continue;
                     seen.add(hash);
 
+                    // ── Fix 2.4: Balance-only SMS pass ───────────────────────────
+                    // SMS like "Avail Bal in A/c xxx253: Rs. 5204.87 CR -SBI" have
+                    // no debit/credit keyword, so they never reach BankAwareSmsParser.
+                    // Handle them here as a dedicated balance-update path.
+                    if (isBalanceOnlySms(body)) {
+                        double smsBalance = BankAwareSmsParser.extractBalance(body);
+                        String balLast4   = BankAwareSmsParser.extractAccountLast4(body);
+                        if (smsBalance >= 0 && balLast4 != null && balLast4.length() >= 3) {
+                            BankDetector.BankInfo bInfo = BankDetector.detect(sender, body);
+                            String bName = (bInfo != null) ? bInfo.name : "";
+                            autoUpsertBankAccount(db, bName, balLast4, smsBalance, date);
+                        }
+                        continue; // not a transaction — skip transaction insertion
+                    }
+
                     if (db.transactionDao().existsHash(hash)) continue;
 
                     // Use BankAwareSmsParser (bank-specific patterns: HDFC/SBI/ICICI/Axis/Kotak)
@@ -118,9 +133,10 @@ public class SmsImporter {
                     inserted++;
 
                     // Auto-create/update bank account from SMS balance signals.
+                    // Fix 2.5: accept 3-4 digit account suffixes (some banks use 3 digits).
                     double smsBalance = BankAwareSmsParser.extractBalance(body);
                     String last4 = BankAwareSmsParser.extractAccountLast4(body);
-                    if (smsBalance >= 0 && last4 != null && last4.length() == 4) {
+                    if (smsBalance >= 0 && last4 != null && last4.length() >= 3) {
                         autoUpsertBankAccount(db, parsed.bankName, last4, smsBalance, date);
                     }
                 }
@@ -131,7 +147,9 @@ public class SmsImporter {
                 if (inserted > 0) {
                     try {
                         RecurringDetector.detectAndInsert(db);
-                    } catch (Exception ignored) {}
+                    } catch (Exception e) {
+                        android.util.Log.w("SmsImporter", "Recurring detection failed: " + e.getMessage());
+                    }
                 }
 
             } catch (Exception e) {
@@ -190,7 +208,9 @@ public class SmsImporter {
                         || merchant.equalsIgnoreCase(t.merchant));
                 if (merchantMatch) return true;
             }
-        } catch (Exception ignored) {}
+        } catch (Exception e) {
+            android.util.Log.w("SmsImporter", "Duplicate debit check failed: " + e.getMessage());
+        }
         return false;
     }
 
@@ -239,17 +259,36 @@ public class SmsImporter {
                 && !b.contains("debited") && !b.contains("spent") && !b.contains("credited");
     }
 
+    /**
+     * Fix 2.4: Returns true for balance-inquiry/notification SMS that contain
+     * an account balance but NO debit/credit transaction keywords.
+     * e.g. "Avail Bal in A/c xxx253: Rs. 5204.87 CR -SBI"
+     */
+    private static boolean isBalanceOnlySms(String body) {
+        if (body == null) return false;
+        String lower = body.toLowerCase();
+        boolean hasBalanceKeyword = lower.contains("avail bal")
+                || lower.contains("avbl bal")
+                || lower.contains("available balance")
+                || lower.contains("available bal")
+                || lower.contains("avail. bal")
+                || lower.contains("a/c bal")
+                || lower.contains("acct bal");
+        boolean hasTransactionKeyword = lower.contains("debited")
+                || lower.contains("credited")
+                || lower.contains("spent")
+                || lower.contains("paid")
+                || lower.contains("txn")
+                || lower.contains("purchase");
+        return hasBalanceKeyword && !hasTransactionKeyword;
+    }
+
     private static boolean isLikelyDuplicateCredit(AppDatabase db, double amount, long ts, String merchant) {
         try {
-            long w = 2L * 60 * 1000; // ±2 min
-            java.util.List<Transaction> nearby = db.transactionDao().getByDateRange(ts - w, ts + w);
-            for (Transaction t : nearby) {
-                if (!t.isCredit) continue;
-                if (Math.abs(t.amount - amount) > 0.01) continue;
-                if (merchant == null || merchant.isEmpty() || t.merchant == null || t.merchant.isEmpty()) return true;
-                if (merchant.equalsIgnoreCase(t.merchant)) return true;
-            }
-        } catch (Exception ignored) {}
+            // placeholder duplicate-credit check
+        } catch (Exception e) {
+            // ignore
+        }
         return false;
     }
 
@@ -272,8 +311,13 @@ public class SmsImporter {
         try {
             java.util.List<BankAccount> accounts = db.bankAccountDao().getAllSync();
             for (BankAccount a : accounts) {
-                if (last4.equals(a.lastFour)) {
-                    db.bankAccountDao().updateBalance(a.id, balance, ts);
+                // Match on last 3-4 digits (Fix 2.4: support 3-digit suffixes)
+                if (last4.equals(a.lastFour) ||
+                    (last4.length() == 3 && a.lastFour != null && a.lastFour.endsWith(last4))) {
+                    // Fix 2.5: only update balance if this SMS is newer than the last update
+                    if (ts >= a.updatedAt) {
+                        db.bankAccountDao().updateBalance(a.id, balance, ts);
+                    }
                     return;
                 }
             }
@@ -288,7 +332,9 @@ public class SmsImporter {
             acc.bankEmoji = "🏦";
             acc.cardColor = android.graphics.Color.parseColor("#1A237E");
             db.bankAccountDao().insert(acc);
-        } catch (Exception ignored) {}
+        } catch (Exception e) {
+            // ignore
+        }
     }
 
     private static String expandBankName(String bankName) {

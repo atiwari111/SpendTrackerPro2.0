@@ -4,6 +4,7 @@ import android.graphics.Color;
 import android.view.*;
 import android.widget.*;
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.*;
 import java.util.*;
 
@@ -56,7 +57,7 @@ public class BankAccountAdapter extends RecyclerView.Adapter<BankAccountAdapter.
         // Balance color: red if negative
         int balColor = acc.balance < 0
                 ? Color.parseColor("#EF4444")
-                : Color.WHITE;
+                : ContextCompat.getColor(h.itemView.getContext(), R.color.text_primary);
         h.tvBalance.setTextColor(balColor);
 
         // Bank logo emoji / initials

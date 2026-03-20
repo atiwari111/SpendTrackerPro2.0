@@ -17,7 +17,7 @@
             android:layout_weight="1" android:orientation="vertical" android:layout_marginStart="12dp">
             <TextView android:id="@+id/tvName" android:layout_width="wrap_content"
                 android:layout_height="wrap_content" android:textSize="14sp"
-                android:textStyle="bold" android:textColor="@color/white"/>
+                android:textStyle="bold" android:textColor="@color/text_primary"/>
             <TextView android:id="@+id/tvType" android:layout_width="wrap_content"
                 android:layout_height="wrap_content" android:textSize="11sp"
                 android:textColor="@color/green" android:layout_marginTop="2dp"/>
