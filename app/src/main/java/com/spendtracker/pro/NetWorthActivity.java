@@ -67,32 +67,61 @@ public class NetWorthActivity extends AppCompatActivity {
 
     /**
      * Syncs all active BankAccounts into NetWorthItem ASSET rows.
-     * Existing rows with name matching "bank:<id>" are updated; new ones are inserted.
-     * CreditCard outstanding balances are synced as LIABILITY rows.
+     * Fix 2.29: Deduplicates by lastFour — if multiple BankAccount rows exist
+     * for the same account number, only the most recently updated one is used.
+     * Stale duplicate net-worth rows from old bank IDs are deleted automatically.
      */
     private void syncBankAccountsToNetWorth() {
         AppExecutors.db().execute(() -> {
+            // Fix 2.29: clean up duplicate BankAccount rows before syncing
+            db.bankAccountDao().deleteDuplicatesByLastFour();
+
             // ── Bank accounts → ASSET ─────────────────────────────
             List<BankAccount> bankAccounts = db.bankAccountDao().getAllSync();
-            int synced = 0;
+
+            // Fix 2.29: deduplicate by lastFour — keep the row with the highest updatedAt
+            java.util.Map<String, BankAccount> uniqueAccounts = new java.util.LinkedHashMap<>();
             for (BankAccount acc : bankAccounts) {
                 if (!acc.isActive) continue;
-                String key  = "bank:" + acc.id;
-                String name = acc.bankName + " (" + acc.getMaskedAccount() + ")";
+                String key = acc.lastFour != null ? acc.lastFour : String.valueOf(acc.id);
+                BankAccount existing = uniqueAccounts.get(key);
+                if (existing == null || acc.updatedAt > existing.updatedAt) {
+                    uniqueAccounts.put(key, acc);
+                }
+            }
 
-                // Find existing net worth row for this account
-                NetWorthItem existing = findByKey(key);
-                if (existing != null) {
-                    existing.name      = name;
-                    existing.amount    = acc.balance;
-                    existing.icon      = "🏦";
-                    existing.updatedAt = System.currentTimeMillis();
-                    db.netWorthDao().update(existing);
+            // Fix 2.29: collect all valid bank keys from deduplicated accounts
+            java.util.Set<String> validKeys = new java.util.HashSet<>();
+            for (BankAccount acc : uniqueAccounts.values()) {
+                validKeys.add("bank:" + acc.id);
+            }
+
+            // Fix 2.29: delete any stale NetWorthItem rows whose bank:X key is NOT in validKeys
+            List<NetWorthItem> allItems = db.netWorthDao().getAllSync();
+            for (NetWorthItem item : allItems) {
+                if (item.name != null && item.name.startsWith("bank:") && item.name.contains("||")) {
+                    String itemKey = item.name.substring(0, item.name.indexOf("||"));
+                    if (!validKeys.contains(itemKey)) {
+                        db.netWorthDao().delete(item);
+                    }
+                }
+            }
+
+            // Upsert one NetWorthItem per unique account
+            int synced = 0;
+            for (BankAccount acc : uniqueAccounts.values()) {
+                String key  = "bank:" + acc.id;
+                String name = acc.bankName + " (A/c " + (acc.lastFour != null ? acc.lastFour : "????") + ")";
+
+                NetWorthItem existingItem = findByKey(key);
+                if (existingItem != null) {
+                    existingItem.name      = key + "||" + name;
+                    existingItem.amount    = acc.balance;
+                    existingItem.icon      = "🏦";
+                    existingItem.updatedAt = System.currentTimeMillis();
+                    db.netWorthDao().update(existingItem);
                 } else {
                     NetWorthItem item = new NetWorthItem(name, acc.balance, "ASSET", "🏦");
-                    // Store key in name with a hidden prefix — Room has no notes field
-                    // so we embed the key in the name for lookup. We strip it on display
-                    // via the adapter (which only shows item.name, not the key).
                     item.name = key + "||" + name;
                     db.netWorthDao().insert(item);
                 }

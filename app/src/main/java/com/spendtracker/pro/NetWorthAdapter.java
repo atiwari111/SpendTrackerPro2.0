@@ -21,7 +21,11 @@ public class NetWorthAdapter extends RecyclerView.Adapter<NetWorthAdapter.VH> {
     @Override public void onBindViewHolder(@NonNull VH h, int i) {
         NetWorthItem item = list.get(i);
         h.tvIcon.setText(item.icon != null ? item.icon : (item.type.equals("ASSET") ? "💰" : "💳"));
-        h.tvName.setText(item.name);
+        // Strip internal sync key prefix ("bank:1||" / "cc:2||") before displaying
+        String displayName = (item.name != null && item.name.contains("||"))
+                ? item.name.substring(item.name.indexOf("||") + 2)
+                : item.name;
+        h.tvName.setText(displayName);
         h.tvType.setText(item.type);
         h.tvAmount.setText(String.format("₹%.0f", item.amount));
         h.tvAmount.setTextColor(item.type.equals("ASSET") ? Color.parseColor("#10B981") : Color.parseColor("#EF4444"));
