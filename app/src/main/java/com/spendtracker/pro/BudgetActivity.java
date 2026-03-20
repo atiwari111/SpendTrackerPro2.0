@@ -125,24 +125,27 @@ public class BudgetActivity extends AppCompatActivity {
                     String cat = (String) sp.getSelectedItem();
                     String limitStr = etLimit.getText().toString().trim();
                     if (limitStr.isEmpty()) return;
-                    try {
-                        double limit = Double.parseDouble(limitStr);
-                        AppExecutors.db().execute(() -> {
-                            Budget existing = db.budgetDao().getByCategoryMonthYear(cat, month, year);
-                            if (existing != null) {
-                                existing.limitAmount = limit;
-                                // Compute live used right now
-                                existing.usedAmount = db.transactionDao().getSumForCategoryBetween(cat, monthStart, monthEnd);
-                                db.budgetDao().update(existing);
-                            } else {
-                                Budget b = new Budget(cat, limit, month, year,
-                                        CategoryEngine.getInfo(cat).icon, CategoryEngine.getInfo(cat).color);
-                                b.usedAmount = db.transactionDao().getSumForCategoryBetween(cat, monthStart, monthEnd);
-                                db.budgetDao().insert(b);
-                            }
-                            refreshBudgets();
-                        });
-                    } catch (Exception ignored) {}
+                    double limit;
+                    try { limit = Double.parseDouble(limitStr); }
+                    catch (NumberFormatException e) {
+                        android.widget.Toast.makeText(this, "Invalid amount: " + limitStr, android.widget.Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    AppExecutors.db().execute(() -> {
+                        Budget existing = db.budgetDao().getByCategoryMonthYear(cat, month, year);
+                        if (existing != null) {
+                            existing.limitAmount = limit;
+                            // Compute live used right now
+                            existing.usedAmount = db.transactionDao().getSumForCategoryBetween(cat, monthStart, monthEnd);
+                            db.budgetDao().update(existing);
+                        } else {
+                            Budget b = new Budget(cat, limit, month, year,
+                                    CategoryEngine.getInfo(cat).icon, CategoryEngine.getInfo(cat).color);
+                            b.usedAmount = db.transactionDao().getSumForCategoryBetween(cat, monthStart, monthEnd);
+                            db.budgetDao().insert(b);
+                        }
+                        refreshBudgets();
+                    });
                 })
                 .setNegativeButton("Cancel", null)
                 .show();
@@ -173,13 +176,15 @@ public class BudgetActivity extends AppCompatActivity {
                 .setPositiveButton("Update", (d, w) -> {
                     String limitStr = etLimit.getText().toString().trim();
                     if (limitStr.isEmpty()) return;
-                    try {
-                        budget.limitAmount = Double.parseDouble(limitStr);
-                        AppExecutors.db().execute(() -> {
-                            db.budgetDao().update(budget);
-                            refreshBudgets();
-                        });
-                    } catch (Exception ignored) {}
+                    try { budget.limitAmount = Double.parseDouble(limitStr); }
+                    catch (NumberFormatException e) {
+                        android.widget.Toast.makeText(this, "Invalid amount: " + limitStr, android.widget.Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    AppExecutors.db().execute(() -> {
+                        db.budgetDao().update(budget);
+                        refreshBudgets();
+                    });
                 })
                 .setNegativeButton("Delete", (d, w) ->
                         AppExecutors.db().execute(() -> {

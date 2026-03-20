@@ -186,12 +186,20 @@ public class NetWorthActivity extends AppCompatActivity {
                     String name = etName.getText().toString().trim();
                     String amtStr = etAmount.getText().toString().trim();
                     if (name.isEmpty() || amtStr.isEmpty()) return;
+                    double parsedAmt;
+                    try { parsedAmt = Double.parseDouble(amtStr); }
+                    catch (NumberFormatException e) {
+                        android.widget.Toast.makeText(this, "Invalid amount: " + amtStr, android.widget.Toast.LENGTH_SHORT).show();
+                        return;
+                    }
                     try {
                         NetWorthItem item = new NetWorthItem(
-                                name, Double.parseDouble(amtStr), type,
+                                name, parsedAmt, type,
                                 (String) spIcon.getSelectedItem());
                         AppExecutors.db().execute(() -> db.netWorthDao().insert(item));
-                    } catch (Exception ignored) {}
+                    } catch (Exception e) {
+                        android.util.Log.e("NetWorthActivity", "Add item DB insert failed: " + e.getMessage());
+                    }
                 })
                 .setNegativeButton("Cancel", null).show();
     }
@@ -227,7 +235,9 @@ public class NetWorthActivity extends AppCompatActivity {
                         item.name = newName;
                     }
                     try { item.amount = Double.parseDouble(etAmount.getText().toString().trim()); }
-                    catch (Exception ignored) {}
+                    catch (NumberFormatException e) {
+                        android.util.Log.w("NetWorthActivity", "Edit item: invalid amount '" + etAmount.getText() + "'");
+                    }
                     item.icon      = (String) spIcon.getSelectedItem();
                     item.updatedAt = System.currentTimeMillis();
                     AppExecutors.db().execute(() -> db.netWorthDao().update(item));

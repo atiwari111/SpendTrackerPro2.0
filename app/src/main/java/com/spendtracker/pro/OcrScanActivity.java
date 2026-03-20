@@ -167,7 +167,9 @@ public class OcrScanActivity extends AppCompatActivity {
             try {
                 double a = Double.parseDouble(m.group(1).replace(",", ""));
                 if (a > bestAmount) bestAmount = a;
-            } catch (Exception ignored) {}
+            } catch (NumberFormatException ignored) {
+                // Expected — not every regex match is a valid number
+            }
         }
 
         // 2. Fallback — largest number on the receipt
@@ -177,7 +179,9 @@ public class OcrScanActivity extends AppCompatActivity {
                 try {
                     double a = Double.parseDouble(nm.group(1).replace(",", ""));
                     if (a > bestAmount && a < 100_000) bestAmount = a;
-                } catch (Exception ignored) {}
+                } catch (NumberFormatException ignored) {
+                    // Expected — scanning raw text for numeric tokens
+                }
             }
         }
 

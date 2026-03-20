@@ -136,6 +136,8 @@ public class NotificationHelper {
             NotificationManagerCompat.from(ctx).notify(id, b.build());
         } catch (SecurityException e) {
             android.util.Log.w("NotificationHelper", "Notification permission denied: " + e.getMessage());
-        } catch (Exception ignored) {}
+        } catch (Exception e) {
+            android.util.Log.e("NotificationHelper", "Failed to send notification id=" + id + ": " + e.getMessage());
+        }
     }
 }

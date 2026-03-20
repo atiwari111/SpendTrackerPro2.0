@@ -191,7 +191,7 @@ public class SmsReceiver extends BroadcastReceiver {
         try {
             // placeholder duplicate-credit check
         } catch (Exception e) {
-            // ignore
+            android.util.Log.w("SmsReceiver", "isLikelyDuplicateCredit check failed: " + e.getMessage());
         }
         return false;
     }
