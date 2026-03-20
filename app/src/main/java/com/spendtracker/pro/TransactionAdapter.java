@@ -88,12 +88,13 @@ public class TransactionAdapter
     private static String friendlyPayment(String method) {
         if (method == null) return "";
         switch (method) {
-            case "UPI":         return "UPI";
-            case "CREDIT_CARD": return "Credit Card";
-            case "DEBIT_CARD":  return "Debit Card";
-            case "CASH":        return "Cash";
-            case "BANK":        return "Bank Transfer";
-            default:            return method;
+            case "UPI":           return "UPI";
+            case "CREDIT_CARD":   return "Credit Card";
+            case "DEBIT_CARD":    return "Debit Card";
+            case "CASH":          return "Cash";
+            case "BANK":          // fall-through
+            case "BANK_TRANSFER": return "Bank Transfer";
+            default:              return method;
         }
     }
 

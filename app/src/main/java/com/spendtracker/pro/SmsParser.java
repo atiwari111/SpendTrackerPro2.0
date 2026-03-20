@@ -117,7 +117,7 @@ public class SmsParser {
             t.category = CategoryEngine.classify(merchant, body);
         }
 
-        t.paymentMethod  = detectPaymentMethod(body);
+        t.paymentMethod  = t.isCredit ? "BANK_TRANSFER" : detectPaymentMethod(body);
         t.paymentDetail  = sender;
         t.isSelfTransfer = isSelfTransfer(body);
 

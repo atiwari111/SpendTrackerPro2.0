@@ -174,7 +174,7 @@ public class HomeFragment extends Fragment {
                 tvBillsBadge.setText(count + " pending");
                 tvBillsBadge.setVisibility(View.VISIBLE);
             } else {
-                tvBillsBadge.setVisibility(View.GONE);
+                tvBillsBadge.setVisibility(View.INVISIBLE);
             }
         });
 
@@ -186,7 +186,7 @@ public class HomeFragment extends Fragment {
                 tvCreditCardSpent.setText(String.format("₹%.0f spent", total));
                 tvCreditCardSpent.setVisibility(View.VISIBLE);
             } else {
-                tvCreditCardSpent.setVisibility(View.GONE);
+                tvCreditCardSpent.setVisibility(View.INVISIBLE);
             }
         });
 
@@ -196,7 +196,7 @@ public class HomeFragment extends Fragment {
                 tvTotalBankBalance.setText(String.format("₹%.0f", total));
                 tvTotalBankBalance.setVisibility(View.VISIBLE);
             } else {
-                tvTotalBankBalance.setVisibility(View.GONE);
+                tvTotalBankBalance.setVisibility(View.INVISIBLE);
             }
         });
     }
