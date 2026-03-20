@@ -29,7 +29,10 @@ public class BudgetAdapter extends RecyclerView.Adapter<BudgetAdapter.VH> {
     public void onBindViewHolder(@NonNull VH h, int i) {
         Budget b = list.get(i);
         h.tvIcon.setText(b.icon != null ? b.icon : "💰");
-        h.tvCategory.setText(b.category);
+        // Fix 2.29: category string already contains the leading emoji (e.g. "🛒 Groceries").
+        // tvIcon displays the icon separately, so strip the emoji prefix from category text.
+        String catDisplay = b.category != null ? b.category.replaceFirst("^\\S+\\s+", "") : "";
+        h.tvCategory.setText(catDisplay.isEmpty() ? b.category : catDisplay);
         h.tvStatus.setText(b.getStatusEmoji());
 
         double remaining = b.getRemaining();
