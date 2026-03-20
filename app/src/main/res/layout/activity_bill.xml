@@ -27,7 +27,7 @@
             android:layout_weight="1"
             android:text="+ Add Bill"
             android:backgroundTint="@color/purple_main"
-            android:textColor="@color/white"
+            android:textColor="@color/text_primary"
             android:textSize="13sp"/>
     </LinearLayout>
 

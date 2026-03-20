@@ -33,10 +33,10 @@
                         <TextView android:id="@+id/tvGreeting"
                             android:layout_width="wrap_content" android:layout_height="wrap_content"
                             android:text="Good Morning ☀️" android:textSize="20sp"
-                            android:textStyle="bold" android:textColor="@color/white"/>
+                            android:textStyle="bold" android:textColor="@color/text_primary"/>
                         <TextView android:id="@+id/tvDate"
                             android:layout_width="wrap_content" android:layout_height="wrap_content"
-                            android:textSize="12sp" android:textColor="@color/white_50"
+                            android:textSize="12sp" android:textColor="@color/text_secondary"
                             android:layout_marginTop="2dp"/>
                     </LinearLayout>
                     <TextView android:id="@+id/tvHealthScore"
@@ -71,7 +71,7 @@
                         android:checkable="true"
                         android:checked="true"
                         style="@style/Widget.MaterialComponents.Chip.Filter"
-                        android:textColor="@color/white"
+                        android:textColor="@color/text_primary"
                         app:chipBackgroundColor="#33A78BFA"
                         app:checkedIconVisible="false"/>
 
@@ -82,7 +82,7 @@
                         android:text="Week"
                         android:checkable="true"
                         style="@style/Widget.MaterialComponents.Chip.Filter"
-                        android:textColor="@color/white"
+                        android:textColor="@color/text_primary"
                         app:chipBackgroundColor="#33A78BFA"
                         app:checkedIconVisible="false"/>
 
@@ -93,7 +93,7 @@
                         android:text="Month"
                         android:checkable="true"
                         style="@style/Widget.MaterialComponents.Chip.Filter"
-                        android:textColor="@color/white"
+                        android:textColor="@color/text_primary"
                         app:chipBackgroundColor="#33A78BFA"
                         app:checkedIconVisible="false"/>
 
@@ -104,7 +104,7 @@
                         android:text="Year"
                         android:checkable="true"
                         style="@style/Widget.MaterialComponents.Chip.Filter"
-                        android:textColor="@color/white"
+                        android:textColor="@color/text_primary"
                         app:chipBackgroundColor="#33A78BFA"
                         app:checkedIconVisible="false"/>
 
@@ -125,11 +125,11 @@
                             android:orientation="vertical" android:padding="14dp">
                             <TextView android:id="@+id/tvPeriodLabel"
                                 android:layout_width="wrap_content" android:layout_height="wrap_content"
-                                android:text="Today" android:textSize="11sp" android:textColor="@color/white_50"/>
+                                android:text="Today" android:textSize="11sp" android:textColor="@color/text_secondary"/>
                             <TextView android:id="@+id/tvTodayAmt"
                                 android:layout_width="wrap_content" android:layout_height="wrap_content"
                                 android:text="₹0" android:textSize="20sp" android:textStyle="bold"
-                                android:textColor="@color/white" android:layout_marginTop="4dp"/>
+                                android:textColor="@color/text_primary" android:layout_marginTop="4dp"/>
                         </LinearLayout>
                     </androidx.cardview.widget.CardView>
 
@@ -142,7 +142,7 @@
                         <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
                             android:orientation="vertical" android:padding="14dp">
                             <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                                android:text="Month Total" android:textSize="11sp" android:textColor="@color/white_50"/>
+                                android:text="Month Total" android:textSize="11sp" android:textColor="@color/text_secondary"/>
                             <TextView android:id="@+id/tvMonthAmt"
                                 android:layout_width="wrap_content" android:layout_height="wrap_content"
                                 android:text="₹0" android:textSize="20sp" android:textStyle="bold"
@@ -165,7 +165,7 @@
                         <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
                             android:orientation="vertical" android:padding="14dp">
                             <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                                android:text="Budget Left" android:textSize="11sp" android:textColor="@color/white_50"/>
+                                android:text="Budget Left" android:textSize="11sp" android:textColor="@color/text_secondary"/>
                             <TextView android:id="@+id/tvBudgetLeft"
                                 android:layout_width="wrap_content" android:layout_height="wrap_content"
                                 android:text="Set budget" android:textSize="13sp" android:textStyle="bold"
@@ -182,7 +182,7 @@
                         <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
                             android:orientation="vertical" android:padding="14dp">
                             <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                                android:text="Top Category" android:textSize="11sp" android:textColor="@color/white_50"/>
+                                android:text="Top Category" android:textSize="11sp" android:textColor="@color/text_secondary"/>
                             <TextView android:id="@+id/tvTopCat"
                                 android:layout_width="wrap_content" android:layout_height="wrap_content"
                                 android:text="—" android:textSize="11sp" android:textStyle="bold"
@@ -200,7 +200,7 @@
                     android:layout_width="match_parent" android:layout_height="52dp"
                     android:text="🔍  Scan SMS for Transactions"
                     android:textSize="15sp" android:textStyle="bold"
-                    android:backgroundTint="@color/purple_main" android:textColor="@color/white"/>
+                    android:backgroundTint="@color/purple_main" android:textColor="@color/text_primary"/>
                 <ProgressBar android:id="@+id/progressBar"
                     android:layout_width="match_parent" android:layout_height="4dp"
                     android:layout_marginTop="8dp" android:indeterminate="true"
@@ -208,7 +208,7 @@
                     style="@style/Widget.AppCompat.ProgressBar.Horizontal"/>
                 <TextView android:id="@+id/tvImportStatus"
                     android:layout_width="wrap_content" android:layout_height="wrap_content"
-                    android:text="" android:textSize="12sp" android:textColor="@color/white_50"
+                    android:text="" android:textSize="12sp" android:textColor="@color/text_secondary"
                     android:layout_marginTop="4dp" android:visibility="gone"/>
             </LinearLayout>
 
@@ -226,7 +226,7 @@
                         <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
                             android:text="📊" android:textSize="24sp"/>
                         <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                            android:text="Analytics" android:textSize="11sp" android:textColor="@color/white_70"
+                            android:text="Analytics" android:textSize="11sp" android:textColor="@color/text_secondary"
                             android:layout_marginTop="4dp"/>
                     </LinearLayout>
                 </androidx.cardview.widget.CardView>
@@ -241,7 +241,7 @@
                         <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
                             android:text="📋" android:textSize="24sp"/>
                         <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                            android:text="Budget" android:textSize="11sp" android:textColor="@color/white_70"
+                            android:text="Budget" android:textSize="11sp" android:textColor="@color/text_secondary"
                             android:layout_marginTop="4dp"/>
                     </LinearLayout>
                 </androidx.cardview.widget.CardView>
@@ -255,7 +255,7 @@
                         <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
                             android:text="🏦" android:textSize="24sp"/>
                         <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                            android:text="Net Worth" android:textSize="11sp" android:textColor="@color/white_70"
+                            android:text="Net Worth" android:textSize="11sp" android:textColor="@color/text_secondary"
                             android:layout_marginTop="4dp"/>
                     </LinearLayout>
                 </androidx.cardview.widget.CardView>
@@ -270,7 +270,7 @@
                         <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
                             android:text="📋" android:textSize="24sp"/>
                         <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                            android:text="Bills" android:textSize="11sp" android:textColor="@color/white_70"
+                            android:text="Bills" android:textSize="11sp" android:textColor="@color/text_secondary"
                             android:layout_marginTop="4dp"/>
                         <TextView android:id="@+id/tvBillsBadge"
                             android:layout_width="wrap_content" android:layout_height="wrap_content"
@@ -295,7 +295,7 @@
                         <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
                             android:text="💳" android:textSize="24sp"/>
                         <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                            android:text="Cards" android:textSize="11sp" android:textColor="@color/white_70"
+                            android:text="Cards" android:textSize="11sp" android:textColor="@color/text_secondary"
                             android:layout_marginTop="4dp"/>
                         <TextView android:id="@+id/tvCreditCardSpent"
                             android:layout_width="wrap_content" android:layout_height="wrap_content"
@@ -314,7 +314,7 @@
                         <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
                             android:text="🏦" android:textSize="24sp"/>
                         <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                            android:text="Accounts" android:textSize="11sp" android:textColor="@color/white_70"
+                            android:text="Accounts" android:textSize="11sp" android:textColor="@color/text_secondary"
                             android:layout_marginTop="4dp"/>
                         <TextView android:id="@+id/tvTotalBankBalance"
                             android:layout_width="wrap_content" android:layout_height="wrap_content"
@@ -343,12 +343,12 @@
                             android:textColor="@color/purple_light"/>
                         <TextView android:id="@+id/tvStreakDetail"
                             android:layout_width="wrap_content" android:layout_height="wrap_content"
-                            android:textSize="11sp" android:textColor="@color/white_50"
+                            android:textSize="11sp" android:textColor="@color/text_secondary"
                             android:layout_marginTop="2dp"/>
                     </LinearLayout>
                     <TextView android:id="@+id/tvStreakBest"
                         android:layout_width="wrap_content" android:layout_height="wrap_content"
-                        android:textSize="11sp" android:textColor="@color/white_50"
+                        android:textSize="11sp" android:textColor="@color/text_secondary"
                         android:gravity="end"/>
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
@@ -360,10 +360,10 @@
                     android:orientation="horizontal" android:gravity="center_vertical">
                     <TextView android:layout_width="0dp" android:layout_height="wrap_content"
                         android:layout_weight="1" android:text="Recent Transactions"
-                        android:textSize="16sp" android:textStyle="bold" android:textColor="@color/white"/>
+                        android:textSize="16sp" android:textStyle="bold" android:textColor="@color/text_primary"/>
                     <TextView android:id="@+id/tvTransCount"
                         android:layout_width="wrap_content" android:layout_height="wrap_content"
-                        android:textSize="12sp" android:textColor="@color/white_50"/>
+                        android:textSize="12sp" android:textColor="@color/text_secondary"/>
                 </LinearLayout>
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/rvRecent"

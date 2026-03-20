@@ -33,10 +33,10 @@
                     android:layout_width="wrap_content" android:layout_height="wrap_content"
                     android:textSize="11sp" android:textColor="@color/amber"/>
                 <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                    android:text="  ·  " android:textSize="11sp" android:textColor="@color/white_30"/>
+                    android:text="  ·  " android:textSize="11sp" android:textColor="@color/text_hint"/>
                 <TextView android:id="@+id/tvDueDate"
                     android:layout_width="wrap_content" android:layout_height="wrap_content"
-                    android:textSize="11sp" android:textColor="@color/white_50"/>
+                    android:textSize="11sp" android:textColor="@color/text_secondary"/>
             </LinearLayout>
         </LinearLayout>
 

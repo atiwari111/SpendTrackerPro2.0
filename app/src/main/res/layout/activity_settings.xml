@@ -6,7 +6,7 @@
 
     <androidx.appcompat.widget.Toolbar android:id="@+id/toolbar"
         android:layout_width="match_parent" android:layout_height="?attr/actionBarSize"
-        android:background="@color/bg_card" app:titleTextColor="@color/white"/>
+        android:background="@color/bg_card" app:titleTextColor="@color/text_primary"/>
 
     <ScrollView android:layout_width="match_parent" android:layout_height="match_parent">
         <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
@@ -26,10 +26,10 @@
                     <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content"
                         android:layout_weight="1" android:orientation="vertical">
                         <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                            android:text="Biometric Lock" android:textColor="@color/white" android:textSize="15sp"/>
+                            android:text="Biometric Lock" android:textColor="@color/text_primary" android:textSize="15sp"/>
                         <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
                             android:text="Require fingerprint to open app"
-                            android:textColor="@color/white_50" android:textSize="12sp" android:layout_marginTop="2dp"/>
+                            android:textColor="@color/text_secondary" android:textSize="12sp" android:layout_marginTop="2dp"/>
                     </LinearLayout>
                     <Switch android:id="@+id/swBiometric" android:layout_width="wrap_content"
                         android:layout_height="wrap_content" android:thumbTint="@color/purple_main"/>
@@ -50,10 +50,10 @@
                     <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content"
                         android:layout_weight="1" android:orientation="vertical">
                         <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                            android:text="Dark Theme" android:textColor="@color/white" android:textSize="15sp"/>
+                            android:text="Dark Theme" android:textColor="@color/text_primary" android:textSize="15sp"/>
                         <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
                             android:text="Use dark mode across the app"
-                            android:textColor="@color/white_50" android:textSize="12sp" android:layout_marginTop="2dp"/>
+                            android:textColor="@color/text_secondary" android:textSize="12sp" android:layout_marginTop="2dp"/>
                     </LinearLayout>
                     <RadioGroup
                         android:id="@+id/rgTheme"
@@ -121,7 +121,7 @@
                     <Button android:id="@+id/btnExportCsv"
                         android:layout_width="match_parent" android:layout_height="50dp"
                         android:text="📤  Export as CSV" android:backgroundTint="@android:color/transparent"
-                        android:textColor="@color/white" android:textSize="14sp" android:gravity="start|center_vertical"
+                        android:textColor="@color/text_primary" android:textSize="14sp" android:gravity="start|center_vertical"
                         android:paddingStart="16dp"/>
 
                     <View android:layout_width="match_parent" android:layout_height="1dp"
@@ -130,7 +130,7 @@
                     <Button android:id="@+id/btnCsvImport"
                         android:layout_width="match_parent" android:layout_height="50dp"
                         android:text="📥  Import from CSV" android:backgroundTint="@android:color/transparent"
-                        android:textColor="@color/white" android:textSize="14sp" android:gravity="start|center_vertical"
+                        android:textColor="@color/text_primary" android:textSize="14sp" android:gravity="start|center_vertical"
                         android:paddingStart="16dp"/>
 
                     <View android:layout_width="match_parent" android:layout_height="1dp"
@@ -139,7 +139,7 @@
                     <Button android:id="@+id/btnRecurring"
                         android:layout_width="match_parent" android:layout_height="50dp"
                         android:text="🔁  Recurring Bills" android:backgroundTint="@android:color/transparent"
-                        android:textColor="@color/white" android:textSize="14sp" android:gravity="start|center_vertical"
+                        android:textColor="@color/text_primary" android:textSize="14sp" android:gravity="start|center_vertical"
                         android:paddingStart="16dp"/>
 
                     <View android:layout_width="match_parent" android:layout_height="1dp"
@@ -148,7 +148,7 @@
                     <Button android:id="@+id/btnNetWorth"
                         android:layout_width="match_parent" android:layout_height="50dp"
                         android:text="📊  Net Worth Tracker" android:backgroundTint="@android:color/transparent"
-                        android:textColor="@color/white" android:textSize="14sp" android:gravity="start|center_vertical"
+                        android:textColor="@color/text_primary" android:textSize="14sp" android:gravity="start|center_vertical"
                         android:paddingStart="16dp"/>
 
                     <View android:layout_width="match_parent" android:layout_height="1dp"
@@ -157,7 +157,7 @@
                     <Button android:id="@+id/btnCreditCards"
                         android:layout_width="match_parent" android:layout_height="50dp"
                         android:text="💳  Credit Card Spends" android:backgroundTint="@android:color/transparent"
-                        android:textColor="@color/white" android:textSize="14sp" android:gravity="start|center_vertical"
+                        android:textColor="@color/text_primary" android:textSize="14sp" android:gravity="start|center_vertical"
                         android:paddingStart="16dp"/>
 
                     <View android:layout_width="match_parent" android:layout_height="1dp"
@@ -166,7 +166,7 @@
                     <Button android:id="@+id/btnBankAccounts"
                         android:layout_width="match_parent" android:layout_height="50dp"
                         android:text="🏦  Bank Accounts" android:backgroundTint="@android:color/transparent"
-                        android:textColor="@color/white" android:textSize="14sp" android:gravity="start|center_vertical"
+                        android:textColor="@color/text_primary" android:textSize="14sp" android:gravity="start|center_vertical"
                         android:paddingStart="16dp"/>
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
@@ -184,11 +184,11 @@
                     android:orientation="vertical" android:padding="16dp">
                     <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
                         android:text="This permanently deletes local transactions only. Your budgets, cards, accounts and cloud backup remain unchanged."
-                        android:textColor="@color/white_50" android:textSize="12sp" android:layout_marginBottom="12dp"/>
+                        android:textColor="@color/text_secondary" android:textSize="12sp" android:layout_marginBottom="12dp"/>
                     <Button android:id="@+id/btnClearData"
                         android:layout_width="match_parent" android:layout_height="44dp"
                         android:text="Delete Local Transactions"
-                        android:backgroundTint="#EF4444" android:textColor="@color/white"
+                        android:backgroundTint="#EF4444" android:textColor="@color/text_primary"
                         android:textSize="13sp"/>
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
@@ -203,20 +203,20 @@
                     <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
                         android:text="🔒 Backup &amp; Restore"
                         android:textSize="14sp" android:textStyle="bold"
-                        android:textColor="@color/white" android:layout_marginBottom="4dp"/>
+                        android:textColor="@color/text_primary" android:layout_marginBottom="4dp"/>
                     <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
                         android:text="Encrypted with AES-256-GCM · Bound to this device"
-                        android:textSize="11sp" android:textColor="@color/white_50"
+                        android:textSize="11sp" android:textColor="@color/text_secondary"
                         android:layout_marginBottom="12dp"/>
                     <Button android:id="@+id/btnBackup"
                         android:layout_width="match_parent" android:layout_height="44dp"
                         android:text="📤  Create Backup"
-                        android:backgroundTint="@color/purple_main" android:textColor="@color/white"
+                        android:backgroundTint="@color/purple_main" android:textColor="@color/text_primary"
                         android:textSize="13sp" android:layout_marginBottom="8dp"/>
                     <Button android:id="@+id/btnRestore"
                         android:layout_width="match_parent" android:layout_height="44dp"
                         android:text="📥  Restore from Backup"
-                        android:backgroundTint="@color/bg_card" android:textColor="@color/white"
+                        android:backgroundTint="@color/bg_card" android:textColor="@color/text_primary"
                         android:textSize="13sp"/>
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
@@ -224,7 +224,7 @@
             <!-- App version -->
             <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
                 android:id="@+id/tvAppInfo" android:text="SpendTracker Pro v2.0\nBuilt with 🔒 AES-256 encryption"
-                android:textColor="@color/white_50" android:textSize="11sp"
+                android:textColor="@color/text_secondary" android:textSize="11sp"
                 android:gravity="center" android:layout_marginBottom="16dp" android:lineSpacingExtra="4dp"/>
 
         </LinearLayout>
