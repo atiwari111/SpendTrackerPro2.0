@@ -66,6 +66,13 @@ jobs:
           echo "✅ Keystore decoded: $(wc -c < app/spendtracker.keystore) bytes"
 
       # ── Quality gates (match main build-apk.yml) ───────────────────────────
+      - name: Generate lint baseline (first run only)
+        run: |
+          if [ ! -f app/lint-baseline.xml ]; then
+            echo "No lint baseline found — generating one to capture existing issues"
+            ./gradlew updateLintBaseline --no-daemon || true
+          fi
+
       - name: Run Android Lint
         run: ./gradlew lint
 

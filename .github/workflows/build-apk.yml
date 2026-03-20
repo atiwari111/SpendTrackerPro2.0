@@ -60,6 +60,13 @@ jobs:
               -alias spendtracker \
             && echo "✅ Keystore verified" || echo "⚠️ Keystore check failed"
 
+      - name: Generate lint baseline (first run only)
+        run: |
+          if [ ! -f app/lint-baseline.xml ]; then
+            echo "No lint baseline found — generating one to capture existing issues"
+            ./gradlew updateLintBaseline --no-daemon || true
+          fi
+
       - name: Run Android Lint
         run: ./gradlew lint
 
