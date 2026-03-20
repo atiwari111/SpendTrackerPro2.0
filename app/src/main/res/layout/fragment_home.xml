@@ -260,6 +260,22 @@
                     </LinearLayout>
                 </androidx.cardview.widget.CardView>
 
+                <!-- Fix 2.7: Scan Receipt card moved to Home page -->
+                <androidx.cardview.widget.CardView android:id="@+id/cardScanReceipt"
+                    android:layout_width="0dp" android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:clickable="true" android:focusable="true"
+                    app:cardBackgroundColor="@color/bg_card" app:cardCornerRadius="12dp">
+                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                        android:orientation="vertical" android:padding="14dp" android:gravity="center">
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                            android:text="📷" android:textSize="24sp"/>
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                            android:text="Scan Receipt" android:textSize="11sp" android:textColor="@color/text_secondary"
+                            android:layout_marginTop="4dp"/>
+                    </LinearLayout>
+                </androidx.cardview.widget.CardView>
+
                 <androidx.cardview.widget.CardView android:id="@+id/cardBills"
                     android:layout_width="0dp" android:layout_height="wrap_content"
                     android:layout_weight="1"
