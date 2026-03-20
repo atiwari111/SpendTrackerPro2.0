@@ -28,8 +28,10 @@ public class MerchantExtractor {
         Pattern.compile("(?i)Info[:\\s]+([A-Za-z][A-Za-z0-9&'./\\-\\s]{1,35}?)(?:\\.|Avail|$)"),
         // "merchant: MERCHANT"
         Pattern.compile("(?i)merchant[:\\s]+([A-Za-z][A-Za-z0-9&'./\\-\\s]{1,35}?)(?:\\s+Ref|\\.|,|$)"),
-        // Fix 2.2: NEFT/IMPS credit — "by ABHICL CLAIMS PAYMENTS A C"
-        Pattern.compile("(?i)\\bby\\s+([A-Z][A-Z0-9&'./\\-\\s]{1,35}?)\\s*(?:,|\\.|\\s+INFO|\\s+A/C|\\s+CLAIMS|$)"),
+        // Fix 2.6: NEFT/IMPS credit — "by ABHICL CLAIMS PAYMENTS A C"
+        // Increased capture limit to 60 chars; stop at ", INFO" or trailing " A C" account suffix.
+        // Previously stopped at " CLAIMS" which truncated the name prematurely.
+        Pattern.compile("(?i)\\bby\\s+([A-Za-z][A-Za-z0-9&'./\\-\\s]{2,60}?)(?:\\s+A\\s*[,.]|\\s+INFO|\\s*,|\\s*\\.|$)"),
         // Generic " at MERCHANT" (keep as last resort — prone to false positives)
         Pattern.compile("(?i)\\bat\\s+([A-Za-z][A-Za-z0-9&'./\\-\\s]{1,25}?)(?:\\s+(?:on|Ref|via)|\\.|,|$)"),
     };
@@ -57,13 +59,16 @@ public class MerchantExtractor {
         if (s == null) return "";
         // Remove trailing noise
         s = s.replaceAll("(?i)\\s+(via|ref|on|avail|avbl|mob|utr|upi)\\b.*$", "").trim();
+        // Fix 2.6: strip trailing " A C" or "A/C" — NEFT account suffix, not part of merchant name
+        s = s.replaceAll("(?i)\\s+A\\s*/\\s*C\\s*$", "").trim();
+        s = s.replaceAll("(?i)\\s+A\\s+C\\s*$", "").trim();
         // Remove leading articles
         for (String noise : NOISE_WORDS) {
             if (s.toLowerCase().startsWith(noise.trim())) {
                 s = s.substring(noise.trim().length()).trim();
             }
         }
-        // Collapse whitespace
+        // Collapse whitespace (Fix 2.6: double spaces in NEFT sender names like "ABHICL  CLAIMS")
         s = s.replaceAll("\\s{2,}", " ").trim();
         return s;
     }
