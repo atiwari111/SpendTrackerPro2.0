@@ -47,6 +47,26 @@ android {
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
     }
+    // ── Source sets ───────────────────────────────────────────────
+    // Explicitly declare test source roots so Android Gradle Plugin
+    // compiles each file with the right classpath (test vs androidTest).
+    // Without this, files placed in src/test/ or src/androidTest/ that
+    // are accidentally copied into src/main/ would be compiled as
+    // production code and fail because test dependencies don't exist there.
+    sourceSets {
+        test {
+            java.srcDirs = ['src/test/java']
+        }
+        androidTest {
+            java.srcDirs = ['src/androidTest/java']
+        }
+        main {
+            java.srcDirs = ['src/main/java']
+            // Safeguard: exclude any *Test.java files that end up in the
+            // main source tree so a misplaced test file never breaks the build.
+            java.excludes = ['**/*Test.java']
+        }
+    }
     buildFeatures {
         viewBinding true
     }
