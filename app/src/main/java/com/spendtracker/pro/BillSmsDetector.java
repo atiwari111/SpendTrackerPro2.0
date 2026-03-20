@@ -136,7 +136,10 @@ public class BillSmsDetector {
                 amount = Double.parseDouble(amtM.group(1).replace(",", ""));
                 }
             }
-        } catch (Exception e) { return null; }
+        } catch (NumberFormatException e) {
+            android.util.Log.w("BillSmsDetector", "Amount parse failed in SMS: " + e.getMessage());
+            return null;
+        }
         if (amount <= 0) return null;
 
         // Identify biller
@@ -241,7 +244,9 @@ public class BillSmsDetector {
                     sdf.setLenient(false);
                     java.util.Date d = sdf.parse(clean);
                     if (d != null) return d.getTime();
-                } catch (Exception ignored) {}
+                } catch (java.text.ParseException ignored) {
+                    // Expected — try next format
+                }
             }
             // If just dd-MM, use current year
             if (clean.matches("\\d{1,2}-\\d{2}")) {
@@ -258,7 +263,9 @@ public class BillSmsDetector {
                     return d.getTime();
                 }
             }
-        } catch (Exception ignored) {}
+        } catch (Exception e) {
+            android.util.Log.w("BillSmsDetector", "parseDate failed for '" + dateStr + "': " + e.getMessage());
+        }
         return 0;
     }
 }

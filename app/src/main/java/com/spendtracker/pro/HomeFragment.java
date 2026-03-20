@@ -321,12 +321,14 @@ public class HomeFragment extends Fragment {
                     tvBudgetLeft.setTextColor(ContextCompat.getColor(requireContext(), R.color.text_hint));
                 } else {
                     tvBudgetLeft.setText(String.format("₹%.0f left", fLeft));
-                    tvBudgetLeft.setTextColor(fLeft >= 0 ? 0xFF10B981 : 0xFFEF4444);
+                    tvBudgetLeft.setTextColor(ContextCompat.getColor(requireContext(),
+                            fLeft >= 0 ? R.color.green : R.color.red));
                 }
             }
             if (tvHealthScore != null) {
                 tvHealthScore.setText(InsightEngine.getHealthScoreLabel(score) + " · " + score + "/100");
-                int color = score >= 70 ? 0xFF10B981 : score >= 40 ? 0xFFF59E0B : 0xFFEF4444;
+                int color = ContextCompat.getColor(requireContext(),
+                        score >= 70 ? R.color.green : score >= 40 ? R.color.amber : R.color.red);
                 tvHealthScore.setTextColor(color);
             }
             // P5: streak card

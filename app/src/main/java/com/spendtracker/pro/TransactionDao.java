@@ -57,6 +57,13 @@ public interface TransactionDao {
     boolean existsHash(String hash);
 
     /**
+     * All transactions (including credits) within a date range — used by Analytics
+     * which needs income + expense data. Use getSpendingInRange() for expense-only dashboards.
+     */
+    @Query("SELECT * FROM transactions WHERE timestamp BETWEEN :start AND :end AND isSelfTransfer = 0 ORDER BY timestamp DESC")
+    List<Transaction> getInRange(long start, long end);
+
+    /**
      * P2 recurring auto-detection: returns all non-credit, non-self-transfer transactions
      * from the last 90 days, ordered by merchant then timestamp.
      * RecurringDetector groups these in Java to find repeated merchant+amount patterns.

@@ -248,7 +248,9 @@ public class BankAwareSmsParser {
                     if (m.groupCount() >= 2 && m.group(2) != null) {
                         merchant = m.group(2).trim();
                     }
-                } catch (IndexOutOfBoundsException ignored) {}
+                } catch (IndexOutOfBoundsException e) {
+                    android.util.Log.w("BankAwareSmsParser", "Group(2) out of bounds for pattern, confidence=" + wp.confidence);
+                }
 
                 merchant = cleanMerchant(merchant);
                 // Small bonus for a non-empty merchant name
@@ -335,7 +337,9 @@ public class BankAwareSmsParser {
         Matcher m = BAL_PATTERN.matcher(body);
         if (m.find()) {
             try { return Double.parseDouble(m.group(1).replace(",", "")); }
-            catch (Exception ignored) {}
+            catch (NumberFormatException e) {
+                android.util.Log.w("BankAwareSmsParser", "Balance parse failed: '" + m.group(1) + "'");
+            }
         }
         return -1;
     }

@@ -287,7 +287,7 @@ public class SmsImporter {
         try {
             // placeholder duplicate-credit check
         } catch (Exception e) {
-            // ignore
+            android.util.Log.w("SmsImporter", "isLikelyDuplicateCredit check failed: " + e.getMessage());
         }
         return false;
     }
@@ -333,7 +333,8 @@ public class SmsImporter {
             acc.cardColor = android.graphics.Color.parseColor("#1A237E");
             db.bankAccountDao().insert(acc);
         } catch (Exception e) {
-            // ignore
+            android.util.Log.w("SmsImporter", "autoUpsertBankAccount failed last4=" + last4
+                    + " bank=" + bankName + " balance=" + balance + ": " + e.getMessage());
         }
     }
 

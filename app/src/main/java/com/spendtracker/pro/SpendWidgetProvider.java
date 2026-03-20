@@ -35,12 +35,13 @@ public class SpendWidgetProvider extends AppWidgetProvider {
                 long todayStart = getDayStart(now);
                 long monthStart = getMonthStart(now);
 
-                List<Transaction> all = db.transactionDao().getAllSync();
+                // Priority 1: use scoped range query — avoids full-table scan on large datasets
+                List<Transaction> monthTxns = db.transactionDao().getSpendingInRange(monthStart, now);
                 double todayTotal = 0, monthTotal = 0;
-                for (Transaction t : all) {
+                for (Transaction t : monthTxns) {
                     if (t.isSelfTransfer || t.isCredit) continue;
-                    if (t.timestamp >= todayStart)  todayTotal  += t.amount;
-                    if (t.timestamp >= monthStart)  monthTotal  += t.amount;
+                    monthTotal += t.amount;
+                    if (t.timestamp >= todayStart) todayTotal += t.amount;
                 }
 
                 // Bank balance total

@@ -50,7 +50,11 @@ public class SettingsFragment extends Fragment {
         prefs = requireContext().getSharedPreferences("stp_prefs", Context.MODE_PRIVATE);
 
         androidx.appcompat.widget.Toolbar tb = view.findViewById(R.id.toolbar);
-        if (tb != null) tb.setTitle("Settings");
+        if (tb != null) {
+            tb.setTitle("Settings");
+            tb.setNavigationIcon(androidx.appcompat.R.drawable.abc_ic_ab_back_material);
+            tb.setNavigationOnClickListener(v -> requireActivity().getOnBackPressedDispatcher().onBackPressed());
+        }
 
         swBiometric = view.findViewById(R.id.swBiometric);
         swBiometric.setChecked(prefs.getBoolean("bio_enabled", false));

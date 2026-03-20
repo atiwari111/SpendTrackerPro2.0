@@ -21,7 +21,7 @@ import androidx.room.migration.Migration;
                 SplitEntry.class      // P5: split expenses
         },
         version = 5,
-        exportSchema = false
+        exportSchema = true   // Priority 5: schema JSON exported to app/schemas/ for migration tests
 )
 public abstract class AppDatabase extends RoomDatabase {
 

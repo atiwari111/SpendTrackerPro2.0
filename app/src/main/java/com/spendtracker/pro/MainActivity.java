@@ -191,11 +191,12 @@ public class MainActivity extends AppCompatActivity {
 
             adapter.setTransactions(recent);
 
+            // Priority 1: replaced getAllSync() full scan with month-scoped query
             AppExecutors.db().execute(() -> {
-
-                List<Transaction> all = db.transactionDao().getAllSync();
-
-                if (all != null) updateStats(all);
+                long now = System.currentTimeMillis();
+                long monthStart = getMonthStart(now);
+                List<Transaction> monthData = db.transactionDao().getSpendingInRange(monthStart, now);
+                if (monthData != null) updateStats(monthData);
             });
         });
 
@@ -446,16 +447,18 @@ public class MainActivity extends AppCompatActivity {
             if (tvBudgetLeft != null) {
                 if (fTotalLimit <= 0) {
                     tvBudgetLeft.setText("No budget set");
-                    tvBudgetLeft.setTextColor(0xFFB0BEC5);
+                    tvBudgetLeft.setTextColor(ContextCompat.getColor(this, R.color.text_hint));
                 } else {
                     tvBudgetLeft.setText(String.format("₹%.0f left", budgetLeft));
-                    tvBudgetLeft.setTextColor(budgetLeft >= 0 ? 0xFF10B981 : 0xFFEF4444);
+                    tvBudgetLeft.setTextColor(ContextCompat.getColor(this,
+                            budgetLeft >= 0 ? R.color.green : R.color.red));
                 }
             }
 
             if (tvHealthScore != null) {
                 tvHealthScore.setText(InsightEngine.getHealthScoreLabel(score) + " · " + score + "/100");
-                int color = score >= 70 ? 0xFF10B981 : score >= 40 ? 0xFFF59E0B : 0xFFEF4444;
+                int color = ContextCompat.getColor(this,
+                        score >= 70 ? R.color.green : score >= 40 ? R.color.amber : R.color.red);
                 tvHealthScore.setTextColor(color);
             }
         });

@@ -58,11 +58,12 @@ public class TransactionAdapter
         // Amount — green for credit/income, red for expense, grey for self-transfer
         String amtPrefix = t.isCredit ? "+ ₹" : "₹";
         h.amount.setText(String.format(amtPrefix + "%.0f", t.amount));
+        android.content.Context ctx = h.itemView.getContext();
         h.amount.setTextColor(t.isSelfTransfer
-                ? 0xFF9CA3AF   // grey  — self-transfer
+                ? androidx.core.content.ContextCompat.getColor(ctx, R.color.text_hint)
                 : t.isCredit
-                ? 0xFF10B981   // green — credit/income
-                : 0xFFEF4444); // red   — expense
+                ? androidx.core.content.ContextCompat.getColor(ctx, R.color.green)
+                : androidx.core.content.ContextCompat.getColor(ctx, R.color.red));
 
         // Tap / long-press to edit (full list only, not dashboard)
         if (!dashboard) {

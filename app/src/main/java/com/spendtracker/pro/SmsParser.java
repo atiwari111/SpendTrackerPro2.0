@@ -101,7 +101,10 @@ public class SmsParser {
         t.isCredit = isCreditTransaction(body);
 
         String merchant = "";
-        try { merchant = MerchantExtractor.extract(body); } catch (Exception ignored) {}
+        try { merchant = MerchantExtractor.extract(body); }
+        catch (Exception e) {
+            android.util.Log.w("SmsParser", "MerchantExtractor failed for sender=" + sender + ": " + e.getMessage());
+        }
         if (merchant == null || merchant.isEmpty()) {
             merchant = sender != null ? sender : "Unknown";
         }
