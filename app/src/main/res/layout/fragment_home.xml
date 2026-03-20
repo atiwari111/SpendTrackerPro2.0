@@ -212,132 +212,146 @@
                     android:layout_marginTop="4dp" android:visibility="gone"/>
             </LinearLayout>
 
-            <!-- QUICK ACTIONS row 1 -->
+            <!-- QUICK ACTIONS — uniform 3-column grid, equal size, distinct accent colors -->
             <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
-                android:orientation="horizontal" android:paddingHorizontal="16dp" android:paddingBottom="8dp">
+                android:orientation="vertical" android:paddingHorizontal="16dp"
+                android:layout_marginBottom="4dp">
 
-                <androidx.cardview.widget.CardView android:id="@+id/cardInsights"
-                    android:clickable="true" android:focusable="true"
-                    android:layout_width="0dp" android:layout_height="wrap_content"
-                    android:layout_weight="1" android:layout_marginEnd="8dp"
-                    app:cardBackgroundColor="@color/bg_card" app:cardCornerRadius="12dp">
-                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
-                        android:orientation="vertical" android:padding="14dp" android:gravity="center">
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                            android:text="📊" android:textSize="24sp"/>
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                            android:text="Analytics" android:textSize="11sp" android:textColor="@color/text_secondary"
-                            android:layout_marginTop="4dp"/>
-                    </LinearLayout>
-                </androidx.cardview.widget.CardView>
+                <!-- Row 1: Analytics | Budget | Net Worth -->
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:orientation="horizontal">
 
-                <androidx.cardview.widget.CardView android:id="@+id/cardBudget"
-                    android:clickable="true" android:focusable="true"
-                    android:layout_width="0dp" android:layout_height="wrap_content"
-                    android:layout_weight="1" android:layout_marginEnd="8dp"
-                    app:cardBackgroundColor="@color/bg_card" app:cardCornerRadius="12dp">
-                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
-                        android:orientation="vertical" android:padding="14dp" android:gravity="center">
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                            android:text="📋" android:textSize="24sp"/>
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                            android:text="Budget" android:textSize="11sp" android:textColor="@color/text_secondary"
-                            android:layout_marginTop="4dp"/>
-                    </LinearLayout>
-                </androidx.cardview.widget.CardView>
+                    <androidx.cardview.widget.CardView android:id="@+id/cardInsights"
+                        android:clickable="true" android:focusable="true"
+                        android:layout_width="0dp" android:layout_height="80dp"
+                        android:layout_weight="1" android:layout_marginEnd="6dp"
+                        app:cardBackgroundColor="#1A7C3AED" app:cardCornerRadius="14dp" app:cardElevation="0dp">
+                        <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent"
+                            android:orientation="vertical" android:gravity="center">
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                                android:text="📊" android:textSize="26sp"/>
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                                android:text="Analytics" android:textSize="11sp"
+                                android:textColor="@color/purple_light" android:layout_marginTop="4dp"/>
+                        </LinearLayout>
+                    </androidx.cardview.widget.CardView>
 
-                <androidx.cardview.widget.CardView android:id="@+id/cardNetWorth"
-                    android:layout_width="0dp" android:layout_height="wrap_content"
-                    android:layout_weight="1" android:layout_marginEnd="8dp"
-                    app:cardBackgroundColor="@color/bg_card" app:cardCornerRadius="12dp">
-                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
-                        android:orientation="vertical" android:padding="14dp" android:gravity="center">
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                            android:text="🏦" android:textSize="24sp"/>
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                            android:text="Net Worth" android:textSize="11sp" android:textColor="@color/text_secondary"
-                            android:layout_marginTop="4dp"/>
-                    </LinearLayout>
-                </androidx.cardview.widget.CardView>
+                    <androidx.cardview.widget.CardView android:id="@+id/cardBudget"
+                        android:clickable="true" android:focusable="true"
+                        android:layout_width="0dp" android:layout_height="80dp"
+                        android:layout_weight="1" android:layout_marginEnd="6dp"
+                        app:cardBackgroundColor="#1A10B981" app:cardCornerRadius="14dp" app:cardElevation="0dp">
+                        <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent"
+                            android:orientation="vertical" android:gravity="center">
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                                android:text="💰" android:textSize="26sp"/>
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                                android:text="Budget" android:textSize="11sp"
+                                android:textColor="@color/green" android:layout_marginTop="4dp"/>
+                        </LinearLayout>
+                    </androidx.cardview.widget.CardView>
 
-                <!-- Fix 2.7: Scan Receipt card moved to Home page -->
-                <androidx.cardview.widget.CardView android:id="@+id/cardScanReceipt"
-                    android:layout_width="0dp" android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:clickable="true" android:focusable="true"
-                    app:cardBackgroundColor="@color/bg_card" app:cardCornerRadius="12dp">
-                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
-                        android:orientation="vertical" android:padding="14dp" android:gravity="center">
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                            android:text="📷" android:textSize="24sp"/>
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                            android:text="Scan Receipt" android:textSize="11sp" android:textColor="@color/text_secondary"
-                            android:layout_marginTop="4dp"/>
-                    </LinearLayout>
-                </androidx.cardview.widget.CardView>
+                    <androidx.cardview.widget.CardView android:id="@+id/cardNetWorth"
+                        android:clickable="true" android:focusable="true"
+                        android:layout_width="0dp" android:layout_height="80dp"
+                        android:layout_weight="1"
+                        app:cardBackgroundColor="#1A0EA5E9" app:cardCornerRadius="14dp" app:cardElevation="0dp">
+                        <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent"
+                            android:orientation="vertical" android:gravity="center">
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                                android:text="📈" android:textSize="26sp"/>
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                                android:text="Net Worth" android:textSize="11sp"
+                                android:textColor="@color/teal" android:layout_marginTop="4dp"/>
+                        </LinearLayout>
+                    </androidx.cardview.widget.CardView>
 
-                <androidx.cardview.widget.CardView android:id="@+id/cardBills"
-                    android:layout_width="0dp" android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:clickable="true" android:focusable="true"
-                    app:cardBackgroundColor="@color/bg_card" app:cardCornerRadius="12dp">
-                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
-                        android:orientation="vertical" android:padding="14dp" android:gravity="center">
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                            android:text="📋" android:textSize="24sp"/>
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                            android:text="Bills" android:textSize="11sp" android:textColor="@color/text_secondary"
-                            android:layout_marginTop="4dp"/>
-                        <TextView android:id="@+id/tvBillsBadge"
-                            android:layout_width="wrap_content" android:layout_height="wrap_content"
-                            android:textSize="9sp" android:textColor="@color/amber"
-                            android:visibility="gone"/>
-                    </LinearLayout>
-                </androidx.cardview.widget.CardView>
-            </LinearLayout>
+                </LinearLayout>
 
-            <!-- QUICK ACTIONS row 2 -->
-            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
-                android:orientation="horizontal" android:paddingHorizontal="16dp"
-                android:layout_marginTop="8dp" android:layout_marginBottom="4dp">
+                <!-- Row 2: Bills | Cards | Accounts -->
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:orientation="horizontal" android:layout_marginTop="8dp">
 
-                <androidx.cardview.widget.CardView android:id="@+id/cardCreditCards"
-                    android:layout_width="0dp" android:layout_height="wrap_content"
-                    android:layout_weight="1" android:layout_marginEnd="8dp"
-                    android:clickable="true" android:focusable="true"
-                    app:cardBackgroundColor="@color/bg_card" app:cardCornerRadius="12dp">
-                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
-                        android:orientation="vertical" android:padding="14dp" android:gravity="center">
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                            android:text="💳" android:textSize="24sp"/>
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                            android:text="Cards" android:textSize="11sp" android:textColor="@color/text_secondary"
-                            android:layout_marginTop="4dp"/>
-                        <TextView android:id="@+id/tvCreditCardSpent"
-                            android:layout_width="wrap_content" android:layout_height="wrap_content"
-                            android:textSize="9sp" android:textColor="@color/purple_light"
-                            android:visibility="gone"/>
-                    </LinearLayout>
-                </androidx.cardview.widget.CardView>
+                    <androidx.cardview.widget.CardView android:id="@+id/cardBills"
+                        android:clickable="true" android:focusable="true"
+                        android:layout_width="0dp" android:layout_height="80dp"
+                        android:layout_weight="1" android:layout_marginEnd="6dp"
+                        app:cardBackgroundColor="#1AF59E0B" app:cardCornerRadius="14dp" app:cardElevation="0dp">
+                        <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent"
+                            android:orientation="vertical" android:gravity="center">
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                                android:text="🧾" android:textSize="26sp"/>
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                                android:text="Bills" android:textSize="11sp"
+                                android:textColor="@color/amber" android:layout_marginTop="4dp"/>
+                            <TextView android:id="@+id/tvBillsBadge"
+                                android:layout_width="wrap_content" android:layout_height="wrap_content"
+                                android:textSize="9sp" android:textColor="@color/amber"
+                                android:visibility="gone"/>
+                        </LinearLayout>
+                    </androidx.cardview.widget.CardView>
 
-                <androidx.cardview.widget.CardView android:id="@+id/cardBankAccounts"
-                    android:layout_width="0dp" android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:clickable="true" android:focusable="true"
-                    app:cardBackgroundColor="@color/bg_card" app:cardCornerRadius="12dp">
-                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
-                        android:orientation="vertical" android:padding="14dp" android:gravity="center">
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                            android:text="🏦" android:textSize="24sp"/>
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                            android:text="Accounts" android:textSize="11sp" android:textColor="@color/text_secondary"
-                            android:layout_marginTop="4dp"/>
-                        <TextView android:id="@+id/tvTotalBankBalance"
-                            android:layout_width="wrap_content" android:layout_height="wrap_content"
-                            android:textSize="9sp" android:textColor="@color/green"
-                            android:visibility="gone"/>
-                    </LinearLayout>
-                </androidx.cardview.widget.CardView>
+                    <androidx.cardview.widget.CardView android:id="@+id/cardCreditCards"
+                        android:clickable="true" android:focusable="true"
+                        android:layout_width="0dp" android:layout_height="80dp"
+                        android:layout_weight="1" android:layout_marginEnd="6dp"
+                        app:cardBackgroundColor="#1AA78BFA" app:cardCornerRadius="14dp" app:cardElevation="0dp">
+                        <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent"
+                            android:orientation="vertical" android:gravity="center">
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                                android:text="💳" android:textSize="26sp"/>
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                                android:text="Cards" android:textSize="11sp"
+                                android:textColor="@color/purple_light" android:layout_marginTop="4dp"/>
+                            <TextView android:id="@+id/tvCreditCardSpent"
+                                android:layout_width="wrap_content" android:layout_height="wrap_content"
+                                android:textSize="9sp" android:textColor="@color/purple_light"
+                                android:visibility="gone"/>
+                        </LinearLayout>
+                    </androidx.cardview.widget.CardView>
+
+                    <androidx.cardview.widget.CardView android:id="@+id/cardBankAccounts"
+                        android:clickable="true" android:focusable="true"
+                        android:layout_width="0dp" android:layout_height="80dp"
+                        android:layout_weight="1"
+                        app:cardBackgroundColor="#1A10B981" app:cardCornerRadius="14dp" app:cardElevation="0dp">
+                        <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent"
+                            android:orientation="vertical" android:gravity="center">
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                                android:text="🏦" android:textSize="26sp"/>
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                                android:text="Accounts" android:textSize="11sp"
+                                android:textColor="@color/green" android:layout_marginTop="4dp"/>
+                            <TextView android:id="@+id/tvTotalBankBalance"
+                                android:layout_width="wrap_content" android:layout_height="wrap_content"
+                                android:textSize="9sp" android:textColor="@color/green"
+                                android:visibility="gone"/>
+                        </LinearLayout>
+                    </androidx.cardview.widget.CardView>
+
+                </LinearLayout>
+
+                <!-- Row 3: Scan Receipt (centered, half-width) -->
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:orientation="horizontal" android:layout_marginTop="8dp">
+
+                    <androidx.cardview.widget.CardView android:id="@+id/cardScanReceipt"
+                        android:clickable="true" android:focusable="true"
+                        android:layout_width="0dp" android:layout_height="80dp"
+                        android:layout_weight="1"
+                        app:cardBackgroundColor="#1AEF4444" app:cardCornerRadius="14dp" app:cardElevation="0dp">
+                        <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent"
+                            android:orientation="vertical" android:gravity="center">
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                                android:text="📷" android:textSize="26sp"/>
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                                android:text="Scan Receipt" android:textSize="11sp"
+                                android:textColor="@color/red" android:layout_marginTop="4dp"/>
+                        </LinearLayout>
+                    </androidx.cardview.widget.CardView>
+
+                </LinearLayout>
+
             </LinearLayout>
 
             <!-- P5: Spending streak card -->
