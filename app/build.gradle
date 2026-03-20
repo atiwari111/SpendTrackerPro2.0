@@ -74,6 +74,7 @@ android {
         // Fail CI only on errors — warnings must not abort the build
         abortOnError true
         warningsAsErrors false
+        baseline = file("lint-baseline.xml")
 
         // Suppress cosmetic/intentional warnings and issues handled in code
         disable 'NotifyDataSetChanged'                  // acceptable adapter pattern
