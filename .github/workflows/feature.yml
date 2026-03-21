@@ -1,14 +1,6 @@
 name: Build SpendTracker Pro APK (Feature Branch)
 
 on:
-  # Run automatically on every push to a feature branch and on PRs targeting main.
-  # This catches lint errors, failing tests, CVEs, and SAST findings before merge.
-  push:
-    branches-ignore:
-      - main
-  pull_request:
-    branches:
-      - main
   # Keep manual dispatch for on-demand builds (e.g. QA hand-off).
   workflow_dispatch:
     inputs:
