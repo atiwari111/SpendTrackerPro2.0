@@ -47,7 +47,10 @@ public class BillAdapter extends RecyclerView.Adapter<BillAdapter.VH> {
             int days = b.daysUntilDue();
             int col = days <= 3 ? Color.parseColor("#F59E0B") : Color.parseColor("#A78BFA");
             h.tvStatus.setTextColor(col);
-            h.tvAmount.setTextColor(Color.parseColor("#F1F5F9"));
+            // Use theme-aware color: resolve text_primary from context
+            h.tvAmount.setTextColor(
+                androidx.core.content.ContextCompat.getColor(
+                    h.itemView.getContext(), R.color.text_primary));
         }
 
         h.itemView.setOnClickListener(v -> click.onClick(b));
