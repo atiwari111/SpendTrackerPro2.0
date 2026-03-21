@@ -45,7 +45,7 @@ public class AddExpenseActivity extends AppCompatActivity {
                 if (result.getResultCode() == RESULT_OK && result.getData() != null) {
                     double amount = result.getData().getDoubleExtra(OcrScanActivity.EXTRA_AMOUNT, 0);
                     String merchant = result.getData().getStringExtra(OcrScanActivity.EXTRA_MERCHANT);
-                    if (amount > 0) etAmount.setText(String.format("%.2f", amount));
+                    if (amount > 0) etAmount.setText(String.format(Locale.ROOT, "%.2f", amount));
                     if (merchant != null && !merchant.isEmpty()) etMerchant.setText(merchant);
                     Toast.makeText(this, "✅ Receipt scanned — check and save", Toast.LENGTH_SHORT).show();
                 }
@@ -138,8 +138,8 @@ public class AddExpenseActivity extends AppCompatActivity {
                             String[] pmList = {"UPI", "Credit Card", "Debit Card",
                                                "Cash", "Bank Transfer"};
                             for (int i = 0; i < pmList.length; i++) {
-                                if (suggestion.paymentMethod.toLowerCase()
-                                        .contains(pmList[i].toLowerCase())) {
+                                if (suggestion.paymentMethod.toLowerCase(Locale.ROOT)
+                                        .contains(pmList[i].toLowerCase(Locale.ROOT))) {
                                     spPayment.setSelection(i);
                                     break;
                                 }
@@ -204,7 +204,7 @@ public class AddExpenseActivity extends AppCompatActivity {
             if (editingTransaction == null) return;
             final Transaction t = editingTransaction;
             runOnUiThread(() -> {
-                etAmount.setText(String.format("%.2f", t.amount));
+                etAmount.setText(String.format(Locale.ROOT, "%.2f", t.amount));
                 etMerchant.setText(t.merchant);
                 etNotes.setText(t.notes != null ? t.notes : "");
                 selectedDate = t.timestamp;
@@ -220,7 +220,7 @@ public class AddExpenseActivity extends AppCompatActivity {
                 String[] pmList = {"UPI", "Credit Card", "Debit Card", "Cash", "Bank Transfer"};
                 String pm = t.paymentDetail != null ? t.paymentDetail : "";
                 for (int i = 0; i < pmList.length; i++) {
-                    if (pm.toLowerCase().contains(pmList[i].toLowerCase())) {
+                    if (pm.toLowerCase(Locale.ROOT).contains(pmList[i].toLowerCase(Locale.ROOT))) {
                         spPayment.setSelection(i);
                         break;
                     }
@@ -247,7 +247,7 @@ public class AddExpenseActivity extends AppCompatActivity {
         String paymentRaw = (String) spPayment.getSelectedItem();
         String paymentMethod = paymentRaw.equals("Credit Card") ? "CREDIT_CARD"
                              : paymentRaw.equals("Debit Card")  ? "DEBIT_CARD"
-                             : paymentRaw.replace(" ", "_").toUpperCase();
+                             : paymentRaw.replace(" ", "_").toUpperCase(Locale.ROOT);
         String notes  = etNotes.getText() != null ? etNotes.getText().toString().trim() : "";
         boolean isSelf = swSelfTransfer.isChecked();
 

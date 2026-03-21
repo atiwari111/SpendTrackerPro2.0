@@ -176,7 +176,7 @@ public class SmsReceiver extends BroadcastReceiver {
 
     private boolean isSelfTransfer(String body) {
         if (body == null) return false;
-        String b = body.toLowerCase();
+        String b = body.toLowerCase(Locale.ROOT);
         return b.contains("self") || b.contains("own account")
                 || b.contains("transfer to your") || b.contains("transfer to self")
                 || b.contains("linked account") || b.contains("savings account to")
@@ -185,7 +185,7 @@ public class SmsReceiver extends BroadcastReceiver {
 
     private boolean isCardBlockMessage(String body) {
         if (body == null) return false;
-        String b = body.toLowerCase();
+        String b = body.toLowerCase(Locale.ROOT);
         return (b.contains("block") || b.contains("blocked") || b.contains("hotlist"))
                 && !b.contains("debited") && !b.contains("spent") && !b.contains("credited");
     }
@@ -201,7 +201,7 @@ public class SmsReceiver extends BroadcastReceiver {
 
     private String normalizeMerchant(String merchant, String sender, String bankName, String body) {
         String m = merchant == null ? "" : merchant.trim();
-        String s = sender == null ? "" : sender.trim().toUpperCase();
+        String s = sender == null ? "" : sender.trim().toUpperCase(Locale.ROOT);
         if (m.matches("(?i)^[A-Z]{2}-[A-Z0-9]{4,}(?:-[A-Z])?$")) m = "";
         if (!s.isEmpty() && m.equalsIgnoreCase(s)) m = "";
         if (m.matches("(?i).*(hdfcbk|sbipsg|sbiinb|icicib|axisbk|kotakb).*")) m = "";
@@ -219,7 +219,7 @@ public class SmsReceiver extends BroadcastReceiver {
             java.security.MessageDigest md = java.security.MessageDigest.getInstance("SHA-256");
             byte[] result = md.digest(text.getBytes(java.nio.charset.StandardCharsets.UTF_8));
             StringBuilder sb = new StringBuilder();
-            for (byte b : result) sb.append(String.format("%02x", b));
+            for (byte b : result) sb.append(String.format(Locale.ROOT, "%02x", b));
             return sb.toString();
         } catch (Exception e) {
             long h1 = text.hashCode();
@@ -289,9 +289,9 @@ public class SmsReceiver extends BroadcastReceiver {
         if (storedName == null || storedName.isEmpty()) return true;  // blank stored = accept any
         if (expandedIncoming == null || expandedIncoming.isEmpty()) return true; // blank incoming = accept any
 
-        String stored   = storedName.toLowerCase().trim();
-        String expanded = expandedIncoming.toLowerCase().trim();
-        String raw      = rawIncoming != null ? rawIncoming.toLowerCase().trim() : "";
+        String stored   = storedName.toLowerCase(Locale.ROOT).trim();
+        String expanded = expandedIncoming.toLowerCase(Locale.ROOT).trim();
+        String raw      = rawIncoming != null ? rawIncoming.toLowerCase(Locale.ROOT).trim() : "";
 
         return stored.equals(expanded)
                 || stored.contains(expanded)
@@ -300,7 +300,7 @@ public class SmsReceiver extends BroadcastReceiver {
     }
 
     private String expandBankName(String bankName) {
-        String b = bankName != null ? bankName.trim().toUpperCase() : "";
+        String b = bankName != null ? bankName.trim().toUpperCase(Locale.ROOT) : "";
         if ("PNB".equals(b)) return "Punjab National Bank";
         if ("SBI".equals(b)) return "State Bank of India";
         if ("HDFC".equals(b)) return "HDFC Bank";
@@ -311,7 +311,7 @@ public class SmsReceiver extends BroadcastReceiver {
     }
 
     private int bankColor(String bank) {
-        String b = bank != null ? bank.toLowerCase() : "";
+        String b = bank != null ? bank.toLowerCase(Locale.ROOT) : "";
         if (b.contains("sbi")) return android.graphics.Color.parseColor("#1565C0");
         if (b.contains("pnb")) return android.graphics.Color.parseColor("#880E4F");
         if (b.contains("hdfc")) return android.graphics.Color.parseColor("#1A237E");

@@ -127,15 +127,15 @@ public class TransactionsActivity extends AppCompatActivity {
     }
 
     private void applyFilter() {
-        String q = etSearch.getText().toString().toLowerCase().trim();
+        String q = etSearch.getText().toString().toLowerCase(Locale.ROOT).trim();
         List<Transaction> filtered = all.stream()
                 .filter(t -> currentMethod.isEmpty() || currentMethod.equals(t.paymentMethod))
                 .filter(t -> currentCat.isEmpty() || currentCat.equals(t.category))
                 .filter(t -> currentMerchant.isEmpty() || currentMerchant.equals(t.merchant))
                 .filter(t -> q.isEmpty()
-                        || (t.merchant != null && t.merchant.toLowerCase().contains(q))
-                        || (t.category != null && t.category.toLowerCase().contains(q))
-                        || (t.paymentDetail != null && t.paymentDetail.toLowerCase().contains(q)))
+                        || (t.merchant != null && t.merchant.toLowerCase(Locale.ROOT).contains(q))
+                        || (t.category != null && t.category.toLowerCase(Locale.ROOT).contains(q))
+                        || (t.paymentDetail != null && t.paymentDetail.toLowerCase(Locale.ROOT).contains(q)))
                 .collect(Collectors.toList());
         adapter.setTransactions(filtered);
         if (layoutEmptyState != null) {
@@ -148,7 +148,7 @@ public class TransactionsActivity extends AppCompatActivity {
         // Update summary
         double total = filtered.stream().filter(t -> !t.isSelfTransfer).mapToDouble(t -> t.amount).sum();
         if (tvCount != null) tvCount.setText(filtered.size() + " transactions");
-        if (tvTotal != null) tvTotal.setText(String.format("₹%.0f", total));
+        if (tvTotal != null) tvTotal.setText(String.format(Locale.getDefault(), "₹%.0f", total));
     }
 
     @Override public boolean onOptionsItemSelected(MenuItem item) {

@@ -1,5 +1,6 @@
 package com.spendtracker.pro;
 
+import java.util.Locale;
 import java.util.regex.*;
 
 /**
@@ -29,7 +30,7 @@ public class UpiDetector {
         Matcher m = UPI_PATTERN.matcher(sms);
         while (m.find()) {
             String match = m.group(1);
-            String handle = match.substring(match.indexOf('@') + 1).toLowerCase();
+            String handle = match.substring(match.indexOf('@') + 1).toLowerCase(Locale.ROOT);
             if (!isEmailDomain(handle)) {
                 return match;
             }

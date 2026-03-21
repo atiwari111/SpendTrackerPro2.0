@@ -323,23 +323,23 @@ public class CategoryEngine {
 
     public static void learnMerchant(String merchant, String category) {
         if (learningPrefs == null || merchant == null || category == null) return;
-        learningPrefs.edit().putString(merchant.toLowerCase().trim(), category).apply();
+        learningPrefs.edit().putString(merchant.toLowerCase(Locale.ROOT).trim(), category).apply();
     }
 
     private static String getLearnedCategory(String merchant) {
         if (learningPrefs == null || merchant == null) return null;
-        return learningPrefs.getString(merchant.toLowerCase().trim(), null);
+        return learningPrefs.getString(merchant.toLowerCase(Locale.ROOT).trim(), null);
     }
 
     public static void learnMerchantAlias(String rawName, String displayName) {
         if (aliasPrefs == null || rawName == null || displayName == null) return;
         if (rawName.trim().equalsIgnoreCase(displayName.trim())) return;
-        aliasPrefs.edit().putString(rawName.toLowerCase().trim(), displayName.trim()).apply();
+        aliasPrefs.edit().putString(rawName.toLowerCase(Locale.ROOT).trim(), displayName.trim()).apply();
     }
 
     public static String resolveMerchantAlias(String rawName) {
         if (aliasPrefs == null || rawName == null) return rawName;
-        String alias = aliasPrefs.getString(rawName.toLowerCase().trim(), null);
+        String alias = aliasPrefs.getString(rawName.toLowerCase(Locale.ROOT).trim(), null);
         return alias != null ? alias : rawName;
     }
 
@@ -348,7 +348,7 @@ public class CategoryEngine {
     // ────────────────────────────────────────────────────────────────
     public static String resolveUpiMerchant(String merchant) {
         if (merchant == null) return "Unknown";
-        String m = merchant.toLowerCase();
+        String m = merchant.toLowerCase(Locale.ROOT);
         m = m.replaceAll("paytmqr", "paytm");
         m = m.replaceAll("@.*", "");
         if (m.contains("amazon"))   return "Amazon";
@@ -378,7 +378,7 @@ public class CategoryEngine {
     // ────────────────────────────────────────────────────────────────
     public static String autoCategory(String merchant) {
         if (merchant == null) return "💼 Others";
-        String m = merchant.toLowerCase().trim();
+        String m = merchant.toLowerCase(Locale.ROOT).trim();
 
         // 1. User-learned overrides (highest priority)
         String learned = getLearnedCategory(m);
@@ -402,8 +402,8 @@ public class CategoryEngine {
     // ────────────────────────────────────────────────────────────────
     public static String classify(String merchant, String smsBody) {
         if (merchant == null) merchant = "";
-        merchant = resolveUpiMerchant(merchant).toLowerCase();
-        String body = smsBody != null ? smsBody.toLowerCase() : "";
+        merchant = resolveUpiMerchant(merchant).toLowerCase(Locale.ROOT);
+        String body = smsBody != null ? smsBody.toLowerCase(Locale.ROOT) : "";
 
         // 1. Income detection — all income signals map to single Income category
         if (body.contains("salary")     || body.contains("credited by employer") ||

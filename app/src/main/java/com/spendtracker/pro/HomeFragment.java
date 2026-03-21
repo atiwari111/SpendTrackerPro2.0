@@ -183,7 +183,7 @@ public class HomeFragment extends Fragment {
             if (cards != null && !cards.isEmpty()) {
                 double total = 0;
                 for (CreditCard c : cards) total += c.currentSpent;
-                tvCreditCardSpent.setText(String.format("₹%.0f spent", total));
+                tvCreditCardSpent.setText(String.format(Locale.getDefault(), "₹%.0f spent", total));
                 tvCreditCardSpent.setVisibility(View.VISIBLE);
             } else {
                 tvCreditCardSpent.setVisibility(View.INVISIBLE);
@@ -193,7 +193,7 @@ public class HomeFragment extends Fragment {
         db.bankAccountDao().getTotalBalance().observe(getViewLifecycleOwner(), total -> {
             if (tvTotalBankBalance == null) return;
             if (total != null && total > 0) {
-                tvTotalBankBalance.setText(String.format("₹%.0f", total));
+                tvTotalBankBalance.setText(String.format(Locale.getDefault(), "₹%.0f", total));
                 tvTotalBankBalance.setVisibility(View.VISIBLE);
             } else {
                 tvTotalBankBalance.setVisibility(View.INVISIBLE);
@@ -309,10 +309,10 @@ public class HomeFragment extends Fragment {
         requireActivity().runOnUiThread(() -> {
             if (!isAdded()) return;
             // Left stat card — reflects current chip selection
-            if (tvTodayAmt   != null) tvTodayAmt.setText(String.format("₹%.0f", fPrimary));
+            if (tvTodayAmt   != null) tvTodayAmt.setText(String.format(Locale.getDefault(), "₹%.0f", fPrimary));
             if (tvPeriodLabel != null) tvPeriodLabel.setText(periodLbl);
             // Right stat card — always month total for budget context
-            if (tvMonthAmt   != null) tvMonthAmt.setText(String.format("₹%.0f", fm));
+            if (tvMonthAmt   != null) tvMonthAmt.setText(String.format(Locale.getDefault(), "₹%.0f", fm));
             if (tvTopCat     != null) tvTopCat.setText(topCatFinal);
             if (tvPrediction != null) tvPrediction.setText(predText);
             if (tvBudgetLeft != null) {
@@ -320,7 +320,7 @@ public class HomeFragment extends Fragment {
                     tvBudgetLeft.setText("No budget set");
                     tvBudgetLeft.setTextColor(ContextCompat.getColor(requireContext(), R.color.text_hint));
                 } else {
-                    tvBudgetLeft.setText(String.format("₹%.0f left", fLeft));
+                    tvBudgetLeft.setText(String.format(Locale.getDefault(), "₹%.0f left", fLeft));
                     tvBudgetLeft.setTextColor(ContextCompat.getColor(requireContext(),
                             fLeft >= 0 ? R.color.green : R.color.red));
                 }
@@ -335,8 +335,8 @@ public class HomeFragment extends Fragment {
             if (tvStreakLabel != null) tvStreakLabel.setText(fStreak.label);
             if (tvStreakDetail != null) {
                 String detail = fStreak.todayOnTrack
-                        ? String.format("Today: ₹%.0f / ₹%.0f ✅", fStreak.todaySpend, fStreak.dailyLimit)
-                        : String.format("Today: ₹%.0f / ₹%.0f ⚠️", fStreak.todaySpend, fStreak.dailyLimit);
+                        ? String.format(Locale.getDefault(), "Today: ₹%.0f / ₹%.0f ✅", fStreak.todaySpend, fStreak.dailyLimit)
+                        : String.format(Locale.getDefault(), "Today: ₹%.0f / ₹%.0f ⚠️", fStreak.todaySpend, fStreak.dailyLimit);
                 tvStreakDetail.setText(detail);
             }
             if (tvStreakBest != null && fStreak.longestStreak > 0) {

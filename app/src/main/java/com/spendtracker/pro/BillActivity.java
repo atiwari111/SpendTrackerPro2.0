@@ -174,7 +174,7 @@ public class BillActivity extends AppCompatActivity {
                                 CategoryEngine.getInfo(cat).icon, amt, dueDate, "PENDING");
                         bill.isRecurring = cbRecurring.isChecked();
                         bill.frequency   = (String) spFreq.getSelectedItem();
-                        bill.merchantId  = name.toLowerCase().replaceAll("[^a-z0-9]","");
+                        bill.merchantId  = name.toLowerCase(Locale.ROOT).replaceAll("[^a-z0-9]","");
                         AppExecutors.db().execute(() -> db.billDao().insert(bill));
                     } catch (Exception e) {
                         android.util.Log.e("BillActivity", "Add bill DB insert failed: " + e.getMessage());
