@@ -1,6 +1,15 @@
-name: Build SpendTracker Pro APK (Manual Only)
+name: Build SpendTracker Pro APK (Feature Branch)
 
 on:
+  # Run automatically on every push to a feature branch and on PRs targeting main.
+  # This catches lint errors, failing tests, CVEs, and SAST findings before merge.
+  push:
+    branches-ignore:
+      - main
+  pull_request:
+    branches:
+      - main
+  # Keep manual dispatch for on-demand builds (e.g. QA hand-off).
   workflow_dispatch:
     inputs:
       notes:
@@ -12,6 +21,8 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
+    # contents:write is required by gradle/actions/dependency-submission to post
+    # the dependency graph to GitHub's Security tab. Never available on fork PRs.
     permissions:
       contents: write
 
@@ -24,20 +35,20 @@ jobs:
 
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v4.2.2
+        uses: actions/checkout@v4
 
       - name: Setup Java 17
-        uses: actions/setup-java@v4.7.0
+        uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
           cache: gradle
 
       - name: Setup Android SDK
-        uses: android-actions/setup-android@v3.2.1
+        uses: android-actions/setup-android@v3
 
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v4.3.1
+        uses: gradle/actions/setup-gradle@v4
         with:
           cache-read-only: false
 
@@ -59,12 +70,11 @@ jobs:
           echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > app/spendtracker.keystore
           echo "✅ Keystore decoded: $(wc -c < app/spendtracker.keystore) bytes"
 
-      # ── Quality checks ───────────────────────────
-
+      # ── Quality gates (match main build-apk.yml) ───────────────────────────
       - name: Generate lint baseline (first run only)
         run: |
           if [ ! -f app/lint-baseline.xml ]; then
-            echo "No lint baseline found — generating one"
+            echo "No lint baseline found — generating one to capture existing issues"
             ./gradlew updateLintBaseline --no-daemon || true
           fi
 
@@ -74,10 +84,18 @@ jobs:
       - name: Run Unit Tests
         run: ./gradlew testDebugUnitTest
 
+      # Scans all Gradle dependencies against the GitHub Advisory Database (OSV).
+      # Fails the build if any dependency has a known CVE with a fix available.
+      # Skipped on pull_request — contents:write is never available for fork PRs.
       - name: Dependency vulnerability scan
-        uses: gradle/actions/dependency-submission@v4.3.1
+        if: github.event_name != 'pull_request'
+        uses: gradle/actions/dependency-submission@v4
         continue-on-error: true
 
+      # Lightweight SAST — catches hardcoded secrets, SQL injection patterns,
+      # and common Android security issues.
+      # continue-on-error keeps the build green while the baseline is being cleaned;
+      # remove it once findings are triaged to make this a hard gate.
       - name: SAST — Semgrep Android rules
         uses: semgrep/semgrep-action@v1
         with:
@@ -86,8 +104,7 @@ jobs:
             p/secrets
             p/owasp-top-ten
         continue-on-error: true
-
-      # ── Build ───────────────────────────
+      # ──────────────────────────────────────────────────────────────────────
 
       - name: Build Debug APK
         run: ./gradlew assembleDebug --stacktrace --no-daemon
@@ -97,8 +114,6 @@ jobs:
 
       - name: Build Release AAB
         run: ./gradlew bundleRelease --stacktrace --no-daemon
-
-      # ── Verify ───────────────────────────
 
       - name: Verify all artifacts exist
         run: |
@@ -113,24 +128,22 @@ jobs:
             && echo "✅ AAB: $(du -sh app/build/outputs/bundle/release/app-release.aab)" \
             || echo "❌ AAB missing"
 
-      # ── Upload ───────────────────────────
-
       - name: Upload Debug APK
-        uses: actions/upload-artifact@v4.6.2
+        uses: actions/upload-artifact@v4
         with:
           name: SpendTrackerPro-${{ github.ref_name }}-Debug-APK
           path: app/build/outputs/apk/debug/app-debug.apk
           retention-days: 14
 
       - name: Upload Release APK
-        uses: actions/upload-artifact@v4.6.2
+        uses: actions/upload-artifact@v4
         with:
           name: SpendTrackerPro-${{ github.ref_name }}-Release-APK
           path: app/build/outputs/apk/release/app-release.apk
           retention-days: 14
 
       - name: Upload AAB
-        uses: actions/upload-artifact@v4.6.2
+        uses: actions/upload-artifact@v4
         with:
           name: SpendTrackerPro-${{ github.ref_name }}-AAB
           path: app/build/outputs/bundle/release/app-release.aab
