@@ -151,7 +151,7 @@ public class AddExpenseActivity extends AppCompatActivity {
                         if (suggestion.avgAmount > 0
                                 && (etAmount.getText() == null
                                     || etAmount.getText().toString().isEmpty())) {
-                            etAmount.setHint(String.format("~₹%.0f (avg)", suggestion.avgAmount));
+                            etAmount.setHint(String.format(Locale.getDefault(), "~₹%.0f (avg)", suggestion.avgAmount));
                         }
 
                         // Show last notes as placeholder hint
