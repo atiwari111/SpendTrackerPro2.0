@@ -1,14 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+
     <!-- ═══════════════════════════════════════════════════════════
          Neo-Banking Light Theme — warm pink/orange tones
-         Fix 2.43: cards = light orange  Fix 2.44: bg = light pink
          ═══════════════════════════════════════════════════════════ -->
-    <color name="bg_dark">#FFF0F5</color>      <!-- Fix 2.44: light pink app background -->
-    <color name="bg_card">#FFF3E0</color>      <!-- Fix 2.43: light orange cards -->
-    <color name="bg_card2">#FFEBD6</color>     <!-- Fix 2.43: slightly deeper light orange -->
+
+    <!-- Backgrounds -->
+    <color name="bg_dark">#FFF0F5</color>      <!-- light pink app background -->
+    <color name="bg_card">#FFF3E0</color>      <!-- light orange cards -->
+    <color name="bg_card2">#FFEBD6</color>     <!-- slightly deeper light orange -->
     <color name="bg_nav">#FFFFFF</color>
-    <color name="bg_elevated">#FFE4CC</color>  <!-- Fix 2.43: elevated surfaces warm orange -->
+    <color name="bg_elevated">#FFE4CC</color>  <!-- elevated surfaces -->
+
+    <!-- 🔥 NEW: Onboarding Dark Theme (for your XML screens) -->
+    <color name="background_dark">#0F172A</color>
 
     <!-- Brand -->
     <color name="purple_main">#7C3AED</color>
@@ -25,22 +30,37 @@
     <color name="amber_dim">#FEF3C7</color>
     <color name="cyan">#06B6D4</color>
 
+    <!-- 🔥 NEW: CTA Button Color -->
+    <color name="cta_green">#22C55E</color>
+
     <!-- Text — light theme -->
     <color name="white">#FFFFFF</color>
     <color name="text_primary">#0F172A</color>
     <color name="text_secondary">#64748B</color>
     <color name="text_hint">#94A3B8</color>
+
+    <!-- 🔥 NEW: Text for dark backgrounds (onboarding) -->
+    <color name="text_on_dark_primary">#FFFFFF</color>
+    <color name="text_on_dark_secondary">#B3FFFFFF</color>
+
+    <!-- Existing opacity variants -->
     <color name="white_70">#B30F172A</color>
     <color name="white_50">#800F172A</color>
     <color name="white_30">#4D0F172A</color>
     <color name="white_10">#1A0F172A</color>
-    <color name="divider">#F5DEB3</color>     <!-- warm wheat divider to match theme -->
+
+    <color name="divider">#F5DEB3</color>
 
     <!-- System -->
     <color name="colorPrimary">#7C3AED</color>
     <color name="colorPrimaryDark">#5B21B6</color>
     <color name="colorAccent">#A78BFA</color>
+
+    <!-- Gradients -->
     <color name="gradient_start">#FFF0F5</color>
     <color name="gradient_end">#FFF3E0</color>
+
+    <!-- Launcher -->
     <color name="ic_launcher_background">#7C3AED</color>
+
 </resources>
