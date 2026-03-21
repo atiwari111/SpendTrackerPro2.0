@@ -2,8 +2,7 @@
 <androidx.coordinatorlayout.widget.CoordinatorLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:layout_width="match_parent" android:layout_height="match_parent"
-    android:background="@color/bg_dark">
+    android:layout_width="match_parent" android:layout_height="match_parent">
 
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent" android:layout_height="match_parent"
@@ -213,7 +212,7 @@
                             android:layout_marginTop="4dp"/>
                         <TextView android:id="@+id/tvBillsBadge"
                             android:layout_width="wrap_content" android:layout_height="wrap_content"
-                            android:textSize="9sp" android:textColor="@color/amber"
+                            android:textSize="11sp" android:textColor="@color/amber"
                             android:visibility="gone"/>
                     </LinearLayout>
                 </androidx.cardview.widget.CardView>
@@ -240,7 +239,7 @@
                             android:layout_marginTop="4dp"/>
                         <TextView android:id="@+id/tvCreditCardSpent"
                             android:layout_width="wrap_content" android:layout_height="wrap_content"
-                            android:textSize="9sp" android:textColor="@color/purple_light"
+                            android:textSize="11sp" android:textColor="@color/purple_light"
                             android:visibility="gone"/>
                     </LinearLayout>
                 </androidx.cardview.widget.CardView>
@@ -260,7 +259,7 @@
                             android:layout_marginTop="4dp"/>
                         <TextView android:id="@+id/tvTotalBankBalance"
                             android:layout_width="wrap_content" android:layout_height="wrap_content"
-                            android:textSize="9sp" android:textColor="@color/green"
+                            android:textSize="11sp" android:textColor="@color/green"
                             android:visibility="gone"/>
                     </LinearLayout>
                 </androidx.cardview.widget.CardView>
@@ -290,7 +289,7 @@
 
     <!-- FAB -->
     <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/fabAdd"
+android:contentDescription="@android:string/untitled"         android:id="@+id/fabAdd"
         android:layout_width="wrap_content" android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
         android:layout_marginBottom="72dp"

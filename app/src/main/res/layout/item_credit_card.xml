@@ -52,7 +52,7 @@
                     android:layout_height="wrap_content"
                     android:text="CREDIT CARD"
                     android:textColor="#CCFFFFFF"
-                    android:textSize="10sp"
+                    android:textSize="11sp"
                     android:letterSpacing="0.15" />
 
                 <LinearLayout
