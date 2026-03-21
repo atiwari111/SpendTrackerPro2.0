@@ -146,123 +146,133 @@
                     android:layout_marginTop="4dp" android:visibility="gone"/>
             </LinearLayout>
 
-            <!-- QUICK ACTIONS -->
+            <!-- QUICK ACTIONS — uniform 2×3 grid, fixed 90dp height per card -->
             <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
-                android:orientation="horizontal" android:paddingHorizontal="16dp" android:paddingBottom="8dp">
+                android:orientation="vertical" android:paddingHorizontal="16dp" android:paddingBottom="8dp">
 
-                <androidx.cardview.widget.CardView android:id="@+id/cardInsights"
-                    android:clickable="true" android:focusable="true"
-                    android:layout_width="0dp" android:layout_height="wrap_content"
-                    android:layout_weight="1" android:layout_marginEnd="8dp"
-                    style="@style/Card.Surface">
-                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
-                        android:orientation="vertical" android:padding="14dp" android:gravity="center">
-                        <ImageView android:layout_width="22dp" android:layout_height="22dp"
-                            android:src="@drawable/ic_nav_analytics"
-                            android:contentDescription="@null"/>
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                            android:text="Analytics" android:textSize="11sp" android:textColor="@color/text_secondary"
-                            android:layout_marginTop="4dp"/>
-                    </LinearLayout>
-                </androidx.cardview.widget.CardView>
+                <!-- Row 1: Analytics | Budget -->
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:orientation="horizontal" android:baselineAligned="false">
 
-                <androidx.cardview.widget.CardView android:id="@+id/cardBudget"
-                    android:clickable="true" android:focusable="true"
-                    android:layout_width="0dp" android:layout_height="wrap_content"
-                    android:layout_weight="1" android:layout_marginEnd="8dp"
-                    style="@style/Card.Surface">
-                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
-                        android:orientation="vertical" android:padding="14dp" android:gravity="center">
-                        <ImageView android:layout_width="22dp" android:layout_height="22dp"
-                            android:src="@drawable/ic_nav_budget"
-                            android:contentDescription="@null"/>
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                            android:text="Budget" android:textSize="11sp" android:textColor="@color/text_secondary"
-                            android:layout_marginTop="4dp"/>
-                    </LinearLayout>
-                </androidx.cardview.widget.CardView>
+                    <androidx.cardview.widget.CardView android:id="@+id/cardInsights"
+                        android:clickable="true" android:focusable="true"
+                        android:layout_width="0dp" android:layout_height="90dp"
+                        android:layout_weight="1" android:layout_marginEnd="8dp"
+                        style="@style/Card.Surface">
+                        <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent"
+                            android:orientation="vertical" android:gravity="center">
+                            <ImageView android:layout_width="28dp" android:layout_height="28dp"
+                                android:src="@drawable/ic_nav_analytics"
+                                android:contentDescription="@null"/>
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                                android:text="Analytics" android:textSize="12sp" android:textStyle="bold"
+                                android:textColor="@color/text_secondary" android:layout_marginTop="6dp"/>
+                        </LinearLayout>
+                    </androidx.cardview.widget.CardView>
 
-                <androidx.cardview.widget.CardView android:id="@+id/cardNetWorth"
-                    android:layout_width="0dp" android:layout_height="wrap_content"
-                    android:layout_weight="1" android:layout_marginEnd="8dp"
-                    style="@style/Card.Surface">
-                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
-                        android:orientation="vertical" android:padding="14dp" android:gravity="center">
-                        <ImageView android:layout_width="22dp" android:layout_height="22dp"
-                            android:src="@drawable/ic_ui_networth"
-                            android:contentDescription="@null"/>
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                            android:text="Net Worth" android:textSize="11sp" android:textColor="@color/text_secondary"
-                            android:layout_marginTop="4dp"/>
-                    </LinearLayout>
-                </androidx.cardview.widget.CardView>
+                    <androidx.cardview.widget.CardView android:id="@+id/cardBudget"
+                        android:clickable="true" android:focusable="true"
+                        android:layout_width="0dp" android:layout_height="90dp"
+                        android:layout_weight="1"
+                        style="@style/Card.Surface">
+                        <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent"
+                            android:orientation="vertical" android:gravity="center">
+                            <ImageView android:layout_width="28dp" android:layout_height="28dp"
+                                android:src="@drawable/ic_nav_budget"
+                                android:contentDescription="@null"/>
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                                android:text="Budget" android:textSize="12sp" android:textStyle="bold"
+                                android:textColor="@color/text_secondary" android:layout_marginTop="6dp"/>
+                        </LinearLayout>
+                    </androidx.cardview.widget.CardView>
+                </LinearLayout>
 
-                <androidx.cardview.widget.CardView android:id="@+id/cardBills"
-                    android:layout_width="0dp" android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:clickable="true" android:focusable="true"
-                    style="@style/Card.Surface">
-                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
-                        android:orientation="vertical" android:padding="14dp" android:gravity="center">
-                        <ImageView android:layout_width="22dp" android:layout_height="22dp"
-                            android:src="@drawable/ic_ui_receipt"
-                            android:contentDescription="@null"/>
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                            android:text="Bills" android:textSize="11sp" android:textColor="@color/text_secondary"
-                            android:layout_marginTop="4dp"/>
-                        <TextView android:id="@+id/tvBillsBadge"
-                            android:layout_width="wrap_content" android:layout_height="wrap_content"
-                            android:textSize="11sp" android:textColor="@color/amber"
-                            android:visibility="gone"/>
-                    </LinearLayout>
-                </androidx.cardview.widget.CardView>
-            </LinearLayout>
+                <!-- Row 2: Net Worth | Bills -->
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:orientation="horizontal" android:baselineAligned="false"
+                    android:layout_marginTop="8dp">
 
-            <!-- Quick action row 2: Credit Cards + Bank Accounts -->
-            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
-                android:orientation="horizontal" android:paddingHorizontal="16dp"
-                android:layout_marginTop="8dp" android:layout_marginBottom="4dp"
-                android:gravity="center_vertical">
+                    <androidx.cardview.widget.CardView android:id="@+id/cardNetWorth"
+                        android:layout_width="0dp" android:layout_height="90dp"
+                        android:layout_weight="1" android:layout_marginEnd="8dp"
+                        style="@style/Card.Surface">
+                        <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent"
+                            android:orientation="vertical" android:gravity="center">
+                            <ImageView android:layout_width="28dp" android:layout_height="28dp"
+                                android:src="@drawable/ic_ui_networth"
+                                android:contentDescription="@null"/>
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                                android:text="Net Worth" android:textSize="12sp" android:textStyle="bold"
+                                android:textColor="@color/text_secondary" android:layout_marginTop="6dp"/>
+                        </LinearLayout>
+                    </androidx.cardview.widget.CardView>
 
-                <androidx.cardview.widget.CardView android:id="@+id/cardCreditCards"
-                    android:layout_width="0dp" android:layout_height="wrap_content"
-                    android:layout_weight="1" android:layout_marginEnd="8dp"
-                    android:clickable="true" android:focusable="true"
-                    style="@style/Card.Surface">
-                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
-                        android:orientation="vertical" android:padding="14dp" android:gravity="center">
-                        <ImageView android:layout_width="22dp" android:layout_height="22dp"
-                            android:src="@drawable/ic_ui_cards"
-                            android:contentDescription="@null"/>
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                            android:text="Cards" android:textSize="11sp" android:textColor="@color/text_secondary"
-                            android:layout_marginTop="4dp"/>
-                        <TextView android:id="@+id/tvCreditCardSpent"
-                            android:layout_width="wrap_content" android:layout_height="wrap_content"
-                            android:textSize="11sp" android:textColor="@color/purple_light"
-                            android:visibility="gone"/>
-                    </LinearLayout>
-                </androidx.cardview.widget.CardView>
+                    <androidx.cardview.widget.CardView android:id="@+id/cardBills"
+                        android:layout_width="0dp" android:layout_height="90dp"
+                        android:layout_weight="1"
+                        android:clickable="true" android:focusable="true"
+                        style="@style/Card.Surface">
+                        <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent"
+                            android:orientation="vertical" android:gravity="center">
+                            <ImageView android:layout_width="28dp" android:layout_height="28dp"
+                                android:src="@drawable/ic_ui_receipt"
+                                android:contentDescription="@null"/>
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                                android:text="Bills" android:textSize="12sp" android:textStyle="bold"
+                                android:textColor="@color/text_secondary" android:layout_marginTop="6dp"/>
+                            <TextView android:id="@+id/tvBillsBadge"
+                                android:layout_width="wrap_content" android:layout_height="wrap_content"
+                                android:textSize="11sp" android:textColor="@color/amber"
+                                android:layout_marginTop="2dp" android:visibility="gone"/>
+                        </LinearLayout>
+                    </androidx.cardview.widget.CardView>
+                </LinearLayout>
 
-                <androidx.cardview.widget.CardView android:id="@+id/cardBankAccounts"
-                    android:layout_width="0dp" android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:clickable="true" android:focusable="true"
-                    style="@style/Card.Surface">
-                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
-                        android:orientation="vertical" android:padding="14dp" android:gravity="center">
-                        <ImageView android:layout_width="22dp" android:layout_height="22dp"
-                            android:src="@drawable/ic_ui_bank"
-                            android:contentDescription="@null"/>
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                            android:text="Accounts" android:textSize="11sp" android:textColor="@color/text_secondary"
-                            android:layout_marginTop="4dp"/>
-                        <TextView android:id="@+id/tvTotalBankBalance"
-                            android:layout_width="wrap_content" android:layout_height="wrap_content"
-                            android:textSize="11sp" android:textColor="@color/green"
-                            android:visibility="gone"/>
-                    </LinearLayout>
-                </androidx.cardview.widget.CardView>
+                <!-- Row 3: Cards | Accounts -->
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:orientation="horizontal" android:baselineAligned="false"
+                    android:layout_marginTop="8dp" android:layout_marginBottom="4dp">
+
+                    <androidx.cardview.widget.CardView android:id="@+id/cardCreditCards"
+                        android:layout_width="0dp" android:layout_height="90dp"
+                        android:layout_weight="1" android:layout_marginEnd="8dp"
+                        android:clickable="true" android:focusable="true"
+                        style="@style/Card.Surface">
+                        <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent"
+                            android:orientation="vertical" android:gravity="center">
+                            <ImageView android:layout_width="28dp" android:layout_height="28dp"
+                                android:src="@drawable/ic_ui_cards"
+                                android:contentDescription="@null"/>
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                                android:text="Cards" android:textSize="12sp" android:textStyle="bold"
+                                android:textColor="@color/text_secondary" android:layout_marginTop="6dp"/>
+                            <TextView android:id="@+id/tvCreditCardSpent"
+                                android:layout_width="wrap_content" android:layout_height="wrap_content"
+                                android:textSize="11sp" android:textColor="@color/purple_light"
+                                android:layout_marginTop="2dp" android:visibility="gone"/>
+                        </LinearLayout>
+                    </androidx.cardview.widget.CardView>
+
+                    <androidx.cardview.widget.CardView android:id="@+id/cardBankAccounts"
+                        android:layout_width="0dp" android:layout_height="90dp"
+                        android:layout_weight="1"
+                        android:clickable="true" android:focusable="true"
+                        style="@style/Card.Surface">
+                        <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent"
+                            android:orientation="vertical" android:gravity="center">
+                            <ImageView android:layout_width="28dp" android:layout_height="28dp"
+                                android:src="@drawable/ic_ui_bank"
+                                android:contentDescription="@null"/>
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                                android:text="Accounts" android:textSize="12sp" android:textStyle="bold"
+                                android:textColor="@color/text_secondary" android:layout_marginTop="6dp"/>
+                            <TextView android:id="@+id/tvTotalBankBalance"
+                                android:layout_width="wrap_content" android:layout_height="wrap_content"
+                                android:textSize="11sp" android:textColor="@color/green"
+                                android:layout_marginTop="2dp" android:visibility="gone"/>
+                        </LinearLayout>
+                    </androidx.cardview.widget.CardView>
+                </LinearLayout>
             </LinearLayout>
 
             <!-- RECENT TRANSACTIONS -->
