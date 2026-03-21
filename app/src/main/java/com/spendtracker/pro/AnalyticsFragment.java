@@ -141,7 +141,7 @@ public class AnalyticsFragment extends Fragment {
             long[] selectedRange = getSelectedMonthRange();
             long monthStart = selectedRange[0];
             long monthEnd   = selectedRange[1];
-            SimpleDateFormat dayFmt = new SimpleDateFormat("MM/dd", Locale.getDefault());
+            SimpleDateFormat dayFmt = new SimpleDateFormat("MM/dd", Locale.ROOT);
 
             Map<String, Double> daily = new LinkedHashMap<>();
             for (int i = 6; i >= 0; i--) {
@@ -173,7 +173,7 @@ public class AnalyticsFragment extends Fragment {
             double monthTotal = monthExpense;
 
             // 30-day line chart
-            SimpleDateFormat d30 = new SimpleDateFormat("dd", Locale.getDefault());
+            SimpleDateFormat d30 = new SimpleDateFormat("dd", Locale.ROOT);
             Map<String, Double> last30 = new LinkedHashMap<>();
             for (int i = 29; i >= 0; i--) {
                 Calendar c = Calendar.getInstance(); c.add(Calendar.DAY_OF_YEAR, -i);
@@ -187,7 +187,7 @@ public class AnalyticsFragment extends Fragment {
 
             String topMerchant = merchantMap.isEmpty() ? "N/A"
                     : Collections.max(merchantMap.entrySet(), Map.Entry.comparingByValue()).getKey()
-                    + " ₹" + String.format("%.0f",
+                    + " ₹" + String.format(Locale.getDefault(), "%.0f",
                     Collections.max(merchantMap.entrySet(), Map.Entry.comparingByValue()).getValue());
 
             // Only use current month budgets for health score
@@ -263,9 +263,9 @@ public class AnalyticsFragment extends Fragment {
             if (!isAdded()) return;
             requireActivity().runOnUiThread(() -> {
                 if (!isAdded()) return;
-                if (tvWeekTotal  != null) tvWeekTotal.setText("₹" + String.format("%.0f", ft));
-                if (tvMonthTotal != null) tvMonthTotal.setText("₹" + String.format("%.0f", fm));
-                if (tvAvgDaily   != null) tvAvgDaily.setText("₹" + String.format("%.0f", favg));
+                if (tvWeekTotal  != null) tvWeekTotal.setText("₹" + String.format(Locale.getDefault(), "%.0f", ft));
+                if (tvMonthTotal != null) tvMonthTotal.setText("₹" + String.format(Locale.getDefault(), "%.0f", fm));
+                if (tvAvgDaily   != null) tvAvgDaily.setText("₹" + String.format(Locale.getDefault(), "%.0f", favg));
                 if (tvTopMerchant != null) tvTopMerchant.setText(ftm);
                 if (tvMerchantBreakdown != null)
                     tvMerchantBreakdown.setText(mBreakdown.isEmpty() ? "No transactions yet" : mBreakdown);
@@ -277,11 +277,11 @@ public class AnalyticsFragment extends Fragment {
                     tvHealthScore.setTextColor(sc);
                 }
                 // P4: income vs expense summary
-                if (tvTotalIncome  != null) tvTotalIncome.setText("Income: ₹" + String.format("%.0f", fIncome));
-                if (tvTotalExpense != null) tvTotalExpense.setText("Spent: ₹" + String.format("%.0f", fExpense));
+                if (tvTotalIncome  != null) tvTotalIncome.setText("Income: ₹" + String.format(Locale.getDefault(), "%.0f", fIncome));
+                if (tvTotalExpense != null) tvTotalExpense.setText("Spent: ₹" + String.format(Locale.getDefault(), "%.0f", fExpense));
                 if (tvNetSavings  != null) {
                     double net = fIncome - fExpense;
-                    tvNetSavings.setText((net >= 0 ? "Saved: ₹" : "Deficit: ₹") + String.format("%.0f", Math.abs(net)));
+                    tvNetSavings.setText((net >= 0 ? "Saved: ₹" : "Deficit: ₹") + String.format(Locale.getDefault(), "%.0f", Math.abs(net)));
                     tvNetSavings.setTextColor(androidx.core.content.ContextCompat.getColor(requireContext(),
                             net >= 0 ? R.color.green : R.color.red));
                 }
@@ -422,7 +422,7 @@ public class AnalyticsFragment extends Fragment {
 
         double total = 0; for (Transaction t : filtered) total += t.amount;
         tvTitle.setText(matchedCat);
-        tvTotal.setText(String.format("₹%.0f · %d transactions", total, filtered.size()));
+        tvTotal.setText(String.format(Locale.getDefault(), "₹%.0f · %d transactions", total, filtered.size()));
         rv.setLayoutManager(new LinearLayoutManager(requireContext()));
         TransactionAdapter a = new TransactionAdapter(true);
         a.setTransactions(filtered); rv.setAdapter(a);

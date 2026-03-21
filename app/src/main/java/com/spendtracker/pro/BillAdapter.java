@@ -15,7 +15,7 @@ public class BillAdapter extends RecyclerView.Adapter<BillAdapter.VH> {
     private final List<Bill> list;
     private final OnBillClick click;
     private final SimpleDateFormat dateFmt =
-            new SimpleDateFormat("dd MMM", Locale.getDefault());
+            new SimpleDateFormat("dd MMM", Locale.ROOT);
 
     public BillAdapter(List<Bill> list, OnBillClick click) {
         this.list  = list != null ? list : new ArrayList<>();
@@ -32,7 +32,7 @@ public class BillAdapter extends RecyclerView.Adapter<BillAdapter.VH> {
         Bill b = list.get(i);
         h.tvIcon.setText(b.icon != null ? b.icon : "📋");
         h.tvName.setText(b.name);
-        h.tvAmount.setText(String.format("₹%.0f", b.amount));
+        h.tvAmount.setText(String.format(Locale.getDefault(), "₹%.0f", b.amount));
         h.tvStatus.setText(b.getStatusLabel());
         h.tvDueDate.setText(b.dueDate > 0 ? "Due: " + dateFmt.format(new Date(b.dueDate)) : "");
 

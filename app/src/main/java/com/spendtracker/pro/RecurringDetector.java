@@ -61,12 +61,12 @@ public class RecurringDetector {
         List<RecurringTransaction> existing = db.recurringDao().getActiveSync();
         Set<String> existingNames = new HashSet<>();
         for (RecurringTransaction r : existing) {
-            if (r.name != null) existingNames.add(r.name.toLowerCase().trim());
+            if (r.name != null) existingNames.add(r.name.toLowerCase(Locale.ROOT).trim());
         }
 
         int inserted = 0;
         for (DetectedPattern p : patterns) {
-            if (existingNames.contains(p.merchant.toLowerCase().trim())) continue;
+            if (existingNames.contains(p.merchant.toLowerCase(Locale.ROOT).trim())) continue;
 
             RecurringTransaction r = new RecurringTransaction();
             r.name          = p.merchant;
@@ -95,7 +95,7 @@ public class RecurringDetector {
         Map<String, List<Transaction>> byMerchant = new LinkedHashMap<>();
         for (Transaction t : txns) {
             if (t.merchant == null || t.merchant.isEmpty()) continue;
-            String key = t.merchant.trim().toLowerCase();
+            String key = t.merchant.trim().toLowerCase(Locale.ROOT);
             if (!byMerchant.containsKey(key)) byMerchant.put(key, new ArrayList<>());
             byMerchant.get(key).add(t);
         }

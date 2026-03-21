@@ -52,7 +52,7 @@ public class BankAccountAdapter extends RecyclerView.Adapter<BankAccountAdapter.
         }
 
         // Balance
-        h.tvBalance.setText(String.format("₹%,.2f", acc.balance));
+        h.tvBalance.setText(String.format(Locale.getDefault(), "₹%,.2f", acc.balance));
 
         // Balance color: red if negative
         int balColor = acc.balance < 0
@@ -76,7 +76,7 @@ public class BankAccountAdapter extends RecyclerView.Adapter<BankAccountAdapter.
     /** Returns 2-letter initials for use in the bank logo circle. */
     private String getBankInitials(String bankName) {
         if (bankName == null || bankName.isEmpty()) return "BK";
-        String upper = bankName.toUpperCase().trim();
+        String upper = bankName.toUpperCase(Locale.ROOT).trim();
         if (upper.startsWith("SBI"))   return "SBI";
         if (upper.startsWith("HDFC"))  return "HDF";
         if (upper.startsWith("ICICI")) return "ICI";

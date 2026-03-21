@@ -1,5 +1,6 @@
 package com.spendtracker.pro;
 
+import java.util.Locale;
 import android.app.AlertDialog;
 import android.os.Bundle;
 import android.view.*;
@@ -45,9 +46,9 @@ public class NetWorthActivity extends AppCompatActivity {
                 double liabs  = db.netWorthDao().getTotalLiabilities();
                 double net    = assets - liabs;
                 runOnUiThread(() -> {
-                    tvAssets.setText(String.format("₹%.0f", assets));
-                    tvLiabilities.setText(String.format("₹%.0f", liabs));
-                    tvNetWorth.setText(String.format("₹%.0f", net));
+                    tvAssets.setText(String.format(Locale.getDefault(), "₹%.0f", assets));
+                    tvLiabilities.setText(String.format(Locale.getDefault(), "₹%.0f", liabs));
+                    tvNetWorth.setText(String.format(Locale.getDefault(), "₹%.0f", net));
                     tvNetWorth.setTextColor(net >= 0 ? 0xFF10B981 : 0xFFEF4444);
                 });
             });

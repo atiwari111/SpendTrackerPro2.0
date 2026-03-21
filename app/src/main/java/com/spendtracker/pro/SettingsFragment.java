@@ -17,7 +17,7 @@ import java.util.List;
 public class SettingsFragment extends Fragment {
 
     private SharedPreferences prefs;
-    private Switch swBiometric;
+    private SwitchCompat swBiometric;
     private AppDatabase db;
 
     private ActivityResultLauncher<String[]> csvPicker;
@@ -88,7 +88,7 @@ public class SettingsFragment extends Fragment {
             });
         }
 
-        Switch swDailySummary = view.findViewById(R.id.swDailySummary);
+        SwitchCompat swDailySummary = view.findViewById(R.id.swDailySummary);
         if (swDailySummary != null) {
             swDailySummary.setChecked(prefs.getBoolean("daily_summary_enabled", true));
             swDailySummary.setOnCheckedChangeListener((v, checked) -> {

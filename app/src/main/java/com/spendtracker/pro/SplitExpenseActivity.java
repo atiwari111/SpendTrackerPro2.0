@@ -71,7 +71,7 @@ public class SplitExpenseActivity extends AppCompatActivity {
 
             runOnUiThread(() -> {
                 tvTxnSummary.setText(txn.merchant != null ? txn.merchant : "Transaction");
-                tvTxnAmount.setText(String.format("₹%.2f", txn.amount));
+                tvTxnAmount.setText(String.format(Locale.getDefault(), "₹%.2f", txn.amount));
                 updateSummary();
                 adapter.notifyDataSetChanged();
             });
@@ -137,7 +137,7 @@ public class SplitExpenseActivity extends AppCompatActivity {
         }
         // Split remaining equally between user + this contact (÷ 2)
         double share = Math.round(remaining / 2.0 * 100.0) / 100.0;
-        etSplitAmount.setText(String.format("%.2f", share));
+        etSplitAmount.setText(String.format(Locale.getDefault(), "%.2f", share));
     }
 
     private void onMarkPaid(SplitEntry entry) {
@@ -156,7 +156,7 @@ public class SplitExpenseActivity extends AppCompatActivity {
         new androidx.appcompat.app.AlertDialog.Builder(this, R.style.AlertDialogDark)
                 .setTitle("Remove split?")
                 .setMessage(entry.contactName + " owes ₹" +
-                        String.format("%.2f", entry.amountOwed))
+                        String.format(Locale.getDefault(), "%.2f", entry.amountOwed))
                 .setPositiveButton("Remove", (d, w) -> {
                     AppExecutors.db().execute(() -> {
                         db.splitEntryDao().delete(entry);
@@ -179,9 +179,9 @@ public class SplitExpenseActivity extends AppCompatActivity {
             if (!e.isPaid) totalOwed += e.amountOwed;
         }
         double yourShare = txn.amount - allocated;
-        tvYourShare.setText(String.format("Your share: ₹%.2f  |  Allocated: ₹%.2f",
+        tvYourShare.setText(String.format(Locale.getDefault(), "Your share: ₹%.2f  |  Allocated: ₹%.2f",
                 yourShare, allocated));
-        tvTotalOwed.setText(String.format("₹%.2f", totalOwed));
+        tvTotalOwed.setText(String.format(Locale.getDefault(), "₹%.2f", totalOwed));
     }
 
     @Override
@@ -215,7 +215,7 @@ public class SplitExpenseActivity extends AppCompatActivity {
         @Override
         public void onBindViewHolder(VH h, int pos) {
             SplitEntry e = list.get(pos);
-            h.text1.setText(e.contactName + "  ₹" + String.format("%.2f", e.amountOwed));
+            h.text1.setText(e.contactName + "  ₹" + String.format(Locale.getDefault(), "%.2f", e.amountOwed));
             h.text1.setTextColor(e.isPaid ? 0xFF9CA3AF : 0xFFFFFFFF);
             h.text2.setText(e.isPaid ? "✅ Paid" : "⏳ Pending");
             h.text2.setTextColor(e.isPaid ? 0xFF10B981 : 0xFFF59E0B);

@@ -79,7 +79,7 @@ public class RecurringActivity extends AppCompatActivity {
     private void showEditDialog(RecurringTransaction r) {
         new AlertDialog.Builder(this, R.style.AlertDialogDark)
                 .setTitle(r.name)
-                .setMessage(String.format("₹%.0f %s\nNext due: %s", r.amount, r.frequency, new SimpleDateFormat("dd MMM yyyy", Locale.getDefault()).format(new Date(r.nextDueDate))))
+                .setMessage(String.format(Locale.getDefault(), "₹%.0f %s\nNext due: %s", r.amount, r.frequency, new SimpleDateFormat("dd MMM yyyy", Locale.ROOT).format(new Date(r.nextDueDate))))
                 .setPositiveButton("Deactivate", (d, w) -> { r.isActive = false; AppExecutors.db().execute(() -> db.recurringDao().update(r)); })
                 .setNegativeButton("Delete", (d, w) -> AppExecutors.db().execute(() -> db.recurringDao().delete(r)))
                 .setNeutralButton("Close", null).show();

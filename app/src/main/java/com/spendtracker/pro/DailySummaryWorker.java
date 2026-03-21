@@ -107,21 +107,21 @@ public class DailySummaryWorker extends Worker {
                 double pctDiff = ((todayTotal - dailyAvg) / dailyAvg) * 100;
 
                 if (pctDiff > 40) {
-                    title = String.format("⚠️ High spend day — ₹%.0f", todayTotal);
-                    body  = String.format("%.0f%% more than your daily average of ₹%.0f",
+                    title = String.format(Locale.getDefault(), "⚠️ High spend day — ₹%.0f", todayTotal);
+                    body  = String.format(Locale.getDefault(), "%.0f%% more than your daily average of ₹%.0f",
                             pctDiff, dailyAvg);
                 } else if (pctDiff < -30) {
-                    title = String.format("✅ Great day! Only ₹%.0f spent", todayTotal);
-                    body  = String.format("%.0f%% below your daily average — well done!",
+                    title = String.format(Locale.getDefault(), "✅ Great day! Only ₹%.0f spent", todayTotal);
+                    body  = String.format(Locale.getDefault(), "%.0f%% below your daily average — well done!",
                             Math.abs(pctDiff));
                 } else {
-                    title = String.format("📊 Today's spend: ₹%.0f", todayTotal);
-                    body  = String.format("%d transaction%s · avg ₹%.0f/day",
+                    title = String.format(Locale.getDefault(), "📊 Today's spend: ₹%.0f", todayTotal);
+                    body  = String.format(Locale.getDefault(), "%d transaction%s · avg ₹%.0f/day",
                             todayCount, todayCount == 1 ? "" : "s", dailyAvg);
                 }
             } else {
-                title = String.format("📊 Today: ₹%.0f spent", todayTotal);
-                body  = String.format("%d transaction%s today",
+                title = String.format(Locale.getDefault(), "📊 Today: ₹%.0f spent", todayTotal);
+                body  = String.format(Locale.getDefault(), "%d transaction%s today",
                         todayCount, todayCount == 1 ? "" : "s");
             }
 

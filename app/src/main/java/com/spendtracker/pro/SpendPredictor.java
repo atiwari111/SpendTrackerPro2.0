@@ -58,7 +58,7 @@ public class SpendPredictor {
 
         /** Returns a display-ready summary string */
         public String getSummary() {
-            return String.format("Projected month-end: ₹%.0f  (%s)",
+            return String.format(Locale.getDefault(), "Projected month-end: ₹%.0f  (%s)",
                     projectedTotal, label);
         }
 
@@ -68,7 +68,7 @@ public class SpendPredictor {
             double remaining = historicalAvg - currentSpend;
             if (remaining <= 0) return String.format(
                     "⚠️ Already exceeded avg! Try to spend < ₹%.0f/day", dailyAvg * 0.5);
-            return String.format("💡 Spend ≤ ₹%.0f/day for remaining %d days to match avg",
+            return String.format(Locale.getDefault(), "💡 Spend ≤ ₹%.0f/day for remaining %d days to match avg",
                     remaining / daysRemaining, (int) daysRemaining);
         }
     }

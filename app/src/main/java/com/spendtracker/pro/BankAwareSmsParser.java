@@ -1,5 +1,6 @@
 package com.spendtracker.pro;
 
+import java.util.Locale;
 import java.util.regex.*;
 
 /**
@@ -291,7 +292,7 @@ public class BankAwareSmsParser {
 
     private static String detectPaymentMethod(String body) {
         if (body == null) return "BANK";
-        String lower = body.toLowerCase();
+        String lower = body.toLowerCase(Locale.ROOT);
         if (lower.contains("neft") || lower.contains("imps") || lower.contains("rtgs")) return "BANK";
         if (lower.contains("credit card") || lower.contains("credit a/c"))  return "CREDIT_CARD";
         if (lower.contains("debit card")  || lower.contains("debit a/c"))   return "DEBIT_CARD";
@@ -313,12 +314,12 @@ public class BankAwareSmsParser {
 
     private static String buildPaymentDetail(String bank, String existing) {
         if (bank == null || bank.isEmpty()) return existing != null ? existing : "";
-        if (existing != null && existing.toUpperCase().startsWith(bank)) return existing;
+        if (existing != null && existing.toUpperCase(Locale.ROOT).startsWith(bank)) return existing;
         return bank + " " + (existing != null ? existing : "");
     }
 
     private static boolean isUpi(String body) {
-        return body != null && body.toLowerCase().contains("upi");
+        return body != null && body.toLowerCase(Locale.ROOT).contains("upi");
     }
 
     // ── Fix 2.37: balance & account extraction ────────────────────
@@ -363,7 +364,7 @@ public class BankAwareSmsParser {
     private static String titleCase(String s) {
         if (s == null || s.isEmpty()) return s;
         StringBuilder sb = new StringBuilder();
-        for (String w : s.toLowerCase().split("\\s+")) {
+        for (String w : s.toLowerCase(Locale.ROOT).split("\\s+")) {
             if (!w.isEmpty()) {
                 sb.append(Character.toUpperCase(w.charAt(0)));
                 if (w.length() > 1) sb.append(w.substring(1));

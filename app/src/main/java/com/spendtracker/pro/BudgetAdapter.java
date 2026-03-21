@@ -38,15 +38,15 @@ public class BudgetAdapter extends RecyclerView.Adapter<BudgetAdapter.VH> {
         double remaining = b.getRemaining();
         double pct = b.limitAmount > 0 ? Math.min((b.usedAmount / b.limitAmount) * 100, 100) : 0;
 
-        h.tvSpent.setText(String.format("Spent: ₹%.0f", b.usedAmount));
-        h.tvLimit.setText(String.format("Budget: ₹%.0f", b.limitAmount));
+        h.tvSpent.setText(String.format(Locale.getDefault(), "Spent: ₹%.0f", b.usedAmount));
+        h.tvLimit.setText(String.format(Locale.getDefault(), "Budget: ₹%.0f", b.limitAmount));
 
         if (remaining >= 0) {
-            h.tvRemaining.setText(String.format("₹%.0f left", remaining));
+            h.tvRemaining.setText(String.format(Locale.getDefault(), "₹%.0f left", remaining));
             h.tvRemaining.setTextColor(androidx.core.content.ContextCompat.getColor(
                     h.itemView.getContext(), R.color.green));
         } else {
-            h.tvRemaining.setText(String.format("₹%.0f over!", Math.abs(remaining)));
+            h.tvRemaining.setText(String.format(Locale.getDefault(), "₹%.0f over!", Math.abs(remaining)));
             h.tvRemaining.setTextColor(androidx.core.content.ContextCompat.getColor(
                     h.itemView.getContext(), R.color.red));
         }
@@ -62,7 +62,7 @@ public class BudgetAdapter extends RecyclerView.Adapter<BudgetAdapter.VH> {
                 DrawableCompat.wrap(h.progressBar.getProgressDrawable()).mutate(),
                 barColor);
 
-        h.tvPercent.setText(String.format("%.0f%%", pct));
+        h.tvPercent.setText(String.format(Locale.getDefault(), "%.0f%%", pct));
         h.tvPercent.setTextColor(barColor);
 
         h.itemView.setOnClickListener(v -> listener.onClick(b));

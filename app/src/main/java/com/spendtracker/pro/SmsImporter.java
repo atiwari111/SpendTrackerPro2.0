@@ -1,5 +1,6 @@
 package com.spendtracker.pro;
 
+import java.util.Locale;
 import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
@@ -170,7 +171,7 @@ public class SmsImporter {
      */
     private static boolean isBareUpiDebit(String body) {
         if (body == null) return false;
-        String lower = body.toLowerCase();
+        String lower = body.toLowerCase(Locale.ROOT);
         // Must be a UPI/debit SMS
         if (!lower.contains("debited") && !lower.contains("debit")) return false;
         // Must have "thru upi:" or "via upi:" followed by a numeric ref (no merchant)
@@ -220,7 +221,7 @@ public class SmsImporter {
             MessageDigest md = MessageDigest.getInstance("SHA-256");
             byte[] result = md.digest(text.getBytes(java.nio.charset.StandardCharsets.UTF_8));
             StringBuilder sb = new StringBuilder();
-            for (byte b : result) sb.append(String.format("%02x", b));
+            for (byte b : result) sb.append(String.format(Locale.ROOT, "%02x", b));
             return sb.toString();
         } catch (Exception e) {
             // Hardened fallback: XOR of two independent hash seeds reduces the
@@ -233,7 +234,7 @@ public class SmsImporter {
 
     private static boolean isSelfTransfer(String body) {
         if (body == null) return false;
-        String b = body.toLowerCase();
+        String b = body.toLowerCase(Locale.ROOT);
         return b.contains("self") || b.contains("own account")
                 || b.contains("transfer to your") || b.contains("transfer to self")
                 || b.contains("linked account") || b.contains("savings account to")
@@ -254,7 +255,7 @@ public class SmsImporter {
 
     private static boolean isCardBlockMessage(String body) {
         if (body == null) return false;
-        String b = body.toLowerCase();
+        String b = body.toLowerCase(Locale.ROOT);
         return (b.contains("block") || b.contains("blocked") || b.contains("hotlist"))
                 && !b.contains("debited") && !b.contains("spent") && !b.contains("credited");
     }
@@ -266,7 +267,7 @@ public class SmsImporter {
      */
     private static boolean isBalanceOnlySms(String body) {
         if (body == null) return false;
-        String lower = body.toLowerCase();
+        String lower = body.toLowerCase(Locale.ROOT);
         boolean hasBalanceKeyword = lower.contains("avail bal")
                 || lower.contains("avbl bal")
                 || lower.contains("available balance")
@@ -294,7 +295,7 @@ public class SmsImporter {
 
     private static String normalizeMerchant(String merchant, String sender, String bankName, String body) {
         String m = merchant == null ? "" : merchant.trim();
-        String s = sender == null ? "" : sender.trim().toUpperCase();
+        String s = sender == null ? "" : sender.trim().toUpperCase(Locale.ROOT);
         if (m.matches("(?i)^[A-Z]{2}-[A-Z0-9]{4,}(?:-[A-Z])?$")) m = "";
         if (!s.isEmpty() && m.equalsIgnoreCase(s)) m = "";
         if (m.matches("(?i).*(hdfcbk|sbipsg|sbiinb|icicib|axisbk|kotakb).*")) m = "";
@@ -339,7 +340,7 @@ public class SmsImporter {
     }
 
     private static String expandBankName(String bankName) {
-        String b = bankName != null ? bankName.trim().toUpperCase() : "";
+        String b = bankName != null ? bankName.trim().toUpperCase(Locale.ROOT) : "";
         if ("PNB".equals(b)) return "Punjab National Bank";
         if ("SBI".equals(b)) return "State Bank of India";
         if ("HDFC".equals(b)) return "HDFC Bank";

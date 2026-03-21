@@ -1,5 +1,6 @@
 package com.spendtracker.pro;
 
+import android.annotation.SuppressLint;
 import android.content.*;
 import android.os.Bundle;
 import android.os.Handler;
@@ -10,6 +11,7 @@ import androidx.appcompat.app.AppCompatDelegate;
 import androidx.biometric.*;
 import androidx.core.content.ContextCompat;
 
+@SuppressLint("CustomSplashScreen")
 public class SplashActivity extends AppCompatActivity {
 
     @Override

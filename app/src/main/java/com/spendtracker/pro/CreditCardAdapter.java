@@ -46,7 +46,7 @@ public class CreditCardAdapter extends RecyclerView.Adapter<CreditCardAdapter.VH
         h.tvNetwork.setText(card.network != null ? card.network : "CREDIT CARD");
 
         // Spent amount
-        h.tvSpent.setText(String.format("₹%.0f", card.currentSpent));
+        h.tvSpent.setText(String.format(Locale.getDefault(), "₹%.0f", card.currentSpent));
 
         // Masked card number
         h.tvCardNumber.setText(card.getMaskedNumber());

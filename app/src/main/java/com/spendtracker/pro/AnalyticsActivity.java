@@ -61,7 +61,7 @@ public class AnalyticsActivity extends AppCompatActivity {
             List<Transaction> all = db.transactionDao().getSpendingInRange(month30, now);
             if (all.isEmpty()) { runOnUiThread(() -> tvInsights.setText("No data yet. Scan your SMS!")); return; }
 
-            SimpleDateFormat dayFmt = new SimpleDateFormat("MM/dd", Locale.getDefault());
+            SimpleDateFormat dayFmt = new SimpleDateFormat("MM/dd", Locale.ROOT);
 
             // Daily bar data (last 7 days)
             Map<String, Double> daily = new LinkedHashMap<>();
@@ -89,7 +89,7 @@ public class AnalyticsActivity extends AppCompatActivity {
             }
 
             // Line chart data (last 30 days)
-            SimpleDateFormat d30 = new SimpleDateFormat("dd", Locale.getDefault());
+            SimpleDateFormat d30 = new SimpleDateFormat("dd", Locale.ROOT);
             Map<String, Double> last30 = new LinkedHashMap<>();
             for (int i = 29; i >= 0; i--) {
                 Calendar c = Calendar.getInstance(); c.add(Calendar.DAY_OF_YEAR, -i);
@@ -100,7 +100,7 @@ public class AnalyticsActivity extends AppCompatActivity {
                     last30.merge(d30.format(new Date(t.timestamp)), t.amount, Double::sum);
             }
 
-            String topMerchant = merchantMap.isEmpty() ? "N/A" : Collections.max(merchantMap.entrySet(), Map.Entry.comparingByValue()).getKey() + " ₹" + String.format("%.0f", Collections.max(merchantMap.entrySet(), Map.Entry.comparingByValue()).getValue());
+            String topMerchant = merchantMap.isEmpty() ? "N/A" : Collections.max(merchantMap.entrySet(), Map.Entry.comparingByValue()).getKey() + " ₹" + String.format(Locale.getDefault(), "%.0f", Collections.max(merchantMap.entrySet(), Map.Entry.comparingByValue()).getValue());
 
             List<String> insights = InsightEngine.generateInsights(all);
             List<Budget> budgets = db.budgetDao().getByMonthYearSync(Calendar.getInstance().get(Calendar.MONTH)+1, Calendar.getInstance().get(Calendar.YEAR));
@@ -137,9 +137,9 @@ public class AnalyticsActivity extends AppCompatActivity {
             final int fscore = score;
 
             runOnUiThread(() -> {
-                tvWeekTotal.setText("₹" + String.format("%.0f", ft));
-                tvMonthTotal.setText("₹" + String.format("%.0f", fm));
-                tvAvgDaily.setText("₹" + String.format("%.0f", favg));
+                tvWeekTotal.setText("₹" + String.format(Locale.getDefault(), "%.0f", ft));
+                tvMonthTotal.setText("₹" + String.format(Locale.getDefault(), "%.0f", fm));
+                tvAvgDaily.setText("₹" + String.format(Locale.getDefault(), "%.0f", favg));
                 tvTopMerchant.setText(ftm);
                 tvMerchantBreakdown.setText(merchantBreakdownStr.isEmpty() ? "No transactions yet" : merchantBreakdownStr);
                 tvInsights.setText(insightSb.toString().trim());
@@ -279,7 +279,7 @@ public class AnalyticsActivity extends AppCompatActivity {
         for (Transaction t : txns) total += t.amount;
 
         tvTitle.setText(cat);
-        tvTotal.setText(String.format("₹%.0f · %d transactions", total, txns.size()));
+        tvTotal.setText(String.format(Locale.getDefault(), "₹%.0f · %d transactions", total, txns.size()));
 
         rv.setLayoutManager(new LinearLayoutManager(this));
         TransactionAdapter adapter = new TransactionAdapter(true);

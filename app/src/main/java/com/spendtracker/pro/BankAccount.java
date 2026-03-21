@@ -1,5 +1,6 @@
 package com.spendtracker.pro;
 
+import java.util.Locale;
 import androidx.room.Entity;
 import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
@@ -51,6 +52,6 @@ public class BankAccount {
     /** Short bank identifier for logo lookup */
     public String getBankKey() {
         if (bankName == null) return "";
-        return bankName.toUpperCase().trim();
+        return bankName.toUpperCase(Locale.ROOT).trim();
     }
 }

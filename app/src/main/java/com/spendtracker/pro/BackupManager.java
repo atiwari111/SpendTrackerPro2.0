@@ -1,5 +1,6 @@
 package com.spendtracker.pro;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.net.Uri;
@@ -194,7 +195,7 @@ public class BackupManager {
      *             ~200 ms on a mid-range device.
      */
     private static SecretKey deriveKey(Context ctx) throws Exception {
-        String androidId = android.provider.Settings.Secure.getString(
+        @SuppressLint("HardwareIds") String androidId = android.provider.Settings.Secure.getString(
                 ctx.getContentResolver(), android.provider.Settings.Secure.ANDROID_ID);
         char[] password = (androidId != null ? androidId : "default").toCharArray();
 
