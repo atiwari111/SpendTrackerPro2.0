@@ -9,74 +9,43 @@ import org.json.JSONObject;
 import java.util.*;
 
 /**
- * SmartTransactionAgent v2.0  —  Hybrid ML + Room orchestrator
+ * SmartTransactionAgent v1.0  —  Room frequency-map layer
  *
- * Three-layer priority system for every suggestion:
+ * Layer 1 in the HybridTransactionAgent chain.
+ * Learns per-merchant patterns (category, payment, amount, notes)
+ * purely from frequency counts stored in the Room merchant_patterns table.
  *
- *   Layer 1 — TFLite base model (semantic understanding, time-aware features)
- *             Trained on 418 merchants from merchant_dataset.json.
- *             Handles cold-start and pattern generalisation (e.g. same merchant
- *             on Fri = Food, on 1st = Business — detected via day-of-month feature).
+ * Works from day 1 with no model file required.
+ * Confidence saturates at 1.0 after ~10 observations.
  *
- *   Layer 2 — PersonalizationLayer (on-device SGD correction weights)
- *             Adjusts TFLite output using a learned weight matrix that updates
- *             instantly every time the user overrides a suggestion.
- *             Stored in SharedPreferences as ~7 KB float array.
- *
- *   Layer 3 — MerchantPattern (Room DB frequency maps)
- *             Supplies payment method, rolling average amount, notes hint,
- *             and autocomplete display names — all fields TFLite doesn't touch.
- *             Also provides a high-confidence override when freq ≥ 5 and
- *             one category has ≥ 80% share.
- *
- * Learning happens on every save/edit:
- *   learn(tx)           — called from AppExecutors.db() after insert/update
- *   recordCorrection()  — called when user explicitly changes the suggested category
- *
- * Suggestion flow for AddExpenseActivity:
- *   suggestAsync(merchant, amount, ..., callback)  — runs on bg thread, delivers on main
+ * HybridTransactionAgent is the sole caller of this class.
+ * AddExpenseActivity should use HybridTransactionAgent, not this directly.
  */
 public class SmartTransactionAgent {
 
     private static final String TAG = "SmartTxAgent";
-
-    // Confidence threshold for Layer 1+2 combined to override Layer 3 frequency data
-    private static final float TFLITE_TRUST_THRESHOLD  = 0.45f;
-    // Frequency + dominance threshold for Layer 3 to override TFLite
-    private static final int   FREQ_OVERRIDE_MIN       = 5;
-    private static final float FREQ_OVERRIDE_DOMINANCE = 0.80f;
-
     private static volatile SmartTransactionAgent INSTANCE;
 
-    private final TFLiteClassifier     tflite;
-    private final PersonalizationLayer personalisation;
-    private final MerchantPatternDao   patternDao;
-    private final UserFeedbackDao      feedbackDao;
+    private final MerchantPatternDao dao;
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // Singleton
-    // ─────────────────────────────────────────────────────────────────────────
+    // ── Singleton ─────────────────────────────────────────────────────────
 
     private SmartTransactionAgent(Context ctx) {
-        tflite          = TFLiteClassifier.getInstance(ctx);
-        personalisation = PersonalizationLayer.getInstance(ctx);
-        patternDao      = AppDatabase.getInstance(ctx).merchantPatternDao();
-        feedbackDao     = AppDatabase.getInstance(ctx).userFeedbackDao();
+        dao = AppDatabase.getInstance(ctx).merchantPatternDao();
     }
 
     public static SmartTransactionAgent getInstance(Context ctx) {
         if (INSTANCE == null) {
             synchronized (SmartTransactionAgent.class) {
-                if (INSTANCE == null)
+                if (INSTANCE == null) {
                     INSTANCE = new SmartTransactionAgent(ctx.getApplicationContext());
+                }
             }
         }
         return INSTANCE;
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // Suggestion
-    // ─────────────────────────────────────────────────────────────────────────
+    // ── Suggestion result ─────────────────────────────────────────────────
 
     public static class Suggestion {
         public final String  category;
@@ -85,31 +54,89 @@ public class SmartTransactionAgent {
         @Nullable public final String notesHint;
         public final float   confidence;
         public final int     frequency;
-        public final String  source;   // "tflite", "personalised", "learned", "frequency"
 
-        Suggestion(String category, String paymentMethod, double avgAmount,
-                   @Nullable String notesHint, float confidence, int frequency, String source) {
+        Suggestion(String category, String paymentMethod,
+                   double avgAmount, @Nullable String notesHint,
+                   float confidence, int frequency) {
             this.category      = category;
             this.paymentMethod = paymentMethod;
             this.avgAmount     = avgAmount;
             this.notesHint     = notesHint;
             this.confidence    = confidence;
             this.frequency     = frequency;
-            this.source        = source;
         }
     }
 
-    /**
-     * Async suggestion — delivers result on the main thread.
-     * Safe to call from onCreate / TextWatcher on the UI thread.
-     */
-    public void suggestAsync(String merchant, double amount,
-                              int dayOfWeek, int dayOfMonth, int hourOfDay,
-                              String paymentMethod,
-                              SuggestionCallback callback) {
+    // ── Learn (call on background thread) ─────────────────────────────────
+
+    public void learn(@NonNull Transaction tx) {
+        if (tx.merchant == null || tx.merchant.trim().isEmpty()) return;
+        if (tx.isSelfTransfer) return;
+
+        String key = normalise(tx.merchant);
+        MerchantPattern existing = dao.getByMerchant(key);
+
+        if (existing == null) {
+            MerchantPattern p      = new MerchantPattern();
+            p.merchant             = key;
+            p.displayName          = tx.merchant.trim();
+            p.topCategory          = tx.category;
+            p.categoryFreqJson     = singleEntryJson(tx.category);
+            p.topPayment           = tx.paymentDetail != null ? tx.paymentDetail : tx.paymentMethod;
+            p.paymentFreqJson      = singleEntryJson(p.topPayment);
+            p.avgAmount            = tx.amount;
+            p.lastNotes            = tx.notes;
+            p.frequency            = 1;
+            p.lastUsed             = tx.timestamp;
+            dao.upsert(p);
+        } else {
+            existing.displayName       = tx.merchant.trim();
+            existing.categoryFreqJson  = incrementFreq(existing.categoryFreqJson, tx.category);
+            existing.topCategory       = topKey(existing.categoryFreqJson);
+
+            String payUsed = tx.paymentDetail != null ? tx.paymentDetail : tx.paymentMethod;
+            existing.paymentFreqJson   = incrementFreq(existing.paymentFreqJson, payUsed);
+            existing.topPayment        = topKey(existing.paymentFreqJson);
+
+            if (!tx.isCredit) {
+                existing.avgAmount = rollingAvg(existing.avgAmount, existing.frequency, tx.amount);
+            }
+            if (tx.notes != null && !tx.notes.trim().isEmpty()) {
+                existing.lastNotes = tx.notes.trim();
+            }
+            existing.frequency++;
+            existing.lastUsed = Math.max(existing.lastUsed, tx.timestamp);
+            dao.upsert(existing);
+        }
+
+        Log.d(TAG, "Learned: " + key + " -> " + tx.category);
+    }
+
+    // ── Suggest (call on background thread) ───────────────────────────────
+
+    @Nullable
+    public Suggestion getSuggestion(String merchantTyped) {
+        if (merchantTyped == null || merchantTyped.trim().length() < 2) return null;
+        String q = normalise(merchantTyped);
+
+        // 1. Exact match
+        MerchantPattern exact = dao.getByMerchant(q);
+        if (exact != null) return toSuggestion(exact);
+
+        // 2. Prefix match
+        List<MerchantPattern> prefixList = dao.getByPrefix(q + "%");
+        if (!prefixList.isEmpty()) return toSuggestion(bestByFreq(prefixList));
+
+        // 3. Token overlap
+        MerchantPattern tokenMatch = bestTokenMatch(q);
+        if (tokenMatch != null) return toSuggestion(tokenMatch);
+
+        return null;
+    }
+
+    public void suggestAsync(String merchantTyped, SuggestionCallback callback) {
         AppExecutors.db().execute(() -> {
-            Suggestion s = getSuggestion(merchant, amount, dayOfWeek,
-                                         dayOfMonth, hourOfDay, paymentMethod);
+            Suggestion s = getSuggestion(merchantTyped);
             AppExecutors.mainThread().execute(() -> callback.onResult(s));
         });
     }
@@ -118,255 +145,72 @@ public class SmartTransactionAgent {
         void onResult(@Nullable Suggestion suggestion);
     }
 
-    /**
-     * Synchronous suggestion — must be called on a background thread.
-     */
-    @Nullable
-    public Suggestion getSuggestion(String merchant, double amount,
-                                     int dayOfWeek, int dayOfMonth,
-                                     int hourOfDay, String paymentMethod) {
-        if (merchant == null || merchant.trim().length() < 2) return null;
+    // ── Autocomplete (call on background thread) ───────────────────────────
 
-        // ── Build feature vector (shared by Layer 1 + 2) ─────────────────
-        float[] vec = TransactionFeatureExtractor.extract(
-                merchant, amount, dayOfWeek, dayOfMonth, hourOfDay, paymentMethod);
-
-        // ── Layer 3: Room frequency data ──────────────────────────────────
-        String normKey = normalise(merchant);
-        MerchantPattern pattern = patternDao.getByMerchant(normKey);
-        if (pattern == null) {
-            // Try prefix match
-            List<MerchantPattern> prefixList = patternDao.getByPrefix(normKey + "%");
-            if (!prefixList.isEmpty()) pattern = bestByFreq(prefixList);
-        }
-
-        // ── Layer 3 early exit: high frequency + dominant category ────────
-        if (pattern != null && pattern.frequency >= FREQ_OVERRIDE_MIN) {
-            float dominance = categoryDominance(pattern.categoryFreqJson, pattern.topCategory);
-            if (dominance >= FREQ_OVERRIDE_DOMINANCE) {
-                return buildSuggestion(pattern.topCategory, pattern, 
-                                       dominance, "frequency");
-            }
-        }
-
-        // ── Layer 1: TFLite inference ─────────────────────────────────────
-        String tfliteCategory = null;
-        float  tfliteConf     = 0f;
-        float[] adjustedScores = null;
-
-        TFLiteClassifier.InferenceResult ir = tflite.classifyPartial(
-                merchant, amount, dayOfWeek, dayOfMonth, hourOfDay, paymentMethod);
-        if (ir != null) {
-            // ── Layer 2: PersonalizationLayer adjustment ──────────────────
-            adjustedScores = personalisation.adjust(ir.scores, vec);
-            int bestIdx = argmax(adjustedScores);
-            tfliteCategory = TransactionFeatureExtractor.indexToCategory(bestIdx);
-            tfliteConf     = adjustedScores[bestIdx];
-        }
-
-        // ── Decision: pick best category source ──────────────────────────
-        String finalCategory;
-        float  finalConf;
-        String source;
-
-        if (tfliteCategory != null && tfliteConf >= TFLITE_TRUST_THRESHOLD) {
-            // Personalisation has adjusted TFLite output
-            boolean wasAdjusted = ir != null
-                    && !tfliteCategory.equals(
-                            TransactionFeatureExtractor.indexToCategory(argmax(ir.scores)));
-            finalCategory = tfliteCategory;
-            finalConf     = tfliteConf;
-            source        = wasAdjusted ? "personalised" : "tflite";
-        } else if (pattern != null && pattern.topCategory != null) {
-            // Fall back to learned frequency data
-            finalCategory = pattern.topCategory;
-            finalConf     = Math.min(0.6f, pattern.frequency / 10.0f);
-            source        = "learned";
-        } else if (tfliteCategory != null) {
-            // Low-confidence TFLite still better than nothing
-            finalCategory = tfliteCategory;
-            finalConf     = tfliteConf;
-            source        = "tflite";
-        } else {
-            return null; // No suggestion available
-        }
-
-        return buildSuggestion(finalCategory, pattern, finalConf, source);
-    }
-
-    // ─────────────────────────────────────────────────────────────────────────
-    // Learning
-    // ─────────────────────────────────────────────────────────────────────────
-
-    /**
-     * Record every saved/edited transaction.
-     * Must be called from a background thread (AppExecutors.db()).
-     */
-    public void learn(@NonNull Transaction tx) {
-        if (tx.merchant == null || tx.merchant.trim().isEmpty()) return;
-        if (tx.isSelfTransfer) return;
-
-        String key = normalise(tx.merchant);
-        float[] vec = TransactionFeatureExtractor.extract(tx);
-
-        // Update Room frequency map
-        updatePattern(key, tx);
-
-        // Reinforce PersonalizationLayer for this (merchant, category) pair
-        personalisation.reinforce(vec, tx.category);
-    }
-
-    /**
-     * Record an explicit user correction — the most valuable training signal.
-     * Call this when the user changes the suggested category before saving.
-     *
-     * @param tx                 the transaction being saved (with corrected category)
-     * @param previouslyShown    the category that was auto-suggested
-     */
-    public void recordCorrection(@NonNull Transaction tx, @Nullable String previouslyShown) {
-        if (previouslyShown == null || previouslyShown.equals(tx.category)) return;
-
-        float[] vec = TransactionFeatureExtractor.extract(tx);
-
-        // Update PersonalizationLayer weights immediately
-        personalisation.learn(vec, previouslyShown, tx.category);
-
-        // Persist correction for future model retraining
-        AppExecutors.db().execute(() -> {
-            UserFeedback fb = new UserFeedback();
-            fb.merchant          = normalise(tx.merchant);
-            fb.displayName       = tx.merchant;
-            fb.amount            = tx.amount;
-            fb.predictedCategory = previouslyShown;
-            fb.correctedCategory = tx.category;
-            fb.paymentMethod     = tx.paymentDetail != null ? tx.paymentDetail : tx.paymentMethod;
-            Calendar cal = Calendar.getInstance();
-            cal.setTimeInMillis(tx.timestamp);
-            fb.dayOfWeek  = ((cal.get(Calendar.DAY_OF_WEEK) - 2) + 7) % 7;
-            fb.dayOfMonth = cal.get(Calendar.DAY_OF_MONTH);
-            fb.hourOfDay  = cal.get(Calendar.HOUR_OF_DAY);
-            fb.timestamp  = System.currentTimeMillis();
-            fb.usedForRetrain = false;
-            feedbackDao.insert(fb);
-            Log.d(TAG, "Correction recorded: " + previouslyShown + " → " + tx.category
-                    + " for " + fb.merchant);
-        });
-    }
-
-    // ─────────────────────────────────────────────────────────────────────────
-    // Autocomplete
-    // ─────────────────────────────────────────────────────────────────────────
-
-    /**
-     * Returns up to `limit` known merchant display names matching the typed prefix.
-     * Must be called on a background thread.
-     */
     public List<String> getAutocompleteSuggestions(String prefix, int limit) {
         if (prefix == null || prefix.trim().isEmpty()) return Collections.emptyList();
-        List<MerchantPattern> rows = patternDao.getByPrefix(normalise(prefix) + "%");
-        rows.sort((a, b) -> Integer.compare(b.frequency, a.frequency));
+        String q = normalise(prefix);
+        List<MerchantPattern> rows = dao.getByPrefix(q + "%");
+
+        List<MerchantPattern> all = new ArrayList<>(rows);
+        List<MerchantPattern> top = dao.getTopByFrequency(50);
+        for (MerchantPattern p : top) {
+            if (!all.contains(p) && tokenScore(q, p.merchant) > 0) all.add(p);
+        }
+        all.sort((a, b) -> Integer.compare(b.frequency, a.frequency));
+
         List<String> names = new ArrayList<>();
-        for (MerchantPattern p : rows) {
+        for (MerchantPattern p : all) {
             if (names.size() >= limit) break;
             names.add(p.displayName != null ? p.displayName : p.merchant);
         }
         return names;
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // Privacy
-    // ─────────────────────────────────────────────────────────────────────────
+    // ── Static helpers (package-accessible for HybridTransactionAgent) ────
 
-    public void resetAllLearning() {
-        personalisation.reset();
-        AppExecutors.db().execute(() -> {
-            patternDao.deleteAll();
-            feedbackDao.deleteAll();
-        });
-    }
-
-    // ─────────────────────────────────────────────────────────────────────────
-    // Private helpers
-    // ─────────────────────────────────────────────────────────────────────────
-
-    private void updatePattern(String key, Transaction tx) {
-        MerchantPattern p = patternDao.getByMerchant(key);
-        if (p == null) {
-            p = new MerchantPattern();
-            p.merchant        = key;
-            p.displayName     = tx.merchant.trim();
-            p.topCategory     = tx.category;
-            p.categoryFreqJson = singleEntryJson(tx.category);
-            p.topPayment      = tx.paymentDetail != null ? tx.paymentDetail : tx.paymentMethod;
-            p.paymentFreqJson = singleEntryJson(p.topPayment);
-            p.avgAmount       = tx.amount;
-            p.lastNotes       = tx.notes;
-            p.frequency       = 1;
-            p.lastUsed        = tx.timestamp;
-        } else {
-            p.displayName = tx.merchant.trim();
-            p.categoryFreqJson = incrementFreq(p.categoryFreqJson, tx.category);
-            p.topCategory      = topKey(p.categoryFreqJson);
-            String payUsed = tx.paymentDetail != null ? tx.paymentDetail : tx.paymentMethod;
-            p.paymentFreqJson = incrementFreq(p.paymentFreqJson, payUsed);
-            p.topPayment      = topKey(p.paymentFreqJson);
-            if (!tx.isCredit) p.avgAmount = rollingAvg(p.avgAmount, p.frequency, tx.amount);
-            if (tx.notes != null && !tx.notes.trim().isEmpty()) p.lastNotes = tx.notes.trim();
-            p.frequency++;
-            p.lastUsed = Math.max(p.lastUsed, tx.timestamp);
-        }
-        patternDao.upsert(p);
-    }
-
-    private Suggestion buildSuggestion(String category, @Nullable MerchantPattern pattern,
-                                        float confidence, String source) {
-        String payMethod = pattern != null ? pattern.topPayment : null;
-        double avgAmt    = pattern != null ? pattern.avgAmount  : 0;
-        String notes     = pattern != null ? pattern.lastNotes  : null;
-        int    freq      = pattern != null ? pattern.frequency  : 0;
-        return new Suggestion(category, payMethod, avgAmt, notes, confidence, freq, source);
-    }
-
-    private float categoryDominance(String freqJson, String category) {
-        if (freqJson == null || category == null) return 0f;
-        try {
-            JSONObject obj = new JSONObject(freqJson);
-            int catCount  = obj.optInt(category, 0);
-            int total = 0;
-            Iterator<String> it = obj.keys();
-            while (it.hasNext()) total += obj.optInt(it.next(), 0);
-            return total > 0 ? catCount / (float) total : 0f;
-        } catch (JSONException e) { return 0f; }
-    }
-
-    static String normalise(String s) {
+    public static String normalise(String s) {
         if (s == null) return "";
         return s.toLowerCase(Locale.ROOT).trim()
                 .replaceAll("[^a-z0-9 ]", " ")
-                .replaceAll("\\s+", " ").trim();
+                .replaceAll("\\s+", " ")
+                .trim();
     }
 
-    private static String incrementFreq(String json, String key) {
+    static String incrementFreq(String json, String key) {
         if (key == null || key.isEmpty()) return json != null ? json : "{}";
         try {
-            JSONObject obj = (json != null && !json.isEmpty()) ? new JSONObject(json) : new JSONObject();
+            JSONObject obj = (json != null && !json.isEmpty())
+                             ? new JSONObject(json) : new JSONObject();
             obj.put(key, obj.optInt(key, 0) + 1);
             return obj.toString();
-        } catch (JSONException e) { return singleEntryJson(key); }
+        } catch (JSONException e) {
+            return singleEntryJson(key);
+        }
     }
 
-    private static String topKey(String json) {
-        if (json == null) return null;
+    static String topKey(String json) {
+        if (json == null || json.isEmpty()) return null;
         try {
-            JSONObject obj = new JSONObject(json);
-            String best = null; int bestCount = -1;
+            JSONObject obj   = new JSONObject(json);
+            String best      = null;
+            int    bestCount = -1;
             Iterator<String> keys = obj.keys();
             while (keys.hasNext()) {
-                String k = keys.next(); int c = obj.optInt(k, 0);
-                if (c > bestCount) { bestCount = c; best = k; }
+                String k = keys.next();
+                int count = obj.optInt(k, 0);
+                if (count > bestCount) { bestCount = count; best = k; }
             }
             return best;
         } catch (JSONException e) { return null; }
+    }
+
+    // ── Private helpers ────────────────────────────────────────────────────
+
+    private Suggestion toSuggestion(MerchantPattern p) {
+        float confidence = Math.min(1.0f, p.frequency / 10.0f);
+        return new Suggestion(p.topCategory, p.topPayment, p.avgAmount,
+                              p.lastNotes, confidence, p.frequency);
     }
 
     private static String singleEntryJson(String key) {
@@ -375,19 +219,34 @@ public class SmartTransactionAgent {
     }
 
     private static double rollingAvg(double prevAvg, int prevCount, double newVal) {
+        if (prevCount <= 0) return newVal;
         if (prevCount < 5) return (prevAvg * prevCount + newVal) / (prevCount + 1);
         return prevAvg * 0.8 + newVal * 0.2;
     }
 
-    private static MerchantPattern bestByFreq(List<MerchantPattern> list) {
+    private MerchantPattern bestByFreq(List<MerchantPattern> list) {
         MerchantPattern best = list.get(0);
         for (MerchantPattern p : list) if (p.frequency > best.frequency) best = p;
         return best;
     }
 
-    private static int argmax(float[] arr) {
-        int best = 0;
-        for (int i = 1; i < arr.length; i++) if (arr[i] > arr[best]) best = i;
-        return best;
+    private static int tokenScore(String query, String stored) {
+        if (query.isEmpty() || stored == null) return 0;
+        String[] tokens = query.split(" ");
+        int score = 0;
+        for (String t : tokens) if (t.length() >= 3 && stored.contains(t)) score++;
+        return score;
+    }
+
+    @Nullable
+    private MerchantPattern bestTokenMatch(String query) {
+        List<MerchantPattern> candidates = dao.getTopByFrequency(100);
+        MerchantPattern best = null;
+        int bestScore = 0;
+        for (MerchantPattern p : candidates) {
+            int score = tokenScore(query, p.merchant);
+            if (score > bestScore) { bestScore = score; best = p; }
+        }
+        return bestScore > 0 ? best : null;
     }
 }
