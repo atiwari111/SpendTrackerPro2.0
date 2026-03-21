@@ -15,8 +15,11 @@
 
         <item name="android:textColorPrimary">@color/text_primary</item>
         <item name="android:textColorSecondary">@color/text_secondary</item>
-        <!-- Inter as global app font — clean neo-banking look -->
         <item name="android:fontFamily">@font/inter</item>
+
+        <!-- Material surface colors — cards and dialogs use bg_card (white) -->
+        <item name="colorSurface">@color/bg_card</item>
+        <item name="colorOnSurface">@color/text_primary</item>
 
         <item name="android:colorControlHighlight">#337C3AED</item>
         <item name="rippleColor">#337C3AED</item>
@@ -27,7 +30,7 @@
         <item name="android:windowBackground">@color/bg_dark</item>
     </style>
 
-    <!-- Neo-Banking alert dialog -->
+    <!-- Alert dialog — white surface, deep indigo text -->
     <style name="AlertDialogDark" parent="Theme.MaterialComponents.DayNight.Dialog.Alert">
         <item name="colorSurface">@color/bg_card</item>
         <item name="colorOnSurface">@color/text_primary</item>
@@ -36,16 +39,13 @@
         <item name="android:textColorSecondary">@color/text_secondary</item>
         <item name="android:background">@color/bg_card</item>
         <item name="android:colorBackground">@color/bg_card</item>
-        <item name="buttonBarPositiveButtonStyle">@style/DialogButtonStyle</item>
-        <item name="buttonBarNegativeButtonStyle">@style/DialogButtonStyle</item>
-        <item name="buttonBarNeutralButtonStyle">@style/DialogButtonStyle</item>
     </style>
 
     <style name="DialogTitleText" parent="MaterialAlertDialog.MaterialComponents.Title.Text">
         <item name="android:textColor">@color/text_primary</item>
     </style>
 
-    <!-- Neo-Banking bottom nav — no background tint, clean dark bar -->
+    <!-- Bottom nav — white bar, purple-tinted icons -->
     <style name="BottomNavStyle" parent="Widget.MaterialComponents.BottomNavigationView">
         <item name="android:background">@color/bg_nav</item>
         <item name="itemIconTint">@color/bottom_nav_tint</item>
@@ -55,18 +55,11 @@
         <item name="elevation">0dp</item>
     </style>
 
-    <!-- Toolbar — transparent to let page background show -->
+    <!-- Toolbar -->
     <style name="ToolbarStyle" parent="Widget.MaterialComponents.Toolbar.Primary">
         <item name="android:background">@color/bg_dark</item>
         <item name="titleTextColor">@color/text_primary</item>
         <item name="navigationIconTint">@color/text_primary</item>
-    </style>
-
-
-    <!-- Explicit button text color — prevents Cancel/Save being invisible on dark dialogs -->
-    <style name="DialogButtonStyle" parent="Widget.MaterialComponents.Button.TextButton.Dialog">
-        <item name="android:textColor">@color/purple_light</item>
-        <item name="android:textSize">13sp</item>
     </style>
 
 </resources>
