@@ -1,6 +1,7 @@
 package com.spendtracker.pro;
 
-import android.app.AlertDialog;
+import androidx.appcompat.app.AlertDialog;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.view.*;
 import android.widget.*;
@@ -131,7 +132,7 @@ public class BudgetActivity extends AppCompatActivity {
         String[] cats = CategoryEngine.getSpendCategoryNames(); // Income excluded
         sp.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, cats));
 
-        new AlertDialog.Builder(this, R.style.AlertDialogDark)
+        AlertDialog dlg1 = new AlertDialog.Builder(this, R.style.AlertDialogDark)
                 .setTitle("Set Budget")
                 .setView(v)
                 .setPositiveButton("Save", (d, w) -> {
@@ -148,7 +149,6 @@ public class BudgetActivity extends AppCompatActivity {
                         Budget existing = db.budgetDao().getByCategoryMonthYear(cat, month, year);
                         if (existing != null) {
                             existing.limitAmount = limit;
-                            // Compute live used right now
                             existing.usedAmount = db.transactionDao().getSumForCategoryBetween(cat, monthStart, monthEnd);
                             db.budgetDao().update(existing);
                         } else {
@@ -161,7 +161,10 @@ public class BudgetActivity extends AppCompatActivity {
                     });
                 })
                 .setNegativeButton("Cancel", null)
-                .show();
+                .create();
+        dlg1.show();
+        dlg1.getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(0xFF7C3AED);
+        dlg1.getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(0xFF94A3B8);
     }
 
     private void showEditDialog(Budget budget) {
@@ -183,7 +186,7 @@ public class BudgetActivity extends AppCompatActivity {
             ((android.widget.LinearLayout) v).addView(tvInfo, 0);
         }
 
-        new AlertDialog.Builder(this, R.style.AlertDialogDark)
+        AlertDialog dlg2 = new AlertDialog.Builder(this, R.style.AlertDialogDark)
                 .setTitle("Edit Budget — " + budget.category)
                 .setView(v)
                 .setPositiveButton("Update", (d, w) -> {
@@ -205,7 +208,11 @@ public class BudgetActivity extends AppCompatActivity {
                             refreshBudgets();
                         }))
                 .setNeutralButton("Cancel", null)
-                .show();
+                .create();
+        dlg2.show();
+        dlg2.getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(0xFF7C3AED);
+        dlg2.getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(0xFFEF4444);
+        dlg2.getButton(AlertDialog.BUTTON_NEUTRAL).setTextColor(0xFF94A3B8);
     }
 
     @Override public boolean onOptionsItemSelected(MenuItem item) {
