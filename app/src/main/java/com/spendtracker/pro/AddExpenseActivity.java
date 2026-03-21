@@ -71,7 +71,7 @@ public class AddExpenseActivity extends AppCompatActivity {
         swSelfTransfer = findViewById(R.id.swSelfTransfer);
 
         // ── Spinners ─────────────────────────────────────────────
-        String[] cats = CategoryEngine.getCategoryNames();
+        String[] cats = CategoryEngine.getSpendCategoryNames();
         spCategory.setAdapter(new ArrayAdapter<>(this,
                 android.R.layout.simple_spinner_dropdown_item, cats));
 
@@ -213,7 +213,7 @@ public class AddExpenseActivity extends AppCompatActivity {
                 originalMerchant = t.merchant;
                 originalCategory = t.category;
 
-                String[] catList = CategoryEngine.getCategoryNames();
+                String[] catList = CategoryEngine.getSpendCategoryNames();
                 for (int i = 0; i < catList.length; i++) {
                     if (catList[i].equals(t.category)) { spCategory.setSelection(i); break; }
                 }
@@ -343,7 +343,7 @@ public class AddExpenseActivity extends AppCompatActivity {
 
     /** Select a category in the spinner without triggering the override listener. */
     private void selectCategory(String category) {
-        String[] catList = CategoryEngine.getCategoryNames();
+        String[] catList = CategoryEngine.getSpendCategoryNames();
         for (int i = 0; i < catList.length; i++) {
             if (catList[i].equals(category)) {
                 userOverrodeCategory = false;

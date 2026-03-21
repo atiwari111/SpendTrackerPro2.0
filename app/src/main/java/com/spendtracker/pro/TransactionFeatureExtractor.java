@@ -22,22 +22,20 @@ import java.util.Calendar;
  * CATEGORY INDEX ORDER (must match generate_model.py CATEGORY_LABELS list)
  *  0:Food  1:Groceries  2:Transport  3:Fuel  4:Travel  5:Shopping
  *  6:Rent  7:Bills  8:Entertainment  9:Health  10:Medicine  11:Education
- *  12:Fitness  13:Investment  14:Gifts  15:Salary  16:Cashback
- *  17:InvestmentReturn  18:Refund  19:Others
+ *  12:Fitness  13:Investment  14:Gifts  15:Income  16:Others
  */
 public class TransactionFeatureExtractor {
 
     public static final int FEATURE_SIZE    = 86;
     public static final int TRIGRAM_BUCKETS = 64;
-    public static final int NUM_CATEGORIES  = 20;
+    public static final int NUM_CATEGORIES  = 17;
 
     /** CategoryEngine key in insertion order — index = model output index */
     public static final String[] CATEGORY_ORDER = {
         "🍔 Food", "🛒 Groceries", "🚗 Transport", "⛽ Fuel",
         "✈️ Travel", "🛍️ Shopping", "🏠 Rent", "🔌 Bills",
         "🎬 Entertainment", "🏥 Health", "💊 Medicine", "📚 Education",
-        "💪 Fitness", "💰 Investment", "🎁 Gifts", "💵 Salary",
-        "🎉 Cashback", "📈 Investment Return", "↩️ Refund", "💼 Others"
+        "💪 Fitness", "💰 Investment", "🎁 Gifts", "💚 Income", "💼 Others"
     };
 
     private static final double[] AMOUNT_THRESHOLDS = {0, 50, 150, 300, 500, 1000, 3000};
