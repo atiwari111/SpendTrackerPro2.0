@@ -184,115 +184,118 @@
                 android:layout_marginBottom="10dp"/>
 
 
-            <!-- QUICK ACTIONS GRID — uniform 3×2, all tiles 84dp × equal weight -->
+            <!-- QUICK ACTIONS GRID — uniform 2×3, all tiles 100dp, equal weight -->
             <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
                 android:orientation="vertical" android:paddingHorizontal="20dp">
 
-                <!-- Row 1: Analytics | Budget | Net Worth -->
+                <!-- Row 1: Analytics | Budget -->
                 <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
                     android:orientation="horizontal">
                     <LinearLayout android:id="@+id/cardInsights"
-                        android:layout_width="0dp" android:layout_height="84dp"
+                        android:layout_width="0dp" android:layout_height="100dp"
                         android:layout_weight="1" android:layout_marginEnd="8dp"
                         android:orientation="vertical" android:gravity="center"
                         android:background="@drawable/bg_action_card_purple"
                         android:clickable="true" android:focusable="true">
                         <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                            android:text="📊" android:textSize="28sp"/>
+                            android:text="📊" android:textSize="30sp"/>
                         <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                            android:text="Analytics" android:textSize="11sp"
-                            android:textColor="@color/purple_light" android:layout_marginTop="5dp" android:textStyle="bold"/>
+                            android:text="Analytics" android:textSize="12sp"
+                            android:textColor="@color/purple_light" android:layout_marginTop="6dp" android:textStyle="bold"/>
                     </LinearLayout>
                     <LinearLayout android:id="@+id/cardBudget"
-                        android:layout_width="0dp" android:layout_height="84dp"
-                        android:layout_weight="1" android:layout_marginEnd="8dp"
+                        android:layout_width="0dp" android:layout_height="100dp"
+                        android:layout_weight="1"
                         android:orientation="vertical" android:gravity="center"
                         android:background="@drawable/bg_action_card_green"
                         android:clickable="true" android:focusable="true">
                         <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                            android:text="💰" android:textSize="28sp"/>
+                            android:text="💰" android:textSize="30sp"/>
                         <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                            android:text="Budget" android:textSize="11sp"
-                            android:textColor="@color/green" android:layout_marginTop="5dp" android:textStyle="bold"/>
+                            android:text="Budget" android:textSize="12sp"
+                            android:textColor="@color/green" android:layout_marginTop="6dp" android:textStyle="bold"/>
                     </LinearLayout>
+                </LinearLayout>
+
+                <!-- Row 2: Net Worth | Bills -->
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:orientation="horizontal" android:layout_marginTop="8dp">
                     <LinearLayout android:id="@+id/cardNetWorth"
-                        android:layout_width="0dp" android:layout_height="84dp"
-                        android:layout_weight="1"
+                        android:layout_width="0dp" android:layout_height="100dp"
+                        android:layout_weight="1" android:layout_marginEnd="8dp"
                         android:orientation="vertical" android:gravity="center"
                         android:background="@drawable/bg_action_card_teal"
                         android:clickable="true" android:focusable="true">
                         <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                            android:text="📈" android:textSize="28sp"/>
+                            android:text="📈" android:textSize="30sp"/>
                         <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                            android:text="Net Worth" android:textSize="11sp"
-                            android:textColor="@color/teal" android:layout_marginTop="5dp" android:textStyle="bold"/>
+                            android:text="Net Worth" android:textSize="12sp"
+                            android:textColor="@color/teal" android:layout_marginTop="6dp" android:textStyle="bold"/>
                     </LinearLayout>
-                </LinearLayout>
-
-                <!-- Row 2: Bills | Cards | Accounts — same tile size as row 1 -->
-                <!-- Sub-labels (badge, spent, balance) are fixed-height so they never push -->
-                <!-- the tile taller when they become visible.                               -->
-                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
-                    android:orientation="horizontal" android:layout_marginTop="8dp">
                     <LinearLayout android:id="@+id/cardBills"
-                        android:layout_width="0dp" android:layout_height="84dp"
-                        android:layout_weight="1" android:layout_marginEnd="8dp"
+                        android:layout_width="0dp" android:layout_height="100dp"
+                        android:layout_weight="1"
                         android:orientation="vertical" android:gravity="center"
                         android:background="@drawable/bg_action_card_amber"
                         android:clickable="true" android:focusable="true">
                         <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                            android:text="🧾" android:textSize="24sp"/>
+                            android:text="🧾" android:textSize="30sp"/>
                         <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                            android:text="Bills" android:textSize="11sp"
-                            android:textColor="@color/amber" android:layout_marginTop="4dp" android:textStyle="bold"/>
+                            android:text="Bills" android:textSize="12sp"
+                            android:textColor="@color/amber" android:layout_marginTop="6dp" android:textStyle="bold"/>
                         <TextView android:id="@+id/tvBillsBadge"
-                            android:layout_width="wrap_content" android:layout_height="12dp"
+                            android:layout_width="wrap_content" android:layout_height="14dp"
                             android:textSize="11sp" android:textColor="@color/amber"
                             android:gravity="center" android:visibility="invisible"/>
                     </LinearLayout>
+                </LinearLayout>
+
+                <!-- Row 3: Cards | Accounts -->
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:orientation="horizontal" android:layout_marginTop="8dp">
                     <LinearLayout android:id="@+id/cardCreditCards"
-                        android:layout_width="0dp" android:layout_height="84dp"
+                        android:layout_width="0dp" android:layout_height="100dp"
                         android:layout_weight="1" android:layout_marginEnd="8dp"
                         android:orientation="vertical" android:gravity="center"
                         android:background="@drawable/bg_action_card_purple"
                         android:clickable="true" android:focusable="true">
                         <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                            android:text="💳" android:textSize="24sp"/>
+                            android:text="💳" android:textSize="30sp"/>
                         <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                            android:text="Cards" android:textSize="11sp"
-                            android:textColor="@color/purple_light" android:layout_marginTop="4dp" android:textStyle="bold"/>
+                            android:text="Cards" android:textSize="12sp"
+                            android:textColor="@color/purple_light" android:layout_marginTop="6dp" android:textStyle="bold"/>
                         <TextView android:id="@+id/tvCreditCardSpent"
-                            android:layout_width="wrap_content" android:layout_height="12dp"
+                            android:layout_width="wrap_content" android:layout_height="14dp"
                             android:textSize="11sp" android:textColor="@color/purple_light"
                             android:gravity="center" android:visibility="invisible"/>
                     </LinearLayout>
                     <LinearLayout android:id="@+id/cardBankAccounts"
-                        android:layout_width="0dp" android:layout_height="84dp"
+                        android:layout_width="0dp" android:layout_height="100dp"
                         android:layout_weight="1"
                         android:orientation="vertical" android:gravity="center"
                         android:background="@drawable/bg_action_card_green"
                         android:clickable="true" android:focusable="true">
                         <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                            android:text="🏦" android:textSize="24sp"/>
+                            android:text="🏦" android:textSize="30sp"/>
                         <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                            android:text="Accounts" android:textSize="11sp"
-                            android:textColor="@color/green" android:layout_marginTop="4dp" android:textStyle="bold"/>
+                            android:text="Accounts" android:textSize="12sp"
+                            android:textColor="@color/green" android:layout_marginTop="6dp" android:textStyle="bold"/>
                         <TextView android:id="@+id/tvTotalBankBalance"
-                            android:layout_width="wrap_content" android:layout_height="12dp"
+                            android:layout_width="wrap_content" android:layout_height="14dp"
                             android:textSize="11sp" android:textColor="@color/green"
                             android:gravity="center" android:visibility="invisible"/>
                     </LinearLayout>
                 </LinearLayout>
 
-                <!-- Scan Receipt — full-width CTA row, intentionally different from grid tiles -->
+                <!-- Scan Receipt — full-width CTA -->
                 <LinearLayout android:id="@+id/cardScanReceipt"
-                    android:layout_width="match_parent" android:layout_height="48dp"
+                    android:layout_width="match_parent" android:layout_height="52dp"
                     android:layout_marginTop="8dp"
                     android:orientation="horizontal" android:gravity="center"
                     android:background="@drawable/bg_action_card_red"
                     android:clickable="true" android:focusable="true">
                     <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                        android:text="📷" android:textSize="18sp"/>
+                        android:text="📷" android:textSize="20sp"/>
                     <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
                         android:text="  SCAN RECEIPT TO AUTO-FILL" android:textSize="12sp"
                         android:textColor="@color/red" android:textStyle="bold" android:letterSpacing="0.05"/>
