@@ -36,6 +36,9 @@
         <item name="android:textColorSecondary">@color/text_secondary</item>
         <item name="android:background">@color/bg_card</item>
         <item name="android:colorBackground">@color/bg_card</item>
+        <item name="buttonBarPositiveButtonStyle">@style/DialogButtonStyle</item>
+        <item name="buttonBarNegativeButtonStyle">@style/DialogButtonStyle</item>
+        <item name="buttonBarNeutralButtonStyle">@style/DialogButtonStyle</item>
     </style>
 
     <style name="DialogTitleText" parent="MaterialAlertDialog.MaterialComponents.Title.Text">
@@ -57,6 +60,13 @@
         <item name="android:background">@color/bg_dark</item>
         <item name="titleTextColor">@color/text_primary</item>
         <item name="navigationIconTint">@color/text_primary</item>
+    </style>
+
+
+    <!-- Explicit button text color — prevents Cancel/Save being invisible on dark dialogs -->
+    <style name="DialogButtonStyle" parent="Widget.MaterialComponents.Button.TextButton.Dialog">
+        <item name="android:textColor">@color/purple_light</item>
+        <item name="android:textSize">13sp</item>
     </style>
 
 </resources>
