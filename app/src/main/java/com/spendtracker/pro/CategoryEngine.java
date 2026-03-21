@@ -24,7 +24,7 @@ public class CategoryEngine {
     public static final Map<String, CategoryInfo> CATEGORIES = new LinkedHashMap<>();
     static {
         // ── Spend categories ──────────────────────────────────────
-        CATEGORIES.put("🍔 Food",              new CategoryInfo("🍔 Food",              "🍔", 0xFFFF6B6B));
+        CATEGORIES.put("🍽️ Cafe & Food Delivery",              new CategoryInfo("🍽️ Cafe & Food Delivery",              "🍔", 0xFFFF6B6B));
         CATEGORIES.put("🛒 Groceries",         new CategoryInfo("🛒 Groceries",         "🛒", 0xFF4ECDC4));
         CATEGORIES.put("🚗 Transport",         new CategoryInfo("🚗 Transport",         "🚗", 0xFF45B7D1));
         CATEGORIES.put("⛽ Fuel",              new CategoryInfo("⛽ Fuel",              "⛽", 0xFFFFBE0B));
@@ -39,6 +39,7 @@ public class CategoryEngine {
         CATEGORIES.put("💪 Fitness",           new CategoryInfo("💪 Fitness",           "💪", 0xFF98D8C8));
         CATEGORIES.put("💰 Investment",        new CategoryInfo("💰 Investment",        "💰", 0xFFFFD700));
         CATEGORIES.put("🎁 Gifts",             new CategoryInfo("🎁 Gifts",             "🎁", 0xFFFF9AA2));
+        CATEGORIES.put("💄 Beauty & Salon",     new CategoryInfo("💄 Beauty & Salon",     "💄", 0xFFFF69B4));
         CATEGORIES.put("💼 Others",            new CategoryInfo("💼 Others",            "💼", 0xFFB0BEC5));
         // ── Income — kept in CATEGORIES for budget/net worth display ──
         CATEGORIES.put(INCOME,                 new CategoryInfo(INCOME,                 "💚", 0xFF4CAF50));
@@ -72,7 +73,7 @@ public class CategoryEngine {
     public static final Map<String, String> MERCHANT_MAP = new LinkedHashMap<>();
     static {
         // ── 🍔 FOOD ─────────────────────────────────────────────────
-        String FOOD = "🍔 Food";
+        String FOOD = "🍽️ Cafe & Food Delivery";
         MERCHANT_MAP.put("swiggy",       FOOD); MERCHANT_MAP.put("zomato",      FOOD);
         MERCHANT_MAP.put("eatclub",      FOOD); MERCHANT_MAP.put("box8",        FOOD);
         MERCHANT_MAP.put("faasos",       FOOD); MERCHANT_MAP.put("freshmenu",   FOOD);
@@ -267,9 +268,7 @@ public class CategoryEngine {
         MERCHANT_MAP.put("swimming",     FIT); MERCHANT_MAP.put("badminton",    FIT);
         MERCHANT_MAP.put("tennis",       FIT); MERCHANT_MAP.put("football",     FIT);
         MERCHANT_MAP.put("cricket academy",FIT);MERCHANT_MAP.put("spa",         FIT);
-        MERCHANT_MAP.put("salon",        FIT); MERCHANT_MAP.put("loreal",       FIT);
-        MERCHANT_MAP.put("wella",        FIT); MERCHANT_MAP.put("lakme salon",  FIT);
-        MERCHANT_MAP.put("naturals salon",FIT);MERCHANT_MAP.put("jawed habib",  FIT);
+        // salon/beauty merchants moved to 💄 Beauty & Salon (Fix 2.41)
 
         // ── 💰 INVESTMENT ─────────────────────────────────────────────
         String INV = "💰 Investment";
