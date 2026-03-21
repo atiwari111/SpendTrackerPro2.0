@@ -39,6 +39,18 @@
         <item name="android:textColorSecondary">@color/text_secondary</item>
         <item name="android:background">@color/bg_card</item>
         <item name="android:colorBackground">@color/bg_card</item>
+        <!-- Explicit button text colors — fixes invisible Save/Cancel on native AlertDialog -->
+        <item name="buttonBarPositiveButtonStyle">@style/DialogButtonPositive</item>
+        <item name="buttonBarNegativeButtonStyle">@style/DialogButtonNegative</item>
+    </style>
+
+    <style name="DialogButtonPositive" parent="Widget.MaterialComponents.Button.TextButton.Dialog">
+        <item name="android:textColor">@color/purple_main</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="DialogButtonNegative" parent="Widget.MaterialComponents.Button.TextButton.Dialog">
+        <item name="android:textColor">@color/text_secondary</item>
     </style>
 
     <style name="DialogTitleText" parent="MaterialAlertDialog.MaterialComponents.Title.Text">
