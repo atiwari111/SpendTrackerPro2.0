@@ -1,13 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- ═══════════════════════════════════════════════════════════
-         Neo-Banking Light Theme — clean whites/lavender tones
+         Neo-Banking Light Theme — warm pink/orange tones
+         Fix 2.43: cards = light orange  Fix 2.44: bg = light pink
          ═══════════════════════════════════════════════════════════ -->
-    <color name="bg_dark">#F0F4FF</color>
-    <color name="bg_card">#FFFFFF</color>
-    <color name="bg_card2">#F5F7FF</color>
+    <color name="bg_dark">#FFF0F5</color>      <!-- Fix 2.44: light pink app background -->
+    <color name="bg_card">#FFF3E0</color>      <!-- Fix 2.43: light orange cards -->
+    <color name="bg_card2">#FFEBD6</color>     <!-- Fix 2.43: slightly deeper light orange -->
     <color name="bg_nav">#FFFFFF</color>
-    <color name="bg_elevated">#EEF2FF</color>
+    <color name="bg_elevated">#FFE4CC</color>  <!-- Fix 2.43: elevated surfaces warm orange -->
 
     <!-- Brand -->
     <color name="purple_main">#7C3AED</color>
@@ -33,13 +34,13 @@
     <color name="white_50">#800F172A</color>
     <color name="white_30">#4D0F172A</color>
     <color name="white_10">#1A0F172A</color>
-    <color name="divider">#E2E8F0</color>
+    <color name="divider">#F5DEB3</color>     <!-- warm wheat divider to match theme -->
 
     <!-- System -->
     <color name="colorPrimary">#7C3AED</color>
     <color name="colorPrimaryDark">#5B21B6</color>
     <color name="colorAccent">#A78BFA</color>
-    <color name="gradient_start">#EEF2FF</color>
-    <color name="gradient_end">#F0F4FF</color>
+    <color name="gradient_start">#FFF0F5</color>
+    <color name="gradient_end">#FFF3E0</color>
     <color name="ic_launcher_background">#7C3AED</color>
 </resources>
