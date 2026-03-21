@@ -58,3 +58,11 @@
 -dontwarn sun.misc.**
 -dontwarn java.lang.invoke.**
 -dontwarn javax.annotation.**
+
+# Keep TFLite classes
+-keep class org.tensorflow.** { *; }
+-keepclassmembers class org.tensorflow.** { *; }
+
+# Keep ML Agent classes
+-keep class com.spendtracker.pro.TransactionFeatureExtractor { *; }
+-keep class com.spendtracker.pro.TFLiteTransactionClassifier { *; }
