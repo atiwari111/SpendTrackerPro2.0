@@ -15,7 +15,7 @@ public class BillAdapter extends RecyclerView.Adapter<BillAdapter.VH> {
     private final List<Bill> list;
     private final OnBillClick click;
     private final SimpleDateFormat dateFmt =
-            new SimpleDateFormat("dd MMM", Locale.ROOT);
+            new SimpleDateFormat("dd MMM", Locale.ENGLISH);
 
     public BillAdapter(List<Bill> list, OnBillClick click) {
         this.list  = list != null ? list : new ArrayList<>();

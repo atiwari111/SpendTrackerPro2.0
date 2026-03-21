@@ -173,10 +173,7 @@ public class MainActivity extends AppCompatActivity {
         tvGreeting.setText(g);
 
         tvDate.setText(
-                new SimpleDateFormat(
-                        "EEEE, dd MMMM yyyy",
-                        Locale.getDefault()
-                ).format(new Date())
+                new SimpleDateFormat("EEEE, dd MMMM yyyy", Locale.ENGLISH).format(new Date())
         );
     }
 
@@ -221,7 +218,7 @@ public class MainActivity extends AppCompatActivity {
             if (cards != null && !cards.isEmpty()) {
                 double total = 0;
                 for (com.spendtracker.pro.CreditCard c : cards) total += c.currentSpent;
-                tvCreditCardSpent.setText(String.format("₹%.0f spent", total));
+                tvCreditCardSpent.setText(String.format(Locale.getDefault(), "₹%.0f spent", total));
                 tvCreditCardSpent.setVisibility(android.view.View.VISIBLE);
             } else {
                 tvCreditCardSpent.setVisibility(android.view.View.GONE);
@@ -232,7 +229,7 @@ public class MainActivity extends AppCompatActivity {
         db.bankAccountDao().getTotalBalance().observe(this, total -> {
             if (tvTotalBankBalance == null) return;
             if (total != null && total > 0) {
-                tvTotalBankBalance.setText(String.format("₹%.0f", total));
+                tvTotalBankBalance.setText(String.format(Locale.getDefault(), "₹%.0f", total));
                 tvTotalBankBalance.setVisibility(android.view.View.VISIBLE);
             } else {
                 tvTotalBankBalance.setVisibility(android.view.View.GONE);
@@ -439,8 +436,8 @@ public class MainActivity extends AppCompatActivity {
         final String topCatFinal = topCat;
 
         runOnUiThread(() -> {
-            if (tvTodayAmt    != null) tvTodayAmt.setText(String.format("₹%.0f", ft));
-            if (tvMonthAmt    != null) tvMonthAmt.setText(String.format("₹%.0f", fm));
+            if (tvTodayAmt    != null) tvTodayAmt.setText(String.format(Locale.getDefault(), "₹%.0f", ft));
+            if (tvMonthAmt    != null) tvMonthAmt.setText(String.format(Locale.getDefault(), "₹%.0f", fm));
             if (tvTopCat      != null) tvTopCat.setText(topCatFinal);
             if (tvPrediction  != null) tvPrediction.setText(predText);
 
@@ -449,7 +446,7 @@ public class MainActivity extends AppCompatActivity {
                     tvBudgetLeft.setText("No budget set");
                     tvBudgetLeft.setTextColor(ContextCompat.getColor(this, R.color.text_hint));
                 } else {
-                    tvBudgetLeft.setText(String.format("₹%.0f left", budgetLeft));
+                    tvBudgetLeft.setText(String.format(Locale.getDefault(), "₹%.0f left", budgetLeft));
                     tvBudgetLeft.setTextColor(ContextCompat.getColor(this,
                             budgetLeft >= 0 ? R.color.green : R.color.red));
                 }

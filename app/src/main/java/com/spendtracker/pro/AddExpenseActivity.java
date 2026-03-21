@@ -356,7 +356,7 @@ public class AddExpenseActivity extends AppCompatActivity {
     }
 
     private void updateDateLabel() {
-        tvDate.setText(new SimpleDateFormat("dd MMM yyyy", Locale.ROOT)
+        tvDate.setText(new SimpleDateFormat("dd MMM yyyy", Locale.ENGLISH)
                 .format(new Date(selectedDate)));
     }
 

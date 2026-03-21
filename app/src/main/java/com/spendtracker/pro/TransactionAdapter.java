@@ -14,7 +14,7 @@ public class TransactionAdapter
     private List<Transaction> transactions = new ArrayList<>();
     private final boolean dashboard;
     private final SimpleDateFormat dateFmt =
-            new SimpleDateFormat("dd MMM yyyy, hh:mm a", Locale.getDefault());
+            new SimpleDateFormat("dd MMM yyyy, hh:mm a", Locale.ENGLISH);
 
     public TransactionAdapter(boolean dashboard) {
         this.dashboard = dashboard;

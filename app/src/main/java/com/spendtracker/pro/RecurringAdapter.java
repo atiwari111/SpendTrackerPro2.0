@@ -11,7 +11,7 @@ public class RecurringAdapter extends RecyclerView.Adapter<RecurringAdapter.VH> 
     public interface OnClick { void onClick(RecurringTransaction r); }
     private List<RecurringTransaction> list = new ArrayList<>();
     private final OnClick click;
-    private final SimpleDateFormat sdf = new SimpleDateFormat("dd MMM yyyy", Locale.ROOT);
+    private final SimpleDateFormat sdf = new SimpleDateFormat("dd MMM yyyy", Locale.ENGLISH);
     public RecurringAdapter(OnClick c) { this.click = c; }
     public void setItems(List<RecurringTransaction> l) { this.list = l != null ? l : new ArrayList<>(); notifyDataSetChanged(); }
 
