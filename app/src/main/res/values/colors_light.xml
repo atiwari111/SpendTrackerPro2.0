@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- ═══════════════════════════════════════════════════════════
+         Neo-Banking Light Theme — clean white + vibrant accents
+         High contrast, premium look
+         ═══════════════════════════════════════════════════════════ -->
+
+    <!-- Backgrounds -->
+    <color name="bg_dark">#F4F0FF</color>       <!-- very light purple-white page bg -->
+    <color name="bg_card">#FFFFFF</color>        <!-- pure white cards — max contrast -->
+    <color name="bg_card2">#F8F5FF</color>       <!-- subtle purple tint for secondary cards -->
+    <color name="bg_nav">#FFFFFF</color>
+    <color name="bg_elevated">#EDE9FF</color>    <!-- elevated surfaces -->
+
+    <!-- Onboarding -->
+    <color name="background_dark">#0F172A</color>
+
+    <!-- Brand -->
+    <color name="purple_main">#7C3AED</color>
+    <color name="purple_light">#6D28D9</color>   <!-- darker purple for light bg readability -->
+    <color name="purple_dim">#EDE9FE</color>
+
+    <!-- Semantic — full saturation for light bg -->
+    <color name="teal">#0284C7</color>           <!-- slightly deeper teal -->
+    <color name="green">#059669</color>          <!-- slightly deeper green -->
+    <color name="green_dim">#D1FAE5</color>
+    <color name="red">#DC2626</color>            <!-- slightly deeper red -->
+    <color name="red_dim">#FEE2E2</color>
+    <color name="amber">#D97706</color>          <!-- slightly deeper amber -->
+    <color name="amber_dim">#FEF3C7</color>
+    <color name="cyan">#0891B2</color>           <!-- slightly deeper cyan -->
+
+    <!-- CTA -->
+    <color name="cta_green">#16A34A</color>
+
+    <!-- Text — high contrast -->
+    <color name="white">#FFFFFF</color>
+    <color name="text_primary">#0F172A</color>   <!-- near-black -->
+    <color name="text_secondary">#374151</color> <!-- dark grey — was too light before -->
+    <color name="text_hint">#6B7280</color>      <!-- medium grey — was too light -->
+
+    <!-- Onboarding text -->
+    <color name="text_on_dark_primary">#FFFFFF</color>
+    <color name="text_on_dark_secondary">#B3FFFFFF</color>
+
+    <!-- Opacity variants -->
+    <color name="white_70">#B30F172A</color>
+    <color name="white_50">#800F172A</color>
+    <color name="white_30">#4D0F172A</color>
+    <color name="white_10">#1A0F172A</color>
+
+    <color name="divider">#E5E7EB</color>        <!-- clean grey divider -->
+
+    <!-- System -->
+    <color name="colorPrimary">#7C3AED</color>
+    <color name="colorPrimaryDark">#5B21B6</color>
+    <color name="colorAccent">#7C3AED</color>
+
+    <!-- Gradients -->
+    <color name="gradient_start">#F4F0FF</color>
+    <color name="gradient_end">#FFFFFF</color>
+
+    <!-- Launcher -->
+    <color name="ic_launcher_background">#7C3AED</color>
+
+</resources>
