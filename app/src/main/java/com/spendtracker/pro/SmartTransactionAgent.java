@@ -1,6 +1,8 @@
 package com.spendtracker.pro;
 
 import android.content.Context;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -9,26 +11,16 @@ import org.json.JSONObject;
 import java.util.*;
 
 /**
- * SmartTransactionAgent v1.0  —  Room frequency-map layer
- *
- * Layer 1 in the HybridTransactionAgent chain.
- * Learns per-merchant patterns (category, payment, amount, notes)
- * purely from frequency counts stored in the Room merchant_patterns table.
- *
+ * SmartTransactionAgent — Room frequency-map layer (Layer 1).
  * Works from day 1 with no model file required.
- * Confidence saturates at 1.0 after ~10 observations.
- *
- * HybridTransactionAgent is the sole caller of this class.
- * AddExpenseActivity should use HybridTransactionAgent, not this directly.
  */
 public class SmartTransactionAgent {
 
     private static final String TAG = "SmartTxAgent";
     private static volatile SmartTransactionAgent INSTANCE;
+    private static final Handler MAIN = new Handler(Looper.getMainLooper());
 
     private final MerchantPatternDao dao;
-
-    // ── Singleton ─────────────────────────────────────────────────────────
 
     private SmartTransactionAgent(Context ctx) {
         dao = AppDatabase.getInstance(ctx).merchantPatternDao();
@@ -67,7 +59,7 @@ public class SmartTransactionAgent {
         }
     }
 
-    // ── Learn (call on background thread) ─────────────────────────────────
+    // ── Learn ─────────────────────────────────────────────────────────────
 
     public void learn(@NonNull Transaction tx) {
         if (tx.merchant == null || tx.merchant.trim().isEmpty()) return;
@@ -77,26 +69,26 @@ public class SmartTransactionAgent {
         MerchantPattern existing = dao.getByMerchant(key);
 
         if (existing == null) {
-            MerchantPattern p      = new MerchantPattern();
-            p.merchant             = key;
-            p.displayName          = tx.merchant.trim();
-            p.topCategory          = tx.category;
-            p.categoryFreqJson     = singleEntryJson(tx.category);
-            p.topPayment           = tx.paymentDetail != null ? tx.paymentDetail : tx.paymentMethod;
-            p.paymentFreqJson      = singleEntryJson(p.topPayment);
-            p.avgAmount            = tx.amount;
-            p.lastNotes            = tx.notes;
-            p.frequency            = 1;
-            p.lastUsed             = tx.timestamp;
+            MerchantPattern p  = new MerchantPattern();
+            p.merchant         = key;
+            p.displayName      = tx.merchant.trim();
+            p.topCategory      = tx.category;
+            p.categoryFreqJson = singleEntryJson(tx.category);
+            p.topPayment       = tx.paymentDetail != null ? tx.paymentDetail : tx.paymentMethod;
+            p.paymentFreqJson  = singleEntryJson(p.topPayment);
+            p.avgAmount        = tx.amount;
+            p.lastNotes        = tx.notes;
+            p.frequency        = 1;
+            p.lastUsed         = tx.timestamp;
             dao.upsert(p);
         } else {
-            existing.displayName       = tx.merchant.trim();
-            existing.categoryFreqJson  = incrementFreq(existing.categoryFreqJson, tx.category);
-            existing.topCategory       = topKey(existing.categoryFreqJson);
+            existing.displayName      = tx.merchant.trim();
+            existing.categoryFreqJson = incrementFreq(existing.categoryFreqJson, tx.category);
+            existing.topCategory      = topKey(existing.categoryFreqJson);
 
             String payUsed = tx.paymentDetail != null ? tx.paymentDetail : tx.paymentMethod;
-            existing.paymentFreqJson   = incrementFreq(existing.paymentFreqJson, payUsed);
-            existing.topPayment        = topKey(existing.paymentFreqJson);
+            existing.paymentFreqJson  = incrementFreq(existing.paymentFreqJson, payUsed);
+            existing.topPayment       = topKey(existing.paymentFreqJson);
 
             if (!tx.isCredit) {
                 existing.avgAmount = rollingAvg(existing.avgAmount, existing.frequency, tx.amount);
@@ -108,26 +100,22 @@ public class SmartTransactionAgent {
             existing.lastUsed = Math.max(existing.lastUsed, tx.timestamp);
             dao.upsert(existing);
         }
-
         Log.d(TAG, "Learned: " + key + " -> " + tx.category);
     }
 
-    // ── Suggest (call on background thread) ───────────────────────────────
+    // ── Suggest (background thread) ───────────────────────────────────────
 
     @Nullable
     public Suggestion getSuggestion(String merchantTyped) {
         if (merchantTyped == null || merchantTyped.trim().length() < 2) return null;
         String q = normalise(merchantTyped);
 
-        // 1. Exact match
         MerchantPattern exact = dao.getByMerchant(q);
         if (exact != null) return toSuggestion(exact);
 
-        // 2. Prefix match
         List<MerchantPattern> prefixList = dao.getByPrefix(q + "%");
         if (!prefixList.isEmpty()) return toSuggestion(bestByFreq(prefixList));
 
-        // 3. Token overlap
         MerchantPattern tokenMatch = bestTokenMatch(q);
         if (tokenMatch != null) return toSuggestion(tokenMatch);
 
@@ -137,7 +125,7 @@ public class SmartTransactionAgent {
     public void suggestAsync(String merchantTyped, SuggestionCallback callback) {
         AppExecutors.db().execute(() -> {
             Suggestion s = getSuggestion(merchantTyped);
-            AppExecutors.mainThread().execute(() -> callback.onResult(s));
+            MAIN.post(() -> callback.onResult(s));
         });
     }
 
@@ -145,20 +133,17 @@ public class SmartTransactionAgent {
         void onResult(@Nullable Suggestion suggestion);
     }
 
-    // ── Autocomplete (call on background thread) ───────────────────────────
+    // ── Autocomplete ──────────────────────────────────────────────────────
 
     public List<String> getAutocompleteSuggestions(String prefix, int limit) {
         if (prefix == null || prefix.trim().isEmpty()) return Collections.emptyList();
         String q = normalise(prefix);
         List<MerchantPattern> rows = dao.getByPrefix(q + "%");
-
-        List<MerchantPattern> all = new ArrayList<>(rows);
-        List<MerchantPattern> top = dao.getTopByFrequency(50);
-        for (MerchantPattern p : top) {
+        List<MerchantPattern> all  = new ArrayList<>(rows);
+        for (MerchantPattern p : dao.getTopByFrequency(50)) {
             if (!all.contains(p) && tokenScore(q, p.merchant) > 0) all.add(p);
         }
         all.sort((a, b) -> Integer.compare(b.frequency, a.frequency));
-
         List<String> names = new ArrayList<>();
         for (MerchantPattern p : all) {
             if (names.size() >= limit) break;
@@ -167,14 +152,13 @@ public class SmartTransactionAgent {
         return names;
     }
 
-    // ── Static helpers (package-accessible for HybridTransactionAgent) ────
+    // ── Helpers (package-accessible) ──────────────────────────────────────
 
     public static String normalise(String s) {
         if (s == null) return "";
         return s.toLowerCase(Locale.ROOT).trim()
                 .replaceAll("[^a-z0-9 ]", " ")
-                .replaceAll("\\s+", " ")
-                .trim();
+                .replaceAll("\\s+", " ").trim();
     }
 
     static String incrementFreq(String json, String key) {
@@ -184,28 +168,22 @@ public class SmartTransactionAgent {
                              ? new JSONObject(json) : new JSONObject();
             obj.put(key, obj.optInt(key, 0) + 1);
             return obj.toString();
-        } catch (JSONException e) {
-            return singleEntryJson(key);
-        }
+        } catch (JSONException e) { return singleEntryJson(key); }
     }
 
     static String topKey(String json) {
         if (json == null || json.isEmpty()) return null;
         try {
-            JSONObject obj   = new JSONObject(json);
-            String best      = null;
-            int    bestCount = -1;
+            JSONObject obj = new JSONObject(json);
+            String best = null; int bestCount = -1;
             Iterator<String> keys = obj.keys();
             while (keys.hasNext()) {
-                String k = keys.next();
-                int count = obj.optInt(k, 0);
-                if (count > bestCount) { bestCount = count; best = k; }
+                String k = keys.next(); int c = obj.optInt(k, 0);
+                if (c > bestCount) { bestCount = c; best = k; }
             }
             return best;
         } catch (JSONException e) { return null; }
     }
-
-    // ── Private helpers ────────────────────────────────────────────────────
 
     private Suggestion toSuggestion(MerchantPattern p) {
         float confidence = Math.min(1.0f, p.frequency / 10.0f);
@@ -232,17 +210,15 @@ public class SmartTransactionAgent {
 
     private static int tokenScore(String query, String stored) {
         if (query.isEmpty() || stored == null) return 0;
-        String[] tokens = query.split(" ");
         int score = 0;
-        for (String t : tokens) if (t.length() >= 3 && stored.contains(t)) score++;
+        for (String t : query.split(" ")) if (t.length() >= 3 && stored.contains(t)) score++;
         return score;
     }
 
     @Nullable
     private MerchantPattern bestTokenMatch(String query) {
         List<MerchantPattern> candidates = dao.getTopByFrequency(100);
-        MerchantPattern best = null;
-        int bestScore = 0;
+        MerchantPattern best = null; int bestScore = 0;
         for (MerchantPattern p : candidates) {
             int score = tokenScore(query, p.merchant);
             if (score > bestScore) { bestScore = score; best = p; }
