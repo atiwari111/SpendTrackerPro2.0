@@ -1,5 +1,6 @@
 package com.spendtracker.pro;
 
+import java.util.Locale;
 /**
  * BankDetector v1.6
  *
@@ -122,7 +123,7 @@ public class BankDetector {
     public static BankInfo detect(String sender, String body) {
         // 1. Sender ID detection (strip prefix: VM-, AM-, JK- etc.)
         if (sender != null && !sender.isEmpty()) {
-            String s = sender.toUpperCase().replaceAll("^[A-Z]{2}-", "").trim();
+            String s = sender.toUpperCase(Locale.ROOT).replaceAll("^[A-Z]{2}-", "").trim();
             for (String[] row : SENDER_MAP) {
                 if (s.contains(row[0])) {
                     return new BankInfo(row[1], row[2]);
@@ -132,7 +133,7 @@ public class BankDetector {
 
         // 2. Body keyword fallback
         if (body != null && !body.isEmpty()) {
-            String b = body.toLowerCase();
+            String b = body.toLowerCase(Locale.ROOT);
             for (String[] row : BODY_MAP) {
                 if (b.contains(row[0])) {
                     return new BankInfo(row[1], row[2]);

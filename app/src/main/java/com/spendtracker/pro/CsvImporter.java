@@ -24,13 +24,13 @@ public class CsvImporter {
     }
 
     private static final SimpleDateFormat[] DATE_FORMATS = {
-        new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()),
-        new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()),
-        new SimpleDateFormat("dd-MM-yyyy", Locale.getDefault()),
-        new SimpleDateFormat("MM/dd/yyyy", Locale.getDefault()),
-        new SimpleDateFormat("dd MMM yyyy", Locale.getDefault()),
-        new SimpleDateFormat("dd-MMM-yyyy", Locale.getDefault()),
-        new SimpleDateFormat("dd MMM yy", Locale.getDefault()),
+        new SimpleDateFormat("yyyy-MM-dd", Locale.ROOT),
+        new SimpleDateFormat("dd/MM/yyyy", Locale.ROOT),
+        new SimpleDateFormat("dd-MM-yyyy", Locale.ROOT),
+        new SimpleDateFormat("MM/dd/yyyy", Locale.ROOT),
+        new SimpleDateFormat("dd MMM yyyy", Locale.ROOT),
+        new SimpleDateFormat("dd-MMM-yyyy", Locale.ROOT),
+        new SimpleDateFormat("dd MMM yy", Locale.ROOT),
     };
 
     public static void importFromUri(Context ctx, Uri fileUri, Callback cb) {
@@ -143,7 +143,7 @@ public class CsvImporter {
     private static int[] detectColumns(String[] cols) {
         int dateIdx = -1, merchantIdx = -1, amountIdx = -1, categoryIdx = -1, paymentIdx = -1, notesIdx = -1;
         for (int i = 0; i < cols.length; i++) {
-            String h = cols[i].toLowerCase().trim().replaceAll("[^a-z]", "");
+            String h = cols[i].toLowerCase(Locale.ROOT).trim().replaceAll("[^a-z]", "");
             if (h.equals("date") || h.equals("txndate") || h.equals("transactiondate")) dateIdx = i;
             else if (h.contains("merchant") || h.contains("description") || h.contains("narration")
                     || h.contains("payee") || h.contains("name")) merchantIdx = i;
@@ -202,7 +202,7 @@ public class CsvImporter {
 
     private static String parsePaymentMethod(String payment) {
         if (payment == null) return "MANUAL";
-        String p = payment.toLowerCase();
+        String p = payment.toLowerCase(Locale.ROOT);
         if (p.contains("upi") || p.contains("gpay") || p.contains("phonepe") || p.contains("paytm")) return "UPI";
         if (p.contains("credit")) return "CREDIT_CARD";
         if (p.contains("debit")) return "DEBIT_CARD";
@@ -213,9 +213,9 @@ public class CsvImporter {
 
     /** Match a free-text category to one of our defined categories */
     private static String matchCategory(String raw) {
-        String r = raw.toLowerCase().trim();
+        String r = raw.toLowerCase(Locale.ROOT).trim();
         for (String cat : CategoryEngine.getCategoryNames()) {
-            if (cat.toLowerCase().contains(r) || r.contains(cat.toLowerCase().replaceAll("[^a-z]", ""))) return cat;
+            if (cat.toLowerCase(Locale.ROOT).contains(r) || r.contains(cat.toLowerCase(Locale.ROOT).replaceAll("[^a-z]", ""))) return cat;
         }
         return CategoryEngine.classify(raw, "");
     }

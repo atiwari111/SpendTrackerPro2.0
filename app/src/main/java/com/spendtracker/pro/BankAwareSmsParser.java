@@ -1,5 +1,6 @@
 package com.spendtracker.pro;
 
+import java.util.Locale;
 import java.util.regex.*;
 
 /**
@@ -248,7 +249,9 @@ public class BankAwareSmsParser {
                     if (m.groupCount() >= 2 && m.group(2) != null) {
                         merchant = m.group(2).trim();
                     }
-                } catch (IndexOutOfBoundsException ignored) {}
+                } catch (IndexOutOfBoundsException e) {
+                    android.util.Log.w("BankAwareSmsParser", "Group(2) out of bounds for pattern, confidence=" + wp.confidence);
+                }
 
                 merchant = cleanMerchant(merchant);
                 // Small bonus for a non-empty merchant name
@@ -289,7 +292,7 @@ public class BankAwareSmsParser {
 
     private static String detectPaymentMethod(String body) {
         if (body == null) return "BANK";
-        String lower = body.toLowerCase();
+        String lower = body.toLowerCase(Locale.ROOT);
         if (lower.contains("neft") || lower.contains("imps") || lower.contains("rtgs")) return "BANK";
         if (lower.contains("credit card") || lower.contains("credit a/c"))  return "CREDIT_CARD";
         if (lower.contains("debit card")  || lower.contains("debit a/c"))   return "DEBIT_CARD";
@@ -311,20 +314,30 @@ public class BankAwareSmsParser {
 
     private static String buildPaymentDetail(String bank, String existing) {
         if (bank == null || bank.isEmpty()) return existing != null ? existing : "";
-        if (existing != null && existing.toUpperCase().startsWith(bank)) return existing;
+        if (existing != null && existing.toUpperCase(Locale.ROOT).startsWith(bank)) return existing;
         return bank + " " + (existing != null ? existing : "");
     }
 
     private static boolean isUpi(String body) {
-        return body != null && body.toLowerCase().contains("upi");
+        return body != null && body.toLowerCase(Locale.ROOT).contains("upi");
     }
 
-    // ── Fix 2.5: balance & account extraction ─────────────────────
-
+    // ── Fix 2.37: balance & account extraction ────────────────────
+    // Root cause of v2.36 bug: the old pattern used [^0-9]{0,30}? which is
+    // non-greedy and stopped at the FIRST digits it encountered — the account
+    // number suffix (e.g. "xxx253") — capturing 253 instead of the real balance.
+    //
+    // SMS that exposed the bug:
+    //   "Avail Bal in A/c xxx253: Rs.\n5204.87 CR -SBI"
+    //                         ^^^--- old pattern captured this
+    //
+    // Fix: replace [^0-9]{0,30}? with [\s\S]{0,80}? (matches any char,
+    // including newlines and digits) and make the currency symbol MANDATORY.
+    // This forces the regex to skip all the way to a Rs./INR/₹ token before
+    // capturing the number, so account-number digits are never mistaken for
+    // a balance, and a newline between "Rs." and the amount is handled cleanly.
     private static final Pattern BAL_PATTERN = Pattern.compile(
-        // Standard: "Bal INR 3454.36" / "Balance: Rs. 5204"
-        // Fix 2.4: also captures "Avail Bal in A/c xxx253: Rs. 5204.87 CR"
-        "(?i)(?:Avail(?:able)?\\s+)?Bal(?:ance)?[^0-9]{0,30}?(?:INR|Rs\\.?|\\u20b9)?\\s*([0-9,]+(?:\\.[0-9]{1,2})?)");
+        "(?i)(?:Avail(?:able)?\\s+)?Bal(?:ance)?[\\s\\S]{0,80}?(?:INR|Rs\\.?|\\u20b9)\\s*([0-9,]+(?:\\.[0-9]{1,2})?)");
 
     private static final Pattern ACCT_LAST4_PATTERN = Pattern.compile(
         // Fix 2.4: support 3-digit suffixes too (e.g. SBI "xxx253") in addition to standard 4-digit
@@ -335,7 +348,9 @@ public class BankAwareSmsParser {
         Matcher m = BAL_PATTERN.matcher(body);
         if (m.find()) {
             try { return Double.parseDouble(m.group(1).replace(",", "")); }
-            catch (Exception ignored) {}
+            catch (NumberFormatException e) {
+                android.util.Log.w("BankAwareSmsParser", "Balance parse failed: '" + m.group(1) + "'");
+            }
         }
         return -1;
     }
@@ -349,7 +364,7 @@ public class BankAwareSmsParser {
     private static String titleCase(String s) {
         if (s == null || s.isEmpty()) return s;
         StringBuilder sb = new StringBuilder();
-        for (String w : s.toLowerCase().split("\\s+")) {
+        for (String w : s.toLowerCase(Locale.ROOT).split("\\s+")) {
             if (!w.isEmpty()) {
                 sb.append(Character.toUpperCase(w.charAt(0)));
                 if (w.length() > 1) sb.append(w.substring(1));

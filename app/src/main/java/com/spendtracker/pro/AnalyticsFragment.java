@@ -1,11 +1,13 @@
 package com.spendtracker.pro;
 
+import android.content.res.Configuration;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.view.*;
 import android.widget.*;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.*;
 import com.github.mikephil.charting.charts.*;
@@ -122,8 +124,11 @@ public class AnalyticsFragment extends Fragment {
     private void loadData() {
         AppExecutors.db().execute(() -> {
             if (!isAdded()) return;
-            List<Transaction> all = db.transactionDao().getAllSync();
-            if (all.isEmpty()) {
+            // Priority 1: scoped to last 6 months — covers all charts (7-day, 30-day, 6-month grouped bar)
+            long now = System.currentTimeMillis();
+            long sixMonthsAgo = now - (6L * 30 * 24 * 60 * 60 * 1000);
+            List<Transaction> all = db.transactionDao().getInRange(sixMonthsAgo, now);
+            if (all == null || all.isEmpty()) {
                 requireActivity().runOnUiThread(() -> {
                     if (isAdded() && tvInsights != null)
                         tvInsights.setText("No data yet. Scan your SMS!");
@@ -131,12 +136,12 @@ public class AnalyticsFragment extends Fragment {
                 return;
             }
 
-            long now = System.currentTimeMillis();
+            // now already declared above for sixMonthsAgo calculation
             long week = now - 7L * 86400000L;
             long[] selectedRange = getSelectedMonthRange();
             long monthStart = selectedRange[0];
             long monthEnd   = selectedRange[1];
-            SimpleDateFormat dayFmt = new SimpleDateFormat("MM/dd", Locale.getDefault());
+            SimpleDateFormat dayFmt = new SimpleDateFormat("MM/dd", Locale.ROOT);
 
             Map<String, Double> daily = new LinkedHashMap<>();
             for (int i = 6; i >= 0; i--) {
@@ -168,7 +173,7 @@ public class AnalyticsFragment extends Fragment {
             double monthTotal = monthExpense;
 
             // 30-day line chart
-            SimpleDateFormat d30 = new SimpleDateFormat("dd", Locale.getDefault());
+            SimpleDateFormat d30 = new SimpleDateFormat("dd", Locale.ROOT);
             Map<String, Double> last30 = new LinkedHashMap<>();
             for (int i = 29; i >= 0; i--) {
                 Calendar c = Calendar.getInstance(); c.add(Calendar.DAY_OF_YEAR, -i);
@@ -182,7 +187,7 @@ public class AnalyticsFragment extends Fragment {
 
             String topMerchant = merchantMap.isEmpty() ? "N/A"
                     : Collections.max(merchantMap.entrySet(), Map.Entry.comparingByValue()).getKey()
-                    + " ₹" + String.format("%.0f",
+                    + " ₹" + String.format(Locale.getDefault(), "%.0f",
                     Collections.max(merchantMap.entrySet(), Map.Entry.comparingByValue()).getValue());
 
             // Only use current month budgets for health score
@@ -258,27 +263,27 @@ public class AnalyticsFragment extends Fragment {
             if (!isAdded()) return;
             requireActivity().runOnUiThread(() -> {
                 if (!isAdded()) return;
-                if (tvWeekTotal  != null) tvWeekTotal.setText("₹" + String.format("%.0f", ft));
-                if (tvMonthTotal != null) tvMonthTotal.setText("₹" + String.format("%.0f", fm));
-                if (tvAvgDaily   != null) tvAvgDaily.setText("₹" + String.format("%.0f", favg));
+                if (tvWeekTotal  != null) tvWeekTotal.setText("₹" + String.format(Locale.getDefault(), "%.0f", ft));
+                if (tvMonthTotal != null) tvMonthTotal.setText("₹" + String.format(Locale.getDefault(), "%.0f", fm));
+                if (tvAvgDaily   != null) tvAvgDaily.setText("₹" + String.format(Locale.getDefault(), "%.0f", favg));
                 if (tvTopMerchant != null) tvTopMerchant.setText(ftm);
                 if (tvMerchantBreakdown != null)
                     tvMerchantBreakdown.setText(mBreakdown.isEmpty() ? "No transactions yet" : mBreakdown);
                 if (tvInsights   != null) tvInsights.setText(insightSb.toString().trim());
                 if (tvHealthScore != null) {
                     tvHealthScore.setText("Health Score: " + fscore + "/100");
-                    int sc = fscore >= 70 ? Color.parseColor("#10B981")
-                           : fscore >= 40 ? Color.parseColor("#F59E0B")
-                           : Color.parseColor("#EF4444");
+                    int sc = androidx.core.content.ContextCompat.getColor(requireContext(),
+                            fscore >= 70 ? R.color.green : fscore >= 40 ? R.color.amber : R.color.red);
                     tvHealthScore.setTextColor(sc);
                 }
                 // P4: income vs expense summary
-                if (tvTotalIncome  != null) tvTotalIncome.setText("Income: ₹" + String.format("%.0f", fIncome));
-                if (tvTotalExpense != null) tvTotalExpense.setText("Spent: ₹" + String.format("%.0f", fExpense));
+                if (tvTotalIncome  != null) tvTotalIncome.setText("Income: ₹" + String.format(Locale.getDefault(), "%.0f", fIncome));
+                if (tvTotalExpense != null) tvTotalExpense.setText("Spent: ₹" + String.format(Locale.getDefault(), "%.0f", fExpense));
                 if (tvNetSavings  != null) {
                     double net = fIncome - fExpense;
-                    tvNetSavings.setText((net >= 0 ? "Saved: ₹" : "Deficit: ₹") + String.format("%.0f", Math.abs(net)));
-                    tvNetSavings.setTextColor(net >= 0 ? 0xFF10B981 : 0xFFEF4444);
+                    tvNetSavings.setText((net >= 0 ? "Saved: ₹" : "Deficit: ₹") + String.format(Locale.getDefault(), "%.0f", Math.abs(net)));
+                    tvNetSavings.setTextColor(androidx.core.content.ContextCompat.getColor(requireContext(),
+                            net >= 0 ? R.color.green : R.color.red));
                 }
                 catMapInstance = finalCatMap;
                 setupBarChart(barEntries, barLabels);
@@ -295,12 +300,12 @@ public class AnalyticsFragment extends Fragment {
 
         BarDataSet incDs = new BarDataSet(incEntries, "Income");
         incDs.setColor(0xFF10B981);
-        incDs.setValueTextColor(Color.WHITE);
+        incDs.setValueTextColor(getChartTextColor());
         incDs.setValueTextSize(8f);
 
         BarDataSet expDs = new BarDataSet(expEntries, "Expense");
         expDs.setColor(0xFFEF4444);
-        expDs.setValueTextColor(Color.WHITE);
+        expDs.setValueTextColor(getChartTextColor());
         expDs.setValueTextSize(8f);
 
         BarData data = new BarData(incDs, expDs);
@@ -314,14 +319,14 @@ public class AnalyticsFragment extends Fragment {
         XAxis x = barChartIncomeExpense.getXAxis();
         x.setValueFormatter(new IndexAxisValueFormatter(labels));
         x.setPosition(XAxis.XAxisPosition.BOTTOM);
-        x.setTextColor(Color.WHITE);
+        x.setTextColor(getChartTextColor());
         x.setDrawGridLines(false);
         x.setCenterAxisLabels(true);
         x.setAxisMinimum(0f);
         x.setAxisMaximum(incEntries.size());
         x.setGranularity(1f);
 
-        barChartIncomeExpense.getAxisLeft().setTextColor(Color.WHITE);
+        barChartIncomeExpense.getAxisLeft().setTextColor(getChartTextColor());
         barChartIncomeExpense.getAxisRight().setEnabled(false);
         barChartIncomeExpense.getLegend().setEnabled(false); // legend shown via custom views
         barChartIncomeExpense.setScaleEnabled(false);
@@ -331,27 +336,27 @@ public class AnalyticsFragment extends Fragment {
 
     private void setupBarChart(List<BarEntry> entries, List<String> labels) {
         BarDataSet ds = new BarDataSet(entries, "Daily Spend ₹");
-        ds.setColors(COLORS); ds.setValueTextColor(Color.WHITE); ds.setValueTextSize(9f);
+        ds.setColors(COLORS); ds.setValueTextColor(getChartTextColor()); ds.setValueTextSize(9f);
         barChart.setData(new BarData(ds));
         styleChart(barChart);
         XAxis x = barChart.getXAxis();
         x.setValueFormatter(new IndexAxisValueFormatter(labels));
-        x.setPosition(XAxis.XAxisPosition.BOTTOM); x.setTextColor(Color.WHITE); x.setDrawGridLines(false);
-        barChart.getAxisLeft().setTextColor(Color.WHITE); barChart.getAxisRight().setEnabled(false);
+        x.setPosition(XAxis.XAxisPosition.BOTTOM); x.setTextColor(getChartTextColor()); x.setDrawGridLines(false);
+        barChart.getAxisLeft().setTextColor(getChartTextColor()); barChart.getAxisRight().setEnabled(false);
         barChart.animateY(900); barChart.invalidate();
     }
 
     private void setupPieChart(List<PieEntry> entries) {
         if (entries.isEmpty()) return;
         PieDataSet ds = new PieDataSet(entries, "");
-        ds.setColors(COLORS); ds.setValueTextColor(Color.WHITE); ds.setValueTextSize(10f); ds.setSliceSpace(2f);
+        ds.setColors(COLORS); ds.setValueTextColor(getChartTextColor()); ds.setValueTextSize(10f); ds.setSliceSpace(2f);
         pieChart.setData(new PieData(ds));
-        pieChart.setBackgroundColor(Color.parseColor("#0F172A"));
+        pieChart.setBackgroundColor(getChartBgColor());
         pieChart.getDescription().setEnabled(false);
-        pieChart.setDrawHoleEnabled(true); pieChart.setHoleColor(Color.parseColor("#0F172A"));
+        pieChart.setDrawHoleEnabled(true); pieChart.setHoleColor(getChartBgColor());
         pieChart.setHoleRadius(40f); pieChart.setCenterText("Category\nBreakdown");
-        pieChart.setCenterTextColor(Color.WHITE); pieChart.setCenterTextSize(12f);
-        pieChart.getLegend().setTextColor(Color.WHITE); pieChart.getLegend().setTextSize(10f);
+        pieChart.setCenterTextColor(getChartTextColor()); pieChart.setCenterTextSize(12f);
+        pieChart.getLegend().setTextColor(getChartTextColor()); pieChart.getLegend().setTextSize(10f);
         pieChart.animateY(1000);
         pieChart.setOnChartValueSelectedListener(new OnChartValueSelectedListener() {
             @Override public void onValueSelected(Entry e, Highlight h) {
@@ -367,18 +372,32 @@ public class AnalyticsFragment extends Fragment {
         ds.setColor(Color.parseColor("#7C3AED")); ds.setCircleColor(Color.parseColor("#A78BFA"));
         ds.setLineWidth(2f); ds.setCircleRadius(3f); ds.setDrawFilled(true);
         ds.setFillColor(Color.parseColor("#4C1D95")); ds.setFillAlpha(80);
-        ds.setValueTextColor(Color.WHITE); ds.setDrawValues(false);
+        ds.setValueTextColor(getChartTextColor()); ds.setDrawValues(false);
         lineChart.setData(new LineData(ds));
         styleChart(lineChart);
-        lineChart.getXAxis().setTextColor(Color.WHITE); lineChart.getXAxis().setDrawGridLines(false);
-        lineChart.getAxisLeft().setTextColor(Color.WHITE); lineChart.getAxisRight().setEnabled(false);
+        lineChart.getXAxis().setTextColor(getChartTextColor()); lineChart.getXAxis().setDrawGridLines(false);
+        lineChart.getAxisLeft().setTextColor(getChartTextColor()); lineChart.getAxisRight().setEnabled(false);
         lineChart.animateX(800); lineChart.invalidate();
     }
 
+    /** Returns a chart-label color readable in both light and dark themes. */
+    private int getChartTextColor() {
+        boolean isNight = (requireContext().getResources().getConfiguration().uiMode
+                & Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES;
+        return isNight ? Color.WHITE : Color.parseColor("#2F123A");
+    }
+
+    /** Returns a chart background matching the current card background. */
+    private int getChartBgColor() {
+        boolean isNight = (requireContext().getResources().getConfiguration().uiMode
+                & Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES;
+        return isNight ? Color.parseColor("#0F172A") : ContextCompat.getColor(requireContext(), R.color.bg_card);
+    }
+
     private void styleChart(com.github.mikephil.charting.charts.Chart chart) {
-        chart.setBackgroundColor(Color.parseColor("#0F172A"));
+        chart.setBackgroundColor(getChartBgColor());
         chart.getDescription().setEnabled(false);
-        chart.getLegend().setTextColor(Color.WHITE);
+        chart.getLegend().setTextColor(getChartTextColor());
     }
 
     private void showCategoryDrillDown(String categoryLabel) {
@@ -403,7 +422,7 @@ public class AnalyticsFragment extends Fragment {
 
         double total = 0; for (Transaction t : filtered) total += t.amount;
         tvTitle.setText(matchedCat);
-        tvTotal.setText(String.format("₹%.0f · %d transactions", total, filtered.size()));
+        tvTotal.setText(String.format(Locale.getDefault(), "₹%.0f · %d transactions", total, filtered.size()));
         rv.setLayoutManager(new LinearLayoutManager(requireContext()));
         TransactionAdapter a = new TransactionAdapter(true);
         a.setTransactions(filtered); rv.setAdapter(a);

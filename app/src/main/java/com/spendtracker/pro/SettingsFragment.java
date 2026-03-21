@@ -5,10 +5,12 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.view.*;
 import android.widget.*;
+import android.widget.RadioGroup;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.widget.SwitchCompat;
 import androidx.fragment.app.Fragment;
 import java.io.File;
 import java.util.List;
@@ -16,7 +18,7 @@ import java.util.List;
 public class SettingsFragment extends Fragment {
 
     private SharedPreferences prefs;
-    private Switch swBiometric;
+    private SwitchCompat swBiometric;
     private AppDatabase db;
 
     private ActivityResultLauncher<String[]> csvPicker;
@@ -50,14 +52,44 @@ public class SettingsFragment extends Fragment {
         prefs = requireContext().getSharedPreferences("stp_prefs", Context.MODE_PRIVATE);
 
         androidx.appcompat.widget.Toolbar tb = view.findViewById(R.id.toolbar);
-        if (tb != null) tb.setTitle("Settings");
+        if (tb != null) {
+            tb.setTitle("Settings");
+            tb.setNavigationIcon(androidx.appcompat.R.drawable.abc_ic_ab_back_material);
+            tb.setNavigationOnClickListener(v -> requireActivity().getOnBackPressedDispatcher().onBackPressed());
+        }
 
         swBiometric = view.findViewById(R.id.swBiometric);
         swBiometric.setChecked(prefs.getBoolean("bio_enabled", false));
         swBiometric.setOnCheckedChangeListener((v, checked) ->
                 prefs.edit().putBoolean("bio_enabled", checked).apply());
 
-        Switch swDailySummary = view.findViewById(R.id.swDailySummary);
+        // ── Theme selector ────────────────────────────────────────
+        // Previously the RadioGroup had no listener, so selecting Light/Dark
+        // had no effect — the pref was never written and AppCompatDelegate was
+        // never called.  Fix: restore the saved selection on load, then apply
+        // + persist whenever the user changes it.
+        RadioGroup rgTheme = view.findViewById(R.id.rgTheme);
+        if (rgTheme != null) {
+            // Restore saved selection (default: dark, matching app default)
+            String savedMode = prefs.getString("theme_mode", "dark");
+            rgTheme.check("light".equals(savedMode) ? R.id.rbThemeLight : R.id.rbThemeDark);
+
+            rgTheme.setOnCheckedChangeListener((group, checkedId) -> {
+                boolean isLight = (checkedId == R.id.rbThemeLight);
+                String mode = isLight ? "light" : "dark";
+
+                // Persist immediately so SplashActivity reads the right value on next launch
+                prefs.edit().putString("theme_mode", mode).apply();
+
+                // Apply at runtime — no restart required
+                androidx.appcompat.app.AppCompatDelegate.setDefaultNightMode(
+                        isLight
+                                ? androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_NO
+                                : androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_YES);
+            });
+        }
+
+        SwitchCompat swDailySummary = view.findViewById(R.id.swDailySummary);
         if (swDailySummary != null) {
             swDailySummary.setChecked(prefs.getBoolean("daily_summary_enabled", true));
             swDailySummary.setOnCheckedChangeListener((v, checked) -> {
@@ -75,10 +107,6 @@ public class SettingsFragment extends Fragment {
                 startActivity(new Intent(requireContext(), RecurringActivity.class)));
         view.findViewById(R.id.btnNetWorth).setOnClickListener(v ->
                 startActivity(new Intent(requireContext(), NetWorthActivity.class)));
-        view.findViewById(R.id.btnCreditCards).setOnClickListener(v ->
-                startActivity(new Intent(requireContext(), CreditCardActivity.class)));
-        view.findViewById(R.id.btnBankAccounts).setOnClickListener(v ->
-                startActivity(new Intent(requireContext(), BankAccountActivity.class)));
         view.findViewById(R.id.btnClearData).setOnClickListener(v -> confirmClear());
 
         // P4: Backup & Restore

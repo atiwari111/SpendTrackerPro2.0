@@ -31,7 +31,7 @@
                             android:text="Require fingerprint to open app"
                             android:textColor="@color/text_secondary" android:textSize="12sp" android:layout_marginTop="2dp"/>
                     </LinearLayout>
-                    <Switch android:id="@+id/swBiometric" android:layout_width="wrap_content"
+                    <androidx.appcompat.widget.SwitchCompat android:id="@+id/swBiometric" android:layout_width="wrap_content"
                         android:layout_height="wrap_content" android:thumbTint="@color/purple_main"/>
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
@@ -99,7 +99,7 @@
                 android:textSize="12sp" android:textColor="@color/text_secondary"
                 android:layout_marginTop="2dp"/>
         </LinearLayout>
-        <Switch android:id="@+id/swDailySummary"
+        <androidx.appcompat.widget.SwitchCompat android:id="@+id/swDailySummary"
             android:layout_width="wrap_content" android:layout_height="wrap_content"
             android:checked="true"
             android:thumbTint="@color/purple_main"
@@ -151,23 +151,7 @@
                         android:textColor="@color/text_primary" android:textSize="14sp" android:gravity="start|center_vertical"
                         android:paddingStart="16dp"/>
 
-                    <View android:layout_width="match_parent" android:layout_height="1dp"
-                        android:background="#22FFFFFF" android:layout_marginStart="16dp"/>
 
-                    <Button android:id="@+id/btnCreditCards"
-                        android:layout_width="match_parent" android:layout_height="50dp"
-                        android:text="💳  Credit Card Spends" android:backgroundTint="@android:color/transparent"
-                        android:textColor="@color/text_primary" android:textSize="14sp" android:gravity="start|center_vertical"
-                        android:paddingStart="16dp"/>
-
-                    <View android:layout_width="match_parent" android:layout_height="1dp"
-                        android:background="#22FFFFFF" android:layout_marginStart="16dp"/>
-
-                    <Button android:id="@+id/btnBankAccounts"
-                        android:layout_width="match_parent" android:layout_height="50dp"
-                        android:text="🏦  Bank Accounts" android:backgroundTint="@android:color/transparent"
-                        android:textColor="@color/text_primary" android:textSize="14sp" android:gravity="start|center_vertical"
-                        android:paddingStart="16dp"/>
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
 

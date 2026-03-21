@@ -55,7 +55,7 @@
                 android:gravity="center"
                 android:text="SBI"
                 android:textColor="#FFFFFF"
-                android:textSize="10sp"
+                android:textSize="11sp"
                 android:textStyle="bold"
                 android:background="@drawable/bg_bank_logo_circle" />
         </LinearLayout>
@@ -74,7 +74,7 @@
             android:paddingBottom="2dp"
             android:text="SAVINGS"
             android:textColor="#CCFFFFFF"
-            android:textSize="10sp"
+            android:textSize="11sp"
             android:letterSpacing="0.1" />
 
         <!-- Balance — pinned to bottom -->

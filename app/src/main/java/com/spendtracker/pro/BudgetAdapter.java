@@ -38,29 +38,31 @@ public class BudgetAdapter extends RecyclerView.Adapter<BudgetAdapter.VH> {
         double remaining = b.getRemaining();
         double pct = b.limitAmount > 0 ? Math.min((b.usedAmount / b.limitAmount) * 100, 100) : 0;
 
-        h.tvSpent.setText(String.format("Spent: ₹%.0f", b.usedAmount));
-        h.tvLimit.setText(String.format("Budget: ₹%.0f", b.limitAmount));
+        h.tvSpent.setText(String.format(Locale.getDefault(), "Spent: ₹%.0f", b.usedAmount));
+        h.tvLimit.setText(String.format(Locale.getDefault(), "Budget: ₹%.0f", b.limitAmount));
 
         if (remaining >= 0) {
-            h.tvRemaining.setText(String.format("₹%.0f left", remaining));
-            h.tvRemaining.setTextColor(Color.parseColor("#10B981")); // green
+            h.tvRemaining.setText(String.format(Locale.getDefault(), "₹%.0f left", remaining));
+            h.tvRemaining.setTextColor(androidx.core.content.ContextCompat.getColor(
+                    h.itemView.getContext(), R.color.green));
         } else {
-            h.tvRemaining.setText(String.format("₹%.0f over!", Math.abs(remaining)));
-            h.tvRemaining.setTextColor(Color.parseColor("#EF4444")); // red
+            h.tvRemaining.setText(String.format(Locale.getDefault(), "₹%.0f over!", Math.abs(remaining)));
+            h.tvRemaining.setTextColor(androidx.core.content.ContextCompat.getColor(
+                    h.itemView.getContext(), R.color.red));
         }
 
         h.progressBar.setProgress((int) pct);
         int barColor;
-        if (pct >= 100) barColor = Color.parseColor("#EF4444");
-        else if (pct >= 80) barColor = Color.parseColor("#F59E0B");
-        else if (pct >= 50) barColor = Color.parseColor("#FBBF24");
-        else barColor = Color.parseColor("#10B981");
+        if (pct >= 100)      barColor = androidx.core.content.ContextCompat.getColor(h.itemView.getContext(), R.color.red);
+        else if (pct >= 80)  barColor = androidx.core.content.ContextCompat.getColor(h.itemView.getContext(), R.color.amber);
+        else if (pct >= 50)  barColor = 0xFFFBBF24; // amber-light — no exact named color token
+        else                 barColor = androidx.core.content.ContextCompat.getColor(h.itemView.getContext(), R.color.green);
         // DrawableCompat.setTint works on all API levels without deprecation warnings
         DrawableCompat.setTint(
                 DrawableCompat.wrap(h.progressBar.getProgressDrawable()).mutate(),
                 barColor);
 
-        h.tvPercent.setText(String.format("%.0f%%", pct));
+        h.tvPercent.setText(String.format(Locale.getDefault(), "%.0f%%", pct));
         h.tvPercent.setTextColor(barColor);
 
         h.itemView.setOnClickListener(v -> listener.onClick(b));

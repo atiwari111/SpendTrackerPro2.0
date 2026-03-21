@@ -27,7 +27,7 @@ public class NetWorthAdapter extends RecyclerView.Adapter<NetWorthAdapter.VH> {
                 : item.name;
         h.tvName.setText(displayName);
         h.tvType.setText(item.type);
-        h.tvAmount.setText(String.format("₹%.0f", item.amount));
+        h.tvAmount.setText(String.format(Locale.getDefault(), "₹%.0f", item.amount));
         h.tvAmount.setTextColor(item.type.equals("ASSET") ? Color.parseColor("#10B981") : Color.parseColor("#EF4444"));
         h.tvType.setTextColor(item.type.equals("ASSET") ? Color.parseColor("#10B981") : Color.parseColor("#EF4444"));
         h.itemView.setOnClickListener(v -> click.onClick(item));

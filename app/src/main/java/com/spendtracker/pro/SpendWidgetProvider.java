@@ -1,5 +1,6 @@
 package com.spendtracker.pro;
 
+import java.util.Locale;
 import android.app.PendingIntent;
 import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetProvider;
@@ -35,12 +36,13 @@ public class SpendWidgetProvider extends AppWidgetProvider {
                 long todayStart = getDayStart(now);
                 long monthStart = getMonthStart(now);
 
-                List<Transaction> all = db.transactionDao().getAllSync();
+                // Priority 1: use scoped range query — avoids full-table scan on large datasets
+                List<Transaction> monthTxns = db.transactionDao().getSpendingInRange(monthStart, now);
                 double todayTotal = 0, monthTotal = 0;
-                for (Transaction t : all) {
+                for (Transaction t : monthTxns) {
                     if (t.isSelfTransfer || t.isCredit) continue;
-                    if (t.timestamp >= todayStart)  todayTotal  += t.amount;
-                    if (t.timestamp >= monthStart)  monthTotal  += t.amount;
+                    monthTotal += t.amount;
+                    if (t.timestamp >= todayStart) todayTotal += t.amount;
                 }
 
                 // Bank balance total
@@ -49,11 +51,11 @@ public class SpendWidgetProvider extends AppWidgetProvider {
                 // Build RemoteViews
                 RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.widget_spend);
                 views.setTextViewText(R.id.tvWidgetToday,
-                        String.format("₹%.0f", todayTotal));
+                        String.format(Locale.getDefault(), "₹%.0f", todayTotal));
                 views.setTextViewText(R.id.tvWidgetMonth,
-                        String.format("₹%.0f", monthTotal));
+                        String.format(Locale.getDefault(), "₹%.0f", monthTotal));
                 views.setTextViewText(R.id.tvWidgetBalance,
-                        bankBalance > 0 ? String.format("₹%.0f", bankBalance) : "₹—");
+                        bankBalance > 0 ? String.format(Locale.getDefault(), "₹%.0f", bankBalance) : "₹—");
 
                 // Tap to open app
                 Intent intent = new Intent(context, MainActivity.class);

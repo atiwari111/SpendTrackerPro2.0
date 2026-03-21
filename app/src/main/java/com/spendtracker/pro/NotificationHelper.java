@@ -1,5 +1,6 @@
 package com.spendtracker.pro;
 
+import java.util.Locale;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -32,7 +33,6 @@ public class NotificationHelper {
     // Daily summary: fixed 7001 (in DailySummaryWorker)
 
     public static void createChannels(Context ctx) {
-        if (Build.VERSION.SDK_INT < 26) return;
         NotificationManager nm = ctx.getSystemService(NotificationManager.class);
         nm.createNotificationChannel(new NotificationChannel(CH_ALERTS,   "Spend Alerts",    NotificationManager.IMPORTANCE_HIGH));
         nm.createNotificationChannel(new NotificationChannel(CH_BILLS,    "Bill Reminders",  NotificationManager.IMPORTANCE_HIGH));
@@ -83,7 +83,7 @@ public class NotificationHelper {
         int id = nextId(); // transient: each SMS gets its own unique slot
         send(ctx, CH_ALERTS, id,
                 "💸 New Transaction",
-                String.format("₹%.0f at %s · %s", amount, merchant, category),
+                String.format(Locale.getDefault(), "₹%.0f at %s · %s", amount, merchant, category),
                 makeStackedIntent(ctx, MainActivity.class, id));
     }
 
@@ -91,7 +91,7 @@ public class NotificationHelper {
         int id = nextId(); // transient reminder
         send(ctx, CH_BILLS, id,
                 "📅 Bill Due: " + name,
-                String.format("₹%.0f due on %s", amount, dueDate),
+                String.format(Locale.getDefault(), "₹%.0f due on %s", amount, dueDate),
                 makeStackedIntent(ctx, MainActivity.class, id));
     }
 
@@ -106,7 +106,7 @@ public class NotificationHelper {
         String title = days <= 0 ? "🔴 Bill Overdue: " + bill.name
                      : days == 0 ? "⚠️ Bill Due Today: " + bill.name
                      : "📋 Bill Due in " + days + " day(s): " + bill.name;
-        String msg = String.format("₹%.0f due %s",
+        String msg = String.format(Locale.getDefault(), "₹%.0f due %s",
                 bill.amount,
                 days <= 0 ? "NOW" : "on " + new java.text.SimpleDateFormat("dd MMM", java.util.Locale.getDefault())
                         .format(new java.util.Date(bill.dueDate)));
@@ -118,7 +118,7 @@ public class NotificationHelper {
         int id = nextId(); // transient: each anomaly event is unique
         send(ctx, CH_ALERTS, id,
                 "⚠️ Unusual Spend Detected",
-                String.format("₹%.0f at %s · %s (%s)", amount, merchant, category, reason),
+                String.format(Locale.getDefault(), "₹%.0f at %s · %s (%s)", amount, merchant, category, reason),
                 makeStackedIntent(ctx, MainActivity.class, id));
     }
 
@@ -136,6 +136,8 @@ public class NotificationHelper {
             NotificationManagerCompat.from(ctx).notify(id, b.build());
         } catch (SecurityException e) {
             android.util.Log.w("NotificationHelper", "Notification permission denied: " + e.getMessage());
-        } catch (Exception ignored) {}
+        } catch (Exception e) {
+            android.util.Log.e("NotificationHelper", "Failed to send notification id=" + id + ": " + e.getMessage());
+        }
     }
 }

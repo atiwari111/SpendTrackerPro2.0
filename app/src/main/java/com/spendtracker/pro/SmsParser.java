@@ -101,7 +101,10 @@ public class SmsParser {
         t.isCredit = isCreditTransaction(body);
 
         String merchant = "";
-        try { merchant = MerchantExtractor.extract(body); } catch (Exception ignored) {}
+        try { merchant = MerchantExtractor.extract(body); }
+        catch (Exception e) {
+            android.util.Log.w("SmsParser", "MerchantExtractor failed for sender=" + sender + ": " + e.getMessage());
+        }
         if (merchant == null || merchant.isEmpty()) {
             merchant = sender != null ? sender : "Unknown";
         }
@@ -114,7 +117,7 @@ public class SmsParser {
             t.category = CategoryEngine.classify(merchant, body);
         }
 
-        t.paymentMethod  = detectPaymentMethod(body);
+        t.paymentMethod  = t.isCredit ? "BANK_TRANSFER" : detectPaymentMethod(body);
         t.paymentDetail  = sender;
         t.isSelfTransfer = isSelfTransfer(body);
 
@@ -130,29 +133,29 @@ public class SmsParser {
 
         if (lower.contains("salary") || lower.contains("payroll") ||
             lower.contains("credited by employer"))
-            return "💵 Salary";
+            return CategoryEngine.INCOME;
 
         if (lower.contains("cashback"))
-            return "🎉 Cashback";
+            return CategoryEngine.INCOME;
 
         // Fix 2.2: insurance/medical claim credits are refunds
         if (lower.contains("claim") || lower.contains("reimburs"))
-            return "↩️ Refund";
+            return CategoryEngine.INCOME;
 
         if (lower.contains("refund") || lower.contains("reversed") ||
             lower.contains("return"))
-            return "↩️ Refund";
+            return CategoryEngine.INCOME;
 
         if (lower.contains("dividend") || lower.contains("interest credit") ||
             lower.contains("mutual fund") || lower.contains("redemption") ||
             m.contains("zerodha") || m.contains("groww") || m.contains("upstox"))
-            return "📈 Investment Return";
+            return CategoryEngine.INCOME;
 
         // Generic bank transfer from known person = likely personal transfer
         if (lower.contains("credited") && (lower.contains("upi") || lower.contains("imps")))
-            return "↩️ Refund"; // Closest — user can re-categorise
+            return CategoryEngine.INCOME; // user can re-categorise
 
-        return "↩️ Refund"; // Safe default for any credit
+        return CategoryEngine.INCOME; // safe default for any credit
     }
 
     private static String detectPaymentMethod(String sms) {

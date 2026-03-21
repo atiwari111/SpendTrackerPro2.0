@@ -82,7 +82,7 @@ public class CreditCardActivity extends AppCompatActivity {
 
             double total = 0;
             for (CreditCard c : cards) total += c.currentSpent;
-            tvTotalSpent.setText(String.format("₹%.0f", total));
+            tvTotalSpent.setText(String.format(Locale.getDefault(), "₹%.0f", total));
         });
     }
 

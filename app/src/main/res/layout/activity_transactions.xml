@@ -77,7 +77,7 @@
     </LinearLayout>
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/fabAdd" android:layout_width="wrap_content" android:layout_height="wrap_content"
+android:contentDescription="@android:string/untitled"         android:id="@+id/fabAdd" android:layout_width="wrap_content" android:layout_height="wrap_content"
         android:layout_gravity="bottom|end" android:layout_marginBottom="16dp"
         android:layout_marginEnd="16dp" android:src="@android:drawable/ic_input_add"
         app:backgroundTint="@color/purple_main" app:tint="@color/white"/>

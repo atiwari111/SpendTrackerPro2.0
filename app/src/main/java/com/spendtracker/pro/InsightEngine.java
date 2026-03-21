@@ -43,21 +43,21 @@ public class InsightEngine {
         if (sortedCats.size() >= 1) {
             Map.Entry<String, Double> top = sortedCats.get(0);
             double pct = thisTotal > 0 ? (top.getValue() / thisTotal) * 100 : 0;
-            insights.add(String.format("🥇 Top spend: %s at ₹%.0f (%.0f%% of total)", top.getKey(), top.getValue(), pct));
+            insights.add(String.format(Locale.getDefault(), "🥇 Top spend: %s at ₹%.0f (%.0f%% of total)", top.getKey(), top.getValue(), pct));
         }
 
         // Insight 2: 2nd highest category
         if (sortedCats.size() >= 2) {
             Map.Entry<String, Double> second = sortedCats.get(1);
             double pct = thisTotal > 0 ? (second.getValue() / thisTotal) * 100 : 0;
-            insights.add(String.format("🥈 2nd highest: %s at ₹%.0f (%.0f%%)", second.getKey(), second.getValue(), pct));
+            insights.add(String.format(Locale.getDefault(), "🥈 2nd highest: %s at ₹%.0f (%.0f%%)", second.getKey(), second.getValue(), pct));
         }
 
         // Insight 3: 3rd highest category
         if (sortedCats.size() >= 3) {
             Map.Entry<String, Double> third = sortedCats.get(2);
             double pct = thisTotal > 0 ? (third.getValue() / thisTotal) * 100 : 0;
-            insights.add(String.format("🥉 3rd highest: %s at ₹%.0f (%.0f%%)", third.getKey(), third.getValue(), pct));
+            insights.add(String.format(Locale.getDefault(), "🥉 3rd highest: %s at ₹%.0f (%.0f%%)", third.getKey(), third.getValue(), pct));
         }
 
         // Insight 4: Top 3 merchants
@@ -82,7 +82,7 @@ public class InsightEngine {
             double change = ((thisTotal - lastTotal) / lastTotal) * 100;
             if (Math.abs(change) > 10) {
                 String dir = change > 0 ? "more" : "less";
-                insights.add(String.format("📊 You spent %.0f%% %s than last month (₹%.0f vs ₹%.0f)",
+                insights.add(String.format(Locale.getDefault(), "📊 You spent %.0f%% %s than last month (₹%.0f vs ₹%.0f)",
                         Math.abs(change), dir, thisTotal, lastTotal));
             }
         }
@@ -94,9 +94,9 @@ public class InsightEngine {
                 double diff = e.getValue() - prev;
                 double pct = (diff / prev) * 100;
                 if (pct > 30)
-                    insights.add(String.format("⚠️ %s up ₹%.0f (%.0f%%) vs last month", e.getKey(), diff, pct));
+                    insights.add(String.format(Locale.getDefault(), "⚠️ %s up ₹%.0f (%.0f%%) vs last month", e.getKey(), diff, pct));
                 else if (pct < -20)
-                    insights.add(String.format("✅ %s down ₹%.0f (%.0f%%) vs last month", e.getKey(), Math.abs(diff), Math.abs(pct)));
+                    insights.add(String.format(Locale.getDefault(), "✅ %s down ₹%.0f (%.0f%%) vs last month", e.getKey(), Math.abs(diff), Math.abs(pct)));
             }
         }
 
@@ -112,12 +112,12 @@ public class InsightEngine {
         int dim = cal.getActualMaximum(Calendar.DAY_OF_MONTH);
         if (dom > 3 && thisTotal > 0) {
             double predicted = (thisTotal / dom) * dim;
-            insights.add(String.format("🔮 Projected month-end spend: ₹%.0f", predicted));
+            insights.add(String.format(Locale.getDefault(), "🔮 Projected month-end spend: ₹%.0f", predicted));
         }
 
         // Insight 9: Save 10% tip
         if (thisTotal > 0) {
-            insights.add(String.format("💡 Cut 10%% = save ₹%.0f this month", thisTotal * 0.1));
+            insights.add(String.format(Locale.getDefault(), "💡 Cut 10%% = save ₹%.0f this month", thisTotal * 0.1));
         }
 
         return insights;
@@ -237,17 +237,17 @@ public class InsightEngine {
                                                   double lastMonth, double thisMonth) {
         if (lastMonth <= 0 && thisMonth <= 0) return null;
         if (lastMonth <= 0) {
-            return String.format("🆕 New spend in %s: ₹%.0f this month", category, thisMonth);
+            return String.format(Locale.getDefault(), "🆕 New spend in %s: ₹%.0f this month", category, thisMonth);
         }
         double changePct = ((thisMonth - lastMonth) / lastMonth) * 100;
         if (changePct > 30) {
-            return String.format("⚠️ Your %s spending increased %.0f%% this month (₹%.0f → ₹%.0f)",
+            return String.format(Locale.getDefault(), "⚠️ Your %s spending increased %.0f%% this month (₹%.0f → ₹%.0f)",
                     category, changePct, lastMonth, thisMonth);
         } else if (changePct < -20) {
-            return String.format("✅ Your %s spending dropped %.0f%% — great job! (₹%.0f → ₹%.0f)",
+            return String.format(Locale.getDefault(), "✅ Your %s spending dropped %.0f%% — great job! (₹%.0f → ₹%.0f)",
                     category, Math.abs(changePct), lastMonth, thisMonth);
         } else if (Math.abs(changePct) <= 10) {
-            return String.format("📊 %s spending stable this month (₹%.0f)", category, thisMonth);
+            return String.format(Locale.getDefault(), "📊 %s spending stable this month (₹%.0f)", category, thisMonth);
         }
         return null; // minor change — not worth showing
     }
@@ -260,9 +260,9 @@ public class InsightEngine {
         if (lastMonthTotal <= 0) return null;
         double changePct = ((thisMonthTotal - lastMonthTotal) / lastMonthTotal) * 100;
         if (changePct > 30) {
-            return String.format("⚠️ Spending increased by %.0f%% compared to last month", changePct);
+            return String.format(Locale.getDefault(), "⚠️ Spending increased by %.0f%% compared to last month", changePct);
         } else if (changePct < -20) {
-            return String.format("✅ Great! Spending reduced by %.0f%% this month", Math.abs(changePct));
+            return String.format(Locale.getDefault(), "✅ Great! Spending reduced by %.0f%% this month", Math.abs(changePct));
         }
         return "📊 Spending stable this month";
     }

@@ -35,7 +35,7 @@ public class BillSmsDetector {
             this.dueDate    = dueDate;
             this.status     = status;
             this.isRecurring = isRecurring;
-            this.merchantId = name != null ? name.toLowerCase().replaceAll("[^a-z0-9]","") : "";
+            this.merchantId = name != null ? name.toLowerCase(Locale.ROOT).replaceAll("[^a-z0-9]","") : "";
         }
     }
 
@@ -112,7 +112,7 @@ public class BillSmsDetector {
      */
     public static BillSmsResult detect(String body, String sender) {
         if (body == null || body.length() < 10) return null;
-        String lower = body.toLowerCase();
+        String lower = body.toLowerCase(Locale.ROOT);
 
         // Check if paid or pending
         boolean isPaid    = containsAny(lower, BILL_PAID_KEYWORDS);
@@ -136,7 +136,10 @@ public class BillSmsDetector {
                 amount = Double.parseDouble(amtM.group(1).replace(",", ""));
                 }
             }
-        } catch (Exception e) { return null; }
+        } catch (NumberFormatException e) {
+            android.util.Log.w("BillSmsDetector", "Amount parse failed in SMS: " + e.getMessage());
+            return null;
+        }
         if (amount <= 0) return null;
 
         // Identify biller
@@ -212,7 +215,7 @@ public class BillSmsDetector {
 
     private static String extractBillerFromSender(String sender) {
         if (sender == null) return null;
-        String s = sender.toLowerCase().replaceAll("^[a-z]{2}-", "");
+        String s = sender.toLowerCase(Locale.ROOT).replaceAll("^[a-z]{2}-", "");
         if (s.contains("airtel")) return "Airtel";
         if (s.contains("jio"))    return "Jio";
         if (s.contains("bses"))   return "BSES";
@@ -241,7 +244,9 @@ public class BillSmsDetector {
                     sdf.setLenient(false);
                     java.util.Date d = sdf.parse(clean);
                     if (d != null) return d.getTime();
-                } catch (Exception ignored) {}
+                } catch (java.text.ParseException ignored) {
+                    // Expected — try next format
+                }
             }
             // If just dd-MM, use current year
             if (clean.matches("\\d{1,2}-\\d{2}")) {
@@ -258,7 +263,9 @@ public class BillSmsDetector {
                     return d.getTime();
                 }
             }
-        } catch (Exception ignored) {}
+        } catch (Exception e) {
+            android.util.Log.w("BillSmsDetector", "parseDate failed for '" + dateStr + "': " + e.getMessage());
+        }
         return 0;
     }
 }

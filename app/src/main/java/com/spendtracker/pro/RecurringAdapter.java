@@ -11,7 +11,7 @@ public class RecurringAdapter extends RecyclerView.Adapter<RecurringAdapter.VH> 
     public interface OnClick { void onClick(RecurringTransaction r); }
     private List<RecurringTransaction> list = new ArrayList<>();
     private final OnClick click;
-    private final SimpleDateFormat sdf = new SimpleDateFormat("dd MMM yyyy", Locale.getDefault());
+    private final SimpleDateFormat sdf = new SimpleDateFormat("dd MMM yyyy", Locale.ROOT);
     public RecurringAdapter(OnClick c) { this.click = c; }
     public void setItems(List<RecurringTransaction> l) { this.list = l != null ? l : new ArrayList<>(); notifyDataSetChanged(); }
 
@@ -23,7 +23,7 @@ public class RecurringAdapter extends RecyclerView.Adapter<RecurringAdapter.VH> 
         RecurringTransaction r = list.get(i);
         h.tvIcon.setText(r.icon != null ? r.icon : "🔄");
         h.tvName.setText(r.name);
-        h.tvAmount.setText(String.format("₹%.0f", r.amount));
+        h.tvAmount.setText(String.format(Locale.getDefault(), "₹%.0f", r.amount));
         h.tvFreq.setText(r.frequency);
         h.tvDue.setText("Due: " + sdf.format(new Date(r.nextDueDate)));
         long daysLeft = (r.nextDueDate - System.currentTimeMillis()) / 86400000L;

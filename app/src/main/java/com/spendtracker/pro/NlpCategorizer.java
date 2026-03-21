@@ -3,24 +3,21 @@ package com.spendtracker.pro;
 import java.util.*;
 
 /**
- * NlpCategorizer v1.6
+ * NlpCategorizer v1.7
  *
- * Word-level NLP fallback categorizer. Activates when CategoryEngine
- * returns "💼 Others" — handles unknown merchants by decomposing the
- * merchant name into tokens and matching them against semantic word groups.
- *
- * Example:
- *   "Blue Tokai Coffee Roasters" → tokens: [blue, tokai, coffee, roasters]
- *   "coffee" → matched → 🍔 Food
- *
- * This handles new/unknown merchants that haven't been added to the dataset yet.
+ * Word-level NLP fallback categorizer.
+ * Changes vs v1.6:
+ *  - Fix 2.41: Added "💄 Beauty & Salon" group
+ *  - Fix 2.42: Renamed "🍔 Food" → "🍽️ Cafe & Food Delivery"
+ *  - salon/spa/beauty words moved from Fitness/Shopping → Beauty & Salon
+ *  - beauty/skincare/haircare words moved from Shopping → Beauty & Salon
  */
 public class NlpCategorizer {
 
-    // Each entry: { category, word1, word2, ... }
     private static final String[][] WORD_GROUPS = {
-        // Food
-        { "🍔 Food",
+
+        // Cafe & Food Delivery (Fix 2.42)
+        { "🍽️ Cafe & Food Delivery",
           "coffee", "cafe", "restaurant", "kitchen", "food", "eatery", "dining",
           "pizza", "burger", "biryani", "chinese", "italian", "dhaba", "canteen",
           "bakery", "sweets", "mithai", "chaat", "snacks", "grill", "bbq",
@@ -36,16 +33,26 @@ public class NlpCategorizer {
           "kirana", "supershop", "hypermarket", "wholesale", "bulk",
           "milk", "eggs", "produce", "pantry" },
 
-        // Shopping
+        // Shopping (beauty/salon words removed — now in Beauty & Salon)
         { "🛍️ Shopping",
           "store", "shop", "retail", "boutique", "fashion", "wear",
           "clothing", "apparel", "garments", "textiles", "accessories",
           "jewels", "jewellery", "jewelry", "optical", "eyewear",
           "footwear", "shoes", "sneakers", "electronics", "digital",
           "gadgets", "appliances", "furniture", "decor", "interiors",
-          "hardware", "tools", "stationery", "gifting", "cosmetics",
-          "beauty", "skincare", "haircare", "perfume", "watch",
-          "bags", "luggage", "leather" },
+          "hardware", "tools", "stationery", "gifting",
+          "perfume", "watch", "bags", "luggage", "leather" },
+
+        // Beauty & Salon (Fix 2.41 — new category)
+        { "💄 Beauty & Salon",
+          "salon", "spa", "beauty", "skincare", "haircare", "grooming",
+          "barber", "parlour", "parlor", "makeup", "nail", "nails",
+          "waxing", "threading", "facial", "manicure", "pedicure",
+          "bridal", "mehndi", "cosmetics", "loreal", "wella",
+          "lakme", "naturals salon", "jawed habib", "toni guy",
+          "toni&guy", "yves rocher", "the body shop", "kiehl",
+          "forest essentials", "biotique", "himalaya", "plum",
+          "mcaffeine", "minimalist", "dot and key", "sugar cosmetics" },
 
         // Transport
         { "🚗 Transport",
@@ -107,12 +114,11 @@ public class NlpCategorizer {
           "library", "books", "publication", "publishing",
           "skill", "knowledge", "edtech" },
 
-        // Fitness
+        // Fitness (salon/spa/beauty moved out to Beauty & Salon)
         { "💪 Fitness",
           "gym", "fitness", "yoga", "zumba", "pilates", "crossfit",
-          "workout", "sports", "athletics", "martial arts",
+          "workout", "athletics", "martial arts",
           "swimming", "dance", "aerobics", "health club",
-          "salon", "spa", "grooming", "barber", "parlour",
           "wellness center", "physio", "rehabilitation" },
 
         // Investment
@@ -139,32 +145,18 @@ public class NlpCategorizer {
           "trophy", "souvenir" },
     };
 
-    /**
-     * Predict category from merchant name using word-token matching.
-     * Returns "💼 Others" if no match found.
-     *
-     * Call this ONLY as a fallback when CategoryEngine.classify() returns Others.
-     */
     public static String predict(String merchant) {
         if (merchant == null || merchant.trim().isEmpty()) return "💼 Others";
-
         String m = merchant.toLowerCase().trim();
-
-        // Try full string first, then token by token
         for (String[] group : WORD_GROUPS) {
             String category = group[0];
             for (int i = 1; i < group.length; i++) {
                 if (m.contains(group[i])) return category;
             }
         }
-
         return "💼 Others";
     }
 
-    /**
-     * Returns a confidence label based on how the match was made.
-     * Useful for debugging / showing "Auto-detected" badge in UI.
-     */
     public static String predictWithSource(String merchant) {
         String result = predict(merchant);
         return result.equals("💼 Others") ? null : result;

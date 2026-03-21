@@ -1,5 +1,6 @@
 package com.spendtracker.pro;
 
+import java.util.Locale;
 import java.util.regex.*;
 
 /**
@@ -64,7 +65,7 @@ public class MerchantExtractor {
         s = s.replaceAll("(?i)\\s+A\\s+C\\s*$", "").trim();
         // Remove leading articles
         for (String noise : NOISE_WORDS) {
-            if (s.toLowerCase().startsWith(noise.trim())) {
+            if (s.toLowerCase(Locale.ROOT).startsWith(noise.trim())) {
                 s = s.substring(noise.trim().length()).trim();
             }
         }

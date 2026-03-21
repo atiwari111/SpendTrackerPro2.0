@@ -1,5 +1,6 @@
 package com.spendtracker.pro;
 
+import java.util.Locale;
 import java.util.List;
 
 /**
@@ -42,7 +43,7 @@ public class SpendingAnomalyDetector {
         if (!isAnomalous(amount, history)) return null;
         double avg = average(history);
         int multiplier = (int) Math.round(amount / avg);
-        return String.format("%.0fx higher than your usual ₹%.0f", (double) multiplier, avg);
+        return String.format(Locale.getDefault(), "%.0fx higher than your usual ₹%.0f", (double) multiplier, avg);
     }
 
     private static double average(List<Double> values) {

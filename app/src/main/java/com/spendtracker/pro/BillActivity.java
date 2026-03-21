@@ -161,17 +161,24 @@ public class BillActivity extends AppCompatActivity {
                     String amtStr  = etAmount.getText().toString().trim();
                     String dateStr = etDueDate.getText().toString().trim();
                     if (name.isEmpty() || amtStr.isEmpty()) return;
+                    double amt;
+                    try { amt = Double.parseDouble(amtStr); }
+                    catch (NumberFormatException e) {
+                        android.widget.Toast.makeText(this, "Invalid amount: " + amtStr, android.widget.Toast.LENGTH_SHORT).show();
+                        return;
+                    }
                     try {
-                        double amt     = Double.parseDouble(amtStr);
                         String cat     = (String) spCat.getSelectedItem();
                         long dueDate   = parseInputDate(dateStr);
                         Bill bill      = new Bill(name, cat,
                                 CategoryEngine.getInfo(cat).icon, amt, dueDate, "PENDING");
                         bill.isRecurring = cbRecurring.isChecked();
                         bill.frequency   = (String) spFreq.getSelectedItem();
-                        bill.merchantId  = name.toLowerCase().replaceAll("[^a-z0-9]","");
+                        bill.merchantId  = name.toLowerCase(Locale.ROOT).replaceAll("[^a-z0-9]","");
                         AppExecutors.db().execute(() -> db.billDao().insert(bill));
-                    } catch (Exception ignored) {}
+                    } catch (Exception e) {
+                        android.util.Log.e("BillActivity", "Add bill DB insert failed: " + e.getMessage());
+                    }
                 })
                 .setNegativeButton("Cancel", null).show();
     }
@@ -195,7 +202,9 @@ public class BillActivity extends AppCompatActivity {
                 .setPositiveButton("Update", (d, w) -> {
                     bill.name = etName.getText().toString().trim();
                     try { bill.amount = Double.parseDouble(etAmount.getText().toString()); }
-                    catch (Exception ignored) {}
+                    catch (NumberFormatException e) {
+                        android.util.Log.w("BillActivity", "Edit bill: invalid amount '" + etAmount.getText() + "'");
+                    }
                     bill.isRecurring = cbRecurring.isChecked();
                     String dateStr   = etDueDate.getText().toString().trim();
                     if (!dateStr.isEmpty()) bill.dueDate = parseInputDate(dateStr);
@@ -258,7 +267,9 @@ public class BillActivity extends AppCompatActivity {
                 java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat(fmt, Locale.ENGLISH);
                 java.util.Date d = sdf.parse(dateStr.trim());
                 if (d != null) return d.getTime();
-            } catch (Exception ignored) {}
+            } catch (java.text.ParseException ignored) {
+                // Expected — trying next format
+            }
         }
         return 0;
     }

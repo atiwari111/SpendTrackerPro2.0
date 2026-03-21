@@ -14,10 +14,10 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 /**
- * AddExpenseActivity v1.5
- * - Single (non-duplicate) TextWatcher for auto-category
- * - Merchant learning: if user overrides auto-category, stores the correction
- * - Learning triggered only on manual save (not on edit load)
+ * AddExpenseActivity v2.0
+ * - Hybrid ML Agent: TFLite + frequency-map auto-suggestions
+ * - Pre-fills category, payment method, amount hint, notes hint
+ * - Learns from every save and edit (all 3 layers updated)
  */
 public class AddExpenseActivity extends AppCompatActivity {
 
@@ -29,22 +29,23 @@ public class AddExpenseActivity extends AppCompatActivity {
     private Switch swSelfTransfer;
     private long selectedDate = System.currentTimeMillis();
     private AppDatabase db;
+    private HybridTransactionAgent agent;
     private Transaction editingTransaction = null;
 
     // Track what auto-category suggested vs what user actually picked
     private String autoSuggestedCategory = null;
     private boolean userOverrodeCategory  = false;
-    // P2: track original values so we can detect changes on edit-save
+    // Track original values so we can detect changes on edit-save
     private String originalMerchant  = null;
     private String originalCategory  = null;
 
-    // P5: OCR receipt scanner launcher
+    // OCR receipt scanner launcher
     private final ActivityResultLauncher<android.content.Intent> ocrLauncher =
             registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
                 if (result.getResultCode() == RESULT_OK && result.getData() != null) {
                     double amount = result.getData().getDoubleExtra(OcrScanActivity.EXTRA_AMOUNT, 0);
                     String merchant = result.getData().getStringExtra(OcrScanActivity.EXTRA_MERCHANT);
-                    if (amount > 0) etAmount.setText(String.format("%.2f", amount));
+                    if (amount > 0) etAmount.setText(String.format(Locale.ROOT, "%.2f", amount));
                     if (merchant != null && !merchant.isEmpty()) etMerchant.setText(merchant);
                     Toast.makeText(this, "✅ Receipt scanned — check and save", Toast.LENGTH_SHORT).show();
                 }
@@ -54,7 +55,8 @@ public class AddExpenseActivity extends AppCompatActivity {
     protected void onCreate(Bundle s) {
         super.onCreate(s);
         setContentView(R.layout.activity_add_expense);
-        db = AppDatabase.getInstance(this);
+        db    = AppDatabase.getInstance(this);
+        agent = HybridTransactionAgent.getInstance(this);
 
         Toolbar tb = findViewById(R.id.toolbar);
         setSupportActionBar(tb);
@@ -69,7 +71,7 @@ public class AddExpenseActivity extends AppCompatActivity {
         swSelfTransfer = findViewById(R.id.swSelfTransfer);
 
         // ── Spinners ─────────────────────────────────────────────
-        String[] cats = CategoryEngine.getCategoryNames();
+        String[] cats = CategoryEngine.getSpendCategoryNames();
         spCategory.setAdapter(new ArrayAdapter<>(this,
                 android.R.layout.simple_spinner_dropdown_item, cats));
 
@@ -89,7 +91,7 @@ public class AddExpenseActivity extends AppCompatActivity {
             @Override public void onNothingSelected(AdapterView<?> parent) {}
         });
 
-        // ── Single auto-category TextWatcher ─────────────────────
+        // ── Hybrid ML TextWatcher ─────────────────────────────────
         etMerchant.addTextChangedListener(new TextWatcher() {
             @Override public void beforeTextChanged(CharSequence s, int st, int c, int a) {}
             @Override public void onTextChanged(CharSequence s, int st, int b, int c) {}
@@ -97,20 +99,67 @@ public class AddExpenseActivity extends AppCompatActivity {
             public void afterTextChanged(Editable s) {
                 if (editingTransaction != null) return; // don't override when editing
                 String typed = s.toString().trim();
-                if (typed.length() < 3) return;
+                if (typed.length() < 2) return;
 
-                String suggested = CategoryEngine.autoCategory(typed);
-                if (!suggested.equals("💼 Others")) {
-                    autoSuggestedCategory = suggested;
-                    userOverrodeCategory  = false; // reset flag when merchant changes
-                    String[] catList = CategoryEngine.getCategoryNames();
-                    for (int i = 0; i < catList.length; i++) {
-                        if (catList[i].equals(suggested)) {
-                            spCategory.setSelection(i);
-                            break;
+                // Parse current amount if entered (0 if empty)
+                double currentAmount = 0;
+                try {
+                    String amtStr = etAmount.getText() != null
+                                    ? etAmount.getText().toString().trim() : "";
+                    if (!amtStr.isEmpty()) currentAmount = Double.parseDouble(amtStr);
+                } catch (NumberFormatException ignored) {}
+
+                String currentPayment = spPayment.getSelectedItem() != null
+                                        ? spPayment.getSelectedItem().toString() : "UPI";
+
+                // ── Ask Hybrid agent (TFLite + frequency map) ─────
+                agent.suggestAsync(typed, currentAmount, selectedDate, currentPayment,
+                    suggestion -> {
+                        if (suggestion == null) {
+                            // No ML data — fall back to static CategoryEngine
+                            if (!userOverrodeCategory) {
+                                String fallback = CategoryEngine.autoCategory(typed);
+                                if (!fallback.equals("💼 Others")) {
+                                    autoSuggestedCategory = fallback;
+                                    selectCategory(fallback);
+                                }
+                            }
+                            return;
                         }
-                    }
-                }
+
+                        // Apply category suggestion
+                        if (!userOverrodeCategory && suggestion.category != null) {
+                            autoSuggestedCategory = suggestion.category;
+                            selectCategory(suggestion.category);
+                        }
+
+                        // Apply payment method suggestion
+                        if (suggestion.paymentMethod != null) {
+                            String[] pmList = {"UPI", "Credit Card", "Debit Card",
+                                               "Cash", "Bank Transfer"};
+                            for (int i = 0; i < pmList.length; i++) {
+                                if (suggestion.paymentMethod.toLowerCase(Locale.ROOT)
+                                        .contains(pmList[i].toLowerCase(Locale.ROOT))) {
+                                    spPayment.setSelection(i);
+                                    break;
+                                }
+                            }
+                        }
+
+                        // Show avg amount as hint (only when amount field is empty)
+                        if (suggestion.avgAmount > 0
+                                && (etAmount.getText() == null
+                                    || etAmount.getText().toString().isEmpty())) {
+                            etAmount.setHint(String.format("~₹%.0f (avg)", suggestion.avgAmount));
+                        }
+
+                        // Show last notes as placeholder hint
+                        if (suggestion.notesHint != null && !suggestion.notesHint.isEmpty()
+                                && (etNotes.getText() == null
+                                    || etNotes.getText().toString().isEmpty())) {
+                            etNotes.setHint(suggestion.notesHint);
+                        }
+                    });
             }
         });
 
@@ -138,7 +187,7 @@ public class AddExpenseActivity extends AppCompatActivity {
 
         findViewById(R.id.btnSave).setOnClickListener(v -> saveExpense());
 
-        // P5: scan receipt button
+        // scan receipt button
         findViewById(R.id.btnScanReceipt).setOnClickListener(v ->
                 ocrLauncher.launch(new android.content.Intent(this, OcrScanActivity.class)));
     }
@@ -155,24 +204,23 @@ public class AddExpenseActivity extends AppCompatActivity {
             if (editingTransaction == null) return;
             final Transaction t = editingTransaction;
             runOnUiThread(() -> {
-                etAmount.setText(String.format("%.2f", t.amount));
+                etAmount.setText(String.format(Locale.ROOT, "%.2f", t.amount));
                 etMerchant.setText(t.merchant);
                 etNotes.setText(t.notes != null ? t.notes : "");
                 selectedDate = t.timestamp;
                 updateDateLabel();
                 swSelfTransfer.setChecked(t.isSelfTransfer);
-                // P2: capture originals so save can detect what changed
                 originalMerchant = t.merchant;
                 originalCategory = t.category;
 
-                String[] catList = CategoryEngine.getCategoryNames();
+                String[] catList = CategoryEngine.getSpendCategoryNames();
                 for (int i = 0; i < catList.length; i++) {
                     if (catList[i].equals(t.category)) { spCategory.setSelection(i); break; }
                 }
-                String[] payments = {"UPI", "Credit Card", "Debit Card", "Cash", "Bank Transfer"};
+                String[] pmList = {"UPI", "Credit Card", "Debit Card", "Cash", "Bank Transfer"};
                 String pm = t.paymentDetail != null ? t.paymentDetail : "";
-                for (int i = 0; i < payments.length; i++) {
-                    if (pm.toLowerCase().contains(payments[i].toLowerCase())) {
+                for (int i = 0; i < pmList.length; i++) {
+                    if (pm.toLowerCase(Locale.ROOT).contains(pmList[i].toLowerCase(Locale.ROOT))) {
                         spPayment.setSelection(i);
                         break;
                     }
@@ -199,21 +247,18 @@ public class AddExpenseActivity extends AppCompatActivity {
         String paymentRaw = (String) spPayment.getSelectedItem();
         String paymentMethod = paymentRaw.equals("Credit Card") ? "CREDIT_CARD"
                              : paymentRaw.equals("Debit Card")  ? "DEBIT_CARD"
-                             : paymentRaw.replace(" ", "_").toUpperCase();
+                             : paymentRaw.replace(" ", "_").toUpperCase(Locale.ROOT);
         String notes  = etNotes.getText() != null ? etNotes.getText().toString().trim() : "";
         boolean isSelf = swSelfTransfer.isChecked();
 
-        // ── P2: Merchant learning — runs for BOTH new saves and edits ──────
-        // New save: user overrode auto-suggested category → learn it
+        // Keep existing CategoryEngine SharedPrefs learning for backward compat
         if (userOverrodeCategory && !merchant.equals("Manual Entry")) {
             CategoryEngine.learnMerchant(merchant, category);
         }
-        // Edit save: save alias if merchant name was corrected
         if (editingTransaction != null && originalMerchant != null
                 && !originalMerchant.equalsIgnoreCase(merchant)) {
             CategoryEngine.learnMerchantAlias(originalMerchant, merchant);
         }
-        // Edit save: save category if it was changed on an existing transaction
         if (editingTransaction != null && originalCategory != null
                 && !originalCategory.equals(category)
                 && !merchant.equals("Manual Entry")) {
@@ -230,9 +275,11 @@ public class AddExpenseActivity extends AppCompatActivity {
             editingTransaction.timestamp     = selectedDate;
             editingTransaction.notes         = notes;
             editingTransaction.isSelfTransfer = isSelf;
+            final boolean wasEdit = (originalCategory != null
+                    && !originalCategory.equals(category));
             AppExecutors.db().execute(() -> {
                 db.transactionDao().update(editingTransaction);
-                // Recalc budget for the month of the edited transaction
+                agent.learn(editingTransaction, wasEdit);  // Hybrid learn — all 3 layers
                 Calendar cal = Calendar.getInstance();
                 cal.setTimeInMillis(editingTransaction.timestamp);
                 int txMonth = cal.get(Calendar.MONTH) + 1;
@@ -261,17 +308,16 @@ public class AddExpenseActivity extends AppCompatActivity {
             tx.notes         = notes;
             tx.isManual       = true;
             tx.isSelfTransfer = isSelf;
-            // Manual entries need a unique smsHash so the unique index is never violated
             tx.smsHash        = "manual_" + java.util.UUID.randomUUID().toString();
-            final String finalMerchant = merchant;
+            final boolean wasCorrection = userOverrodeCategory;
             AppExecutors.db().execute(() -> {
                 db.transactionDao().insert(tx);
+                agent.learn(tx, wasCorrection);  // Hybrid learn — all 3 layers
                 if (!isSelf) {
                     Calendar cal = Calendar.getInstance();
                     cal.setTimeInMillis(selectedDate);
                     int txMonth = cal.get(Calendar.MONTH) + 1;
                     int txYear  = cal.get(Calendar.YEAR);
-                    // Recompute from transactions table (safe — no accumulation drift)
                     cal.set(Calendar.DAY_OF_MONTH, 1);
                     cal.set(Calendar.HOUR_OF_DAY, 0); cal.set(Calendar.MINUTE, 0);
                     cal.set(Calendar.SECOND, 0);      cal.set(Calendar.MILLISECOND, 0);
@@ -290,6 +336,21 @@ public class AddExpenseActivity extends AppCompatActivity {
                     finish();
                 });
             });
+        }
+    }
+
+    // ── Helpers ───────────────────────────────────────────────────
+
+    /** Select a category in the spinner without triggering the override listener. */
+    private void selectCategory(String category) {
+        String[] catList = CategoryEngine.getSpendCategoryNames();
+        for (int i = 0; i < catList.length; i++) {
+            if (catList[i].equals(category)) {
+                userOverrodeCategory = false;
+                spCategory.setSelection(i);
+                userOverrodeCategory = false; // reset again after listener may have fired
+                break;
+            }
         }
     }
 

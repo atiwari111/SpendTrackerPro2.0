@@ -60,6 +60,10 @@ public class BankAccountActivity extends AppCompatActivity {
 
         observeAccounts();
 
+        // Fix 2.38: clean up any duplicate rows (same lastFour) that were
+        // inserted before this bug was patched — keeps the highest updatedAt row.
+        AppExecutors.db().execute(() -> db.bankAccountDao().deleteDuplicatesByLastFour());
+
         View fab = findViewById(R.id.fabAddAccount);
         if (fab != null) fab.setVisibility(View.GONE);
     }
@@ -89,15 +93,14 @@ public class BankAccountActivity extends AppCompatActivity {
     }
 
     private void showAccountOptions(BankAccount acc) {
-        String[] options = {"Update balance", "Edit account", "Toggle active/hidden", "Delete account"};
+        String[] options = {"Update balance", "Edit account", "Delete account"};
         new AlertDialog.Builder(this, R.style.AlertDialogDark)
                 .setTitle(acc.bankName + " — " + acc.getMaskedAccount())
                 .setItems(options, (d, which) -> {
                     switch (which) {
                         case 0: showUpdateBalanceDialog(acc);  break;
                         case 1: showAccountFormDialog(acc);    break;
-                        case 2: toggleActive(acc);             break;
-                        case 3: confirmDelete(acc);            break;
+                        case 2: confirmDelete(acc);            break;
                     }
                 }).show();
     }
@@ -215,14 +218,6 @@ public class BankAccountActivity extends AppCompatActivity {
                 })
                 .setNegativeButton("Cancel", null)
                 .show();
-    }
-
-    private void toggleActive(BankAccount acc) {
-        acc.isActive = !acc.isActive;
-        AppExecutors.db().execute(() -> db.bankAccountDao().update(acc));
-        Toast.makeText(this,
-                acc.bankName + (acc.isActive ? " shown" : " hidden from total"),
-                Toast.LENGTH_SHORT).show();
     }
 
     private void confirmDelete(BankAccount acc) {

@@ -1,7 +1,10 @@
 package com.spendtracker.pro;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.net.Uri;
+import android.util.Base64;
 import androidx.core.content.FileProvider;
 import java.io.*;
 import java.security.*;
@@ -15,27 +18,43 @@ import javax.crypto.spec.*;
  * P4: Backup and restore manager.
  *
  * Backup: copies the Room SQLite database file into a ZIP archive encrypted
- * with AES-256-GCM keyed from a SHA-256 hash of the app's package name + device ID.
- * The ZIP is placed in external files dir and shared via FileProvider.
+ * with AES-256-GCM. The ZIP is placed in external files dir and shared via
+ * FileProvider.
  *
  * Restore: user picks a .stpbak file, it is decrypted, and the DB file is
  * replaced. The app must be restarted for Room to pick up the new file.
  *
  * Security notes:
- *  - AES/GCM/NoPadding — authenticated encryption, detects file tampering
- *  - IV (12 bytes) prepended to the ciphertext in the ZIP entry
- *  - Key derived deterministically from package + Android ID — no password needed,
- *    backups are bound to this device/app combination
+ *  - AES/GCM/NoPadding — authenticated encryption, detects file tampering.
+ *  - IV (12 bytes) prepended to the ciphertext in the ZIP entry.
+ *  - Key derived with PBKDF2WithHmacSHA256 (100,000 iterations) from
+ *    ANDROID_ID + a 16-byte random salt stored in private SharedPreferences.
+ *    The salt is generated once and persisted; the same salt is reused for
+ *    all future backups so that older backups can always be restored on the
+ *    same device.  Upgrading from the old SHA-256 derivation is handled
+ *    transparently: if no salt is stored yet, a new one is generated and
+ *    existing backups created with the old scheme become unrestorable (they
+ *    were already device-bound and not portable, so this is an acceptable
+ *    one-time migration cost).
  */
 public class BackupManager {
 
     private static final String BACKUP_DIR  = "SpendTracker";
-    private static final String DB_NAME     = "spendtracker_db";
+    // Must match the name passed to Room.databaseBuilder() in AppDatabase.
+    private static final String DB_NAME     = "spendtracker.db";
     private static final String ENTRY_NAME  = "spendtracker.db";
     private static final String EXT         = ".stpbak";
     private static final String ALGO        = "AES/GCM/NoPadding";
     private static final int    IV_LEN      = 12;
-    private static final int    TAG_LEN     = 128; // GCM tag bits
+    private static final int    TAG_LEN     = 128; // GCM auth-tag bits
+
+    // PBKDF2 parameters
+    private static final int    KDF_ITERATIONS = 100_000;
+    private static final int    KEY_LEN_BITS   = 256;
+    private static final int    SALT_LEN       = 16;
+    private static final String KDF_ALGO       = "PBKDF2WithHmacSHA256";
+    private static final String PREFS_NAME     = "stp_backup_prefs";
+    private static final String PREF_SALT_KEY  = "backup_kdf_salt";
 
     public interface Callback {
         void onSuccess(String message);
@@ -50,7 +69,7 @@ public class BackupManager {
                 File dbFile = ctx.getDatabasePath(DB_NAME);
                 if (!dbFile.exists()) { cb.onError("No data to backup yet."); return; }
 
-                // Force Room WAL checkpoint so all data is in the main DB file
+                // Force Room WAL checkpoint so all data is in the main DB file.
                 AppDatabase.getInstance(ctx).getOpenHelper().getWritableDatabase()
                         .execSQL("PRAGMA wal_checkpoint(FULL)");
 
@@ -107,7 +126,7 @@ public class BackupManager {
             try {
                 File dbFile = ctx.getDatabasePath(DB_NAME);
 
-                // Close Room DB before replacing the file
+                // Close Room DB before replacing the file.
                 AppDatabase.getInstance(ctx).close();
 
                 SecretKey key = deriveKey(ctx);
@@ -142,7 +161,7 @@ public class BackupManager {
 
                         byte[] plaintext = cipher.doFinal(cipherBuf.toByteArray());
 
-                        // Write decrypted DB, replacing the old file
+                        // Write decrypted DB, replacing the old file.
                         dbFile.getParentFile().mkdirs();
                         try (FileOutputStream fos = new FileOutputStream(dbFile)) {
                             fos.write(plaintext);
@@ -165,14 +184,46 @@ public class BackupManager {
 
     // ── Key derivation ────────────────────────────────────────────
 
+    /**
+     * Derives a 256-bit AES key using PBKDF2WithHmacSHA256.
+     *
+     * Password material: ANDROID_ID (semi-stable device identifier).
+     * Salt: 16 random bytes generated on first call and persisted in private
+     *       SharedPreferences so that the same key is reproduced on every
+     *       subsequent call on the same device.
+     * Iterations: 100,000 — keeps brute-force cost high while staying under
+     *             ~200 ms on a mid-range device.
+     */
     private static SecretKey deriveKey(Context ctx) throws Exception {
-        String androidId = android.provider.Settings.Secure.getString(
+        @SuppressLint("HardwareIds") String androidId = android.provider.Settings.Secure.getString(
                 ctx.getContentResolver(), android.provider.Settings.Secure.ANDROID_ID);
-        String seed = ctx.getPackageName() + "|" + (androidId != null ? androidId : "default");
+        char[] password = (androidId != null ? androidId : "default").toCharArray();
 
-        MessageDigest sha = MessageDigest.getInstance("SHA-256");
-        byte[] keyBytes = sha.digest(seed.getBytes("UTF-8"));
+        byte[] salt = getOrCreateSalt(ctx);
 
-        return new SecretKeySpec(keyBytes, "AES");
+        SecretKeyFactory factory = SecretKeyFactory.getInstance(KDF_ALGO);
+        PBEKeySpec spec = new PBEKeySpec(password, salt, KDF_ITERATIONS, KEY_LEN_BITS);
+        try {
+            byte[] keyBytes = factory.generateSecret(spec).getEncoded();
+            return new SecretKeySpec(keyBytes, "AES");
+        } finally {
+            spec.clearPassword();
+        }
+    }
+
+    /** Returns the stored salt, creating and persisting a fresh one if absent. */
+    private static byte[] getOrCreateSalt(Context ctx) {
+        SharedPreferences prefs = ctx.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        String encoded = prefs.getString(PREF_SALT_KEY, null);
+        if (encoded != null) {
+            return Base64.decode(encoded, Base64.NO_WRAP);
+        }
+        // First run — generate and persist a new salt.
+        byte[] salt = new byte[SALT_LEN];
+        new SecureRandom().nextBytes(salt);
+        prefs.edit()
+             .putString(PREF_SALT_KEY, Base64.encodeToString(salt, Base64.NO_WRAP))
+             .apply();
+        return salt;
     }
 }
