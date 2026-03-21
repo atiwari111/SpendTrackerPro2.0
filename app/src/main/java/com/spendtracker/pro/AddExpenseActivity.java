@@ -26,7 +26,7 @@ public class AddExpenseActivity extends AppCompatActivity {
     private TextInputEditText etAmount, etMerchant, etNotes;
     private Spinner spCategory, spPayment;
     private TextView tvDate;
-    private Switch swSelfTransfer;
+    private SwitchCompat swSelfTransfer;
     private long selectedDate = System.currentTimeMillis();
     private AppDatabase db;
     private HybridTransactionAgent agent;
@@ -355,7 +355,7 @@ public class AddExpenseActivity extends AppCompatActivity {
     }
 
     private void updateDateLabel() {
-        tvDate.setText(new SimpleDateFormat("dd MMM yyyy", Locale.getDefault())
+        tvDate.setText(new SimpleDateFormat("dd MMM yyyy", Locale.ROOT)
                 .format(new Date(selectedDate)));
     }
 
