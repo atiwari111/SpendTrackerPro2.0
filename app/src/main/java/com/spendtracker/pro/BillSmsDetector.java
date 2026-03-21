@@ -60,6 +60,49 @@ public class BillSmsDetector {
         "recharge successful", "subscription renewed",
     };
 
+
+    // ── Promotional / marketing SMS — must be rejected BEFORE bill detection ─
+    // These phrases appear in welcome, offer, and marketing messages that
+    // happen to mention "credit card", "bill", or an amount — but are NOT dues.
+    private static final String[] PROMO_REJECT_PHRASES = {
+        "hope you love",        // BOBCARD / welcome SMS
+        "congratulations",      // card approval / offer SMS
+        "you have been approved",
+        "your application",
+        "welcome to",           // welcome onboarding SMS
+        "thank you for choosing",
+        "enjoy your",           // "enjoy your new card"
+        "exclusive offer",
+        "special offer",
+        "limited offer",
+        "cashback offer",
+        "reward points",
+        "you have earned",
+        "upgrade your",
+        "pre-approved",
+        "pre approved",
+        "apply now",
+        "click here",
+        "download app",
+        "install app",
+        "refer a friend",
+        "as per rbi",           // RBI promotional disclaimers
+        "to unsubscribe",
+        "to stop sms",
+        "is now active",        // card activation message
+        "has been activated",
+        "card is active",
+        "card activated",
+        "card delivered",
+        "to know your",
+        "for more details",
+        "visit our website",
+        "call us at",
+        "for assistance",
+        "dial 1800",
+        "toll free",
+    };
+
     private static final Pattern AMOUNT_PAT = Pattern.compile(
             "(?i)(?:rs\\.?|inr|₹)\\s*([0-9,]+(?:\\.[0-9]{1,2})?)");
 
@@ -113,6 +156,9 @@ public class BillSmsDetector {
     public static BillSmsResult detect(String body, String sender) {
         if (body == null || body.length() < 10) return null;
         String lower = body.toLowerCase(Locale.ROOT);
+
+        // Reject promotional / marketing messages before any other check
+        if (containsAny(lower, PROMO_REJECT_PHRASES)) return null;
 
         // Check if paid or pending
         boolean isPaid    = containsAny(lower, BILL_PAID_KEYWORDS);
