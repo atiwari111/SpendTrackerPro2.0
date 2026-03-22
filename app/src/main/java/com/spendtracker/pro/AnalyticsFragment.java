@@ -99,8 +99,7 @@ public class AnalyticsFragment extends Fragment {
         } else {
             Calendar c = Calendar.getInstance();
             c.add(Calendar.MONTH, monthOffset);
-            tvSelectedMonth.setText(new java.text.SimpleDateFormat("MMMM yyyy",
-                    Locale.getDefault()).format(c.getTime()));
+            tvSelectedMonth.setText(new java.text.SimpleDateFormat("MMMM yyyy", Locale.ENGLISH).format(c.getTime()));
         }
         // Disable "next" button when already on current month
         if (getView() != null) {
@@ -236,7 +235,7 @@ public class AnalyticsFragment extends Fragment {
                 int idx = 5 - i;
                 incomeEntries.add(new BarEntry(idx, (float) inc));
                 expenseEntries.add(new BarEntry(idx, (float) exp));
-                monthLabels.add(new java.text.SimpleDateFormat("MMM", Locale.getDefault())
+                monthLabels.add(new java.text.SimpleDateFormat("MMM", Locale.ENGLISH)
                         .format(new Date(mc.getTimeInMillis() - 1)));
             }
 

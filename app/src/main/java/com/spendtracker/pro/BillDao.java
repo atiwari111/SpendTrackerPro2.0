@@ -39,4 +39,7 @@ public interface BillDao {
 
     @Query("UPDATE bills SET status = 'OVERDUE' WHERE status = 'PENDING' AND dueDate < :now")
     void markOverdue(long now);
+
+    @androidx.room.Query("DELETE FROM bills")
+    void deleteAll();
 }

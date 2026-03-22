@@ -40,4 +40,7 @@ public interface CreditCardDao {
 
     @Query("SELECT COUNT(*) FROM credit_cards")
     int getCount();
+
+    @androidx.room.Query("DELETE FROM credit_cards")
+    void deleteAll();
 }

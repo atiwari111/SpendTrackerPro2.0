@@ -1,285 +1,259 @@
-# 💰 SpendTracker Pro
+# SpendTracker Pro 2.1
 
-> A smart, offline-first Android expense tracker that reads your bank SMS automatically, categorizes transactions using AI keyword matching, tracks budgets in real time, and syncs your data securely to the cloud.
-
----
-
-## 📱 Screenshots
-
-| Home Dashboard | Budget Manager | Analytics | Transactions |
-|---|---|---|---|
-| Today & Month totals, Health Score, Quick cards | Live budget progress per category | Bar, Pie & Line charts + AI Insights | Filter by category, merchant & payment |
+A privacy-first personal finance Android app that automatically reads your bank SMS messages, categorises transactions using on-device machine learning, and gives you a complete picture of your spending — without sending any data to the cloud.
 
 ---
 
-## ✨ Features
+## Screenshots
 
-### 🔍 Automatic SMS Detection
-- Reads bank & UPI SMS messages from the last 90 days on first scan
-- Real-time detection via `BroadcastReceiver` — works completely **offline**
-- Supports HDFC, SBI, ICICI, Axis, Kotak, Paytm, PhonePe, GPay, and 15+ banks/apps
-- Duplicate detection — never imports the same transaction twice
-
-### 🧠 AI Categorization
-- 16 spending categories: Food, Groceries, Transport, Fuel, Travel, Shopping, Rent, Bills, Entertainment, Health, Medicine, Education, Fitness, Investment, Gifts, Others
-- 200+ merchant keywords mapped automatically
-- Smart merchant map for: Swiggy, Zomato, Zepto, BigBasket, Blinkit, DMart, JioMart, Smart Bazar, Flipkart, Amazon, Meesho, Myntra, Gullak, Zerodha, Groww, Apollo, HP/HPCL, BP/BPCL, IOCL, Uber, Ola, IRCTC, and many more
-- Auto-fills category when you type a merchant name in Add Expense
-
-### 📊 Analytics
-- **7-day Bar Chart** — daily spending overview
-- **Category Pie Chart** — visual breakdown by category
-- **30-day Line Chart** — spending trend
-- **Merchant Breakdown** — top 10 merchants with amounts
-- **AI Insights** — top 3 spending categories (🥇🥈🥉), top 3 merchants, month-over-month comparison, spending predictions, day-of-week patterns
-
-### 📋 Budget Manager
-- Set per-category monthly budgets
-- Live progress bars with colour coding: 🟢 Safe → 🟡 Caution → 🟠 Warning → 🔴 Exceeded
-- Automatically calculates spent vs remaining from actual transactions (always in sync)
-- Push notifications when budget reaches 90% or is exceeded
-- Total budget summary (Total Set / Total Spent / Total Left)
-
-### 🔄 Self-Transfer Support
-- Mark any transaction as "Self-Transfer" (e.g. moving money between own accounts)
-- Self-transfers are excluded from all spending totals, budgets, and analytics
-
-### ✏️ Full Transaction Editing
-- Tap any transaction to edit it (amount, merchant, category, date, payment method, notes)
-- Long-press also triggers edit
-- Add manual expenses with the ➕ FAB button
-
-### 📥 CSV Import
-- Import transactions from any CSV file via Settings → 📥 Import from CSV
-- Auto-detects header rows (date, merchant, amount, category, payment, notes)
-- Supports 6 date formats: `yyyy-MM-dd`, `dd/MM/yyyy`, `dd-MM-yyyy`, `MM/dd/yyyy`, `dd MMM yyyy`, `dd-MMM-yyyy`
-- Deduplicates against existing records automatically
-
-### 📤 CSV Export
-- Export all transactions as a CSV file and share via any app
-
-### 🔁 Recurring Bills
-- Track monthly/weekly/yearly bills
-- Automatic push reminders 1 day before due date
-
-### 💼 Net Worth Tracker
-- Add assets and liabilities
-- Real-time net worth calculation
-
-### 🔒 Security
-- Biometric lock (fingerprint) — toggle in Settings
-- Cloud data encrypted with AES-256-CBC using per-user keys
-- JWT auth tokens stored in Android `EncryptedSharedPreferences` (AES-256-GCM)
-- Passwords hashed with bcrypt (cost 12) — never stored in plaintext
-
-### ☁️ Cloud Account & Sync
-- Register / login with email + password
-- One-tap sync to backend — all data encrypted before storage
-- Sign out and sign back in anytime — data is preserved in cloud
-- Rate-limited auth (10 attempts / 15 min) to prevent brute force
+> _Add screenshots here after your next build_
 
 ---
 
-## 🏗️ Tech Stack
+## Features
 
-| Layer | Technology |
+### Automatic Transaction Import
+- Reads bank and UPI SMS messages in real time and on demand
+- Parses transactions from all major Indian banks (HDFC, SBI, ICICI, PNB, Axis, Kotak and more)
+- Detects debit, credit, UPI, NEFT, IMPS, card swipes, and ATM withdrawals
+- Duplicate detection using SMS hash fingerprinting
+
+### 3-Layer Hybrid ML Engine
+| Layer | What it does | Works from day 1? |
+|---|---|---|
+| Frequency map | Remembers your past merchant-category pairs | Yes |
+| TFLite model | 86-feature on-device classifier (18 categories) | Yes (after training) |
+| Static map + NLP | Rule-based fallback for unknown merchants | Always |
+
+All three layers run entirely on-device. No internet required for categorisation.
+
+### 18 Spending Categories
+🍽️ Cafe & Food Delivery · 🛒 Groceries · 🚗 Transport · ⛽ Fuel · ✈️ Travel · 🛍️ Shopping · 🏠 Rent · 🔌 Bills · 🎬 Entertainment · 🏥 Health · 💊 Medicine · 📚 Education · 💪 Fitness · 💰 Investment · 🎁 Gifts · 💄 Beauty & Salon · 💚 Income · 💼 Others
+
+### Budget Tracking
+- Set monthly budgets per category
+- Real-time progress tracking with alerts at 90% usage
+- Auto-budget generator based on past 3-month averages
+- Daily spend limit streaks
+
+### Analytics
+- Week / month / custom range breakdowns
+- Top merchants, category trends, month-over-month comparison
+- Health score (0–100) based on spending habits
+- Spending anomaly detection
+- Projected month-end forecast
+
+### Bills & Recurring
+- Auto-detect recurring bills from SMS patterns
+- Due-date reminders with notification alerts
+- Mark bills as paid
+
+### Credit Cards
+- Track multiple cards with billing cycle awareness
+- Statement amount tracking
+- Utilisation percentage per card
+
+### Bank Accounts
+- Manual balance tracking across multiple bank accounts
+- Total balance aggregated on home screen
+
+### Net Worth
+- Asset and liability tracking
+- Syncs bank account balances automatically
+
+### OCR Receipt Scanning
+- Point your camera at any receipt
+- Extracts amount and merchant name automatically
+- One tap to fill the add-expense form
+
+### Split Expense
+- Split any transaction with contacts
+- Tracks who owes what
+
+### Security
+- Biometric lock (fingerprint / face)
+- AES-256 encrypted backup files
+- All data stored locally on device
+
+### Import / Export
+- Import transactions from CSV
+- Export transactions, credit cards, and bank accounts to CSV
+- Full backup and restore as `.stpbak` file
+
+### UI
+- Light and dark theme with live switching
+- Home screen widget (today's spend + monthly total + bank balance)
+- Daily summary push notifications
+
+---
+
+## Tech Stack
+
+| Component | Technology |
 |---|---|
-| Language | Java (Android SDK 26+) |
-| UI | Material Design 3, ConstraintLayout, RecyclerView, CardView |
-| Local DB | Room (SQLite) with LiveData observers |
-| Charts | MPAndroidChart v3.1.0 |
-| Networking | OkHttp 4.12 |
-| Secure Storage | AndroidX Security Crypto (EncryptedSharedPreferences) |
-| Background | WorkManager, AlarmManager, BroadcastReceiver |
-| Backend | Node.js + Express + better-sqlite3 |
-| Auth | JWT (jsonwebtoken) + bcryptjs |
-| Encryption | AES-256-CBC (per-user key derivation) |
+| Language | Java |
+| Min SDK | 26 (Android 8.0) |
+| Target SDK | 34 (Android 14) |
+| Database | Room v2.6 (SQLite), schema v7 |
+| ML inference | TensorFlow Lite 2.14 |
+| Charts | MPAndroidChart 3.1 |
+| Camera / OCR | CameraX 1.3 + Google ML Kit Text Recognition |
+| Background work | WorkManager 2.9 |
+| Biometrics | AndroidX Biometric 1.1 |
+| Animations | Lottie 6.4 |
+| CI/CD | GitHub Actions (manual trigger) |
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ```
-SpendTrackerPro/
-├── app/
-│   ├── build.gradle
-│   └── src/main/
-│       ├── AndroidManifest.xml
-│       └── java/com/spendtracker/pro/
-│           │
-│           ├── ── Activities ──
-│           ├── SplashActivity.java          # Launch screen + biometric gate + auth routing
-│           ├── LoginActivity.java           # Email/password sign-in
-│           ├── RegisterActivity.java        # New account creation
-│           ├── MainActivity.java            # Home dashboard
-│           ├── TransactionsActivity.java    # Full list with filters
-│           ├── AnalyticsActivity.java       # Charts + AI insights
-│           ├── BudgetActivity.java          # Budget manager
-│           ├── NetWorthActivity.java        # Assets & liabilities
-│           ├── RecurringActivity.java       # Recurring bills
-│           ├── SettingsActivity.java        # Biometric, export, import, sync, logout
-│           ├── AddExpenseActivity.java      # Add / Edit expense
-│           │
-│           ├── ── Room Entities ──
-│           ├── Transaction.java
-│           ├── Budget.java
-│           ├── RecurringTransaction.java
-│           ├── NetWorthItem.java
-│           │
-│           ├── ── DAOs ──
-│           ├── TransactionDao.java
-│           ├── BudgetDao.java
-│           ├── RecurringDao.java
-│           ├── NetWorthDao.java
-│           ├── AppDatabase.java
-│           │
-│           ├── ── Core Engines ──
-│           ├── CategoryEngine.java          # 16 categories, 200+ keywords, merchant map
-│           ├── SmsParser.java               # Regex parser for bank SMS
-│           ├── SmsImporter.java             # Bulk 90-day offline SMS import
-│           ├── SmsReceiver.java             # Real-time SMS BroadcastReceiver
-│           ├── InsightEngine.java           # AI insights + health score
-│           ├── CsvImporter.java             # CSV file import with header detection
-│           ├── CsvExporter.java             # CSV export
-│           │
-│           ├── ── Backend / Auth ──
-│           ├── ApiClient.java               # OkHttp wrapper for backend calls
-│           ├── SessionManager.java          # Encrypted JWT token storage
-│           ├── SyncManager.java             # Cloud data sync
-│           │
-│           ├── ── Notifications ──
-│           ├── NotificationHelper.java      # 4 channels + TaskStackBuilder intents
-│           ├── ReminderReceiver.java        # Bill due alerts
-│           ├── BootReceiver.java            # Reschedule alarms on reboot
-│           │
-│           └── ── Adapters ──
-│               ├── TransactionAdapter.java  # Tap to edit, self-transfer badge
-│               ├── BudgetAdapter.java       # Progress bar, colour status
-│               ├── NetWorthAdapter.java
-│               └── RecurringAdapter.java
-│
-└── .github/workflows/build-apk.yml         # GitHub Actions CI — auto-builds APK
+app/src/main/
+├── java/com/spendtracker/pro/
+│   ├── ML Agent
+│   │   ├── HybridTransactionAgent.java      — orchestrates all 3 layers
+│   │   ├── TFLiteTransactionClassifier.java  — Layer 2: on-device model
+│   │   ├── SmartTransactionAgent.java        — Layer 1: frequency maps
+│   │   ├── TransactionFeatureExtractor.java  — 86-float feature builder
+│   │   └── NlpCategorizer.java               — Layer 3: word-match fallback
+│   ├── SMS Parsing
+│   │   ├── BankAwareSmsParser.java
+│   │   ├── SmsImporter.java
+│   │   ├── SmsReceiver.java
+│   │   └── BankDetector.java
+│   ├── Database
+│   │   ├── AppDatabase.java                  — Room DB, schema v7
+│   │   ├── Transaction.java / TransactionDao.java
+│   │   ├── Budget.java / BudgetDao.java
+│   │   ├── CreditCard.java / CreditCardDao.java
+│   │   └── BankAccount.java / BankAccountDao.java
+│   └── UI
+│       ├── MainActivity.java / HomeFragment.java
+│       ├── AddExpenseActivity.java
+│       ├── AnalyticsActivity.java / AnalyticsFragment.java
+│       ├── BudgetActivity.java
+│       ├── TransactionsActivity.java
+│       └── ...
+├── assets/
+│   ├── base_model.tflite                     — trained 18-class classifier
+│   ├── merchant_dataset.json                 — 400+ merchant training data
+│   └── merchant_logo_map.json
+└── res/
+    ├── values/colors.xml                     — light theme (lavender + white)
+    └── values-night/colors.xml               — dark theme (deep navy)
 ```
 
 ---
 
-## 🚀 Getting Started
+## ML Model
+
+The on-device classifier uses an 86-element feature vector:
+
+| Features | Indices | Description |
+|---|---|---|
+| Merchant trigrams | 0–63 | MD5-hashed char-trigram bag-of-words, L1 normalised |
+| Amount bucket | 64–71 | Log-scale one-hot (₹0 / ₹50 / ₹150 / ₹300 / ₹500 / ₹1K / ₹3K+) |
+| Day of week | 72–78 | One-hot (Mon–Sun) |
+| Day of month | 79 | Normalised 1/31–31/31 |
+| Hour of day | 80 | Normalised 0/23–23/23 |
+| Payment method | 81–85 | One-hot (UPI / Credit / Debit / Cash / Bank) |
+
+To retrain the model after updating `merchant_dataset.json`:
+
+```bash
+pip install tensorflow numpy
+python train_base_model.py
+# Output: app/src/main/assets/base_model.tflite
+```
+
+---
+
+## Build & Run
 
 ### Prerequisites
-- Android Studio Hedgehog or newer
-- Android SDK 26+ (Android 8.0 Oreo)
+- Android Studio Hedgehog or later
 - JDK 17
+- Android SDK 34
 
-### Build & Run
-
+### Local build
 ```bash
-# Clone the repo
-git clone https://github.com/atiwari111/SpendTrackerPro.git
-cd SpendTrackerPro
-
-# Open in Android Studio and sync Gradle, OR build from terminal:
+git clone https://github.com/<your-username>/SpendTrackerPro2.0.git
+cd SpendTrackerPro2.0
 ./gradlew assembleDebug
-
-# APK output:
-# app/build/outputs/apk/debug/app-debug.apk
 ```
 
-### GitHub Actions (Auto Build)
-Every push to `main` or `master` triggers a workflow that builds the APK automatically.
-Download it from **Actions → SpendTrackerPro-APK → Artifacts**.
+### Release build (CI)
+Trigger manually via GitHub Actions → **Build SpendTracker Pro APK** → **Run workflow**.
 
----
-
-## ☁️ Backend Setup (Optional — for cloud sync)
-
-> Without the backend, the app works fully offline. Backend is only needed for account login and cloud backup.
-
-### Quickest option — Railway (free, no server needed)
-
-1. Push the `SpendTrackerBackend/` folder to a GitHub repo
-2. Go to [railway.app](https://railway.app) → New Project → Deploy from GitHub
-3. Set environment variables:
-   ```
-   JWT_SECRET=<run: node -e "console.log(require('crypto').randomBytes(64).toString('hex'))">
-   ENCRYPTION_KEY=<run: node -e "console.log(require('crypto').randomBytes(32).toString('hex'))">
-   ```
-4. Railway gives you a free `*.railway.app` HTTPS URL automatically
-5. Paste that URL into `ApiClient.java` → `BASE_URL`
-
-### Self-hosted (VPS)
-
-```bash
-cd SpendTrackerBackend
-npm install
-cp .env.example .env    # fill in JWT_SECRET and ENCRYPTION_KEY
-node server.js          # runs on port 3000
-```
-
-Add nginx + Let's Encrypt for free HTTPS. See `SpendTrackerBackend/SETUP_GUIDE.md` for the full step-by-step.
-
-### Update `BASE_URL` in the app
-
-```java
-// ApiClient.java
-public static final String BASE_URL = "https://your-domain.com";
-// For emulator local testing:  "http://10.0.2.2:3000"
-// For device on same WiFi:     "http://192.168.x.x:3000"
-```
-
----
-
-## 🔐 Permissions
-
-| Permission | Why it's needed |
+Required repository secrets:
+| Secret | Description |
 |---|---|
-| `READ_SMS` | Read existing bank SMS to import transactions |
-| `RECEIVE_SMS` | Detect new transactions in real time |
-| `POST_NOTIFICATIONS` | Budget alerts, bill reminders, spend notifications |
-| `INTERNET` | Cloud sync and account login |
-| `ACCESS_NETWORK_STATE` | Check connectivity before sync |
-| `USE_BIOMETRIC` / `USE_FINGERPRINT` | Biometric lock screen |
-| `SCHEDULE_EXACT_ALARM` | Recurring bill reminders |
-| `RECEIVE_BOOT_COMPLETED` | Reschedule reminders after phone restart |
-| `WRITE_EXTERNAL_STORAGE` (≤ API 28) | CSV export |
+| `KEYSTORE_BASE64` | Base64-encoded release keystore |
+| `RELEASE_STORE_PASSWORD` | Keystore password |
+| `RELEASE_KEY_PASSWORD` | Key password |
 
 ---
 
-## 🗺️ Roadmap
+## Permissions
 
-- [ ] UPI deep-link payment integration
-- [ ] Dark / light theme toggle
-- [ ] Widget for home screen balance
-- [ ] Multi-currency support
-- [ ] Bank statement PDF import
-- [ ] Google Drive / Dropbox backup
-- [ ] Shared household expenses
-
----
-
-## 🤝 Contributing
-
-1. Fork the repo
-2. Create a feature branch: `git checkout -b feature/your-feature`
-3. Commit your changes: `git commit -m 'Add your feature'`
-4. Push: `git push origin feature/your-feature`
-5. Open a Pull Request
+| Permission | Reason |
+|---|---|
+| `READ_SMS` / `RECEIVE_SMS` | Auto-import bank transactions |
+| `CAMERA` | OCR receipt scanning |
+| `USE_BIOMETRIC` | App lock |
+| `POST_NOTIFICATIONS` | Budget alerts and daily summary |
+| `SCHEDULE_EXACT_ALARM` | Bill due-date reminders |
+| `RECEIVE_BOOT_COMPLETED` | Reschedule alarms after reboot |
+| `READ/WRITE_EXTERNAL_STORAGE` | CSV export and backup |
 
 ---
 
-## 📄 License
+## Database Schema
 
-```
-MIT License — free to use, modify, and distribute.
-```
+Room database — current version **7**. Migrations are handled gracefully from v1 through v7, including skip migrations (v5→v7 direct path).
 
 ---
 
-## 👤 Author
+## Changelog
 
-**Animesh Tiwari**
-GitHub: [@atiwari111](https://github.com/atiwari111)
+### v2.1 (current)
+- Added **Beauty & Salon** category
+- Renamed Food → **Cafe & Food Delivery**
+- Consolidated 4 income categories → single **Income** category
+- Hybrid 3-layer ML engine with TFLite + on-device personalisation
+- Light theme redesign — lavender background, white cards, purple typography
+- Uniform 2×3 quick-action card grid on home screen
+- Fixed edit-expense crash (SwitchCompat type mismatch)
+- All 80+ lint warnings resolved
+
+### v2.0
+- Complete UI overhaul — neo-banking dark and light themes
+- SMS auto-import with BankAwareSmsParser
+- OCR receipt scanner
+- Split expense feature
+- Biometric lock
+- Backup and restore
+- Home screen widget
+
+---
+
+## Privacy
+
+All processing happens on your device. SpendTracker Pro does not:
+- Send your SMS messages anywhere
+- Connect to any server for categorisation
+- Track usage or analytics
+- Show ads
+
+Your data lives in the app's private storage and never leaves unless you explicitly export or share a backup.
+
+---
+
+Author : Animesh Tiwari
 Linkdin : https://www.linkedin.com/in/animeshtiwari/
 
 ---
 
-> Built with ❤️ for smart personal finance management
+## License
+
+MIT License — see [LICENSE](LICENSE) for details.

@@ -153,7 +153,7 @@ public class HomeFragment extends Fragment {
         int h = Calendar.getInstance().get(Calendar.HOUR_OF_DAY);
         String g = h < 12 ? "Good Morning ☀️" : h < 17 ? "Good Afternoon 🌤️" : "Good Evening 🌙";
         tvGreeting.setText(g);
-        tvDate.setText(new SimpleDateFormat("EEEE, dd MMMM yyyy", Locale.getDefault())
+        tvDate.setText(new SimpleDateFormat("EEEE, dd MMMM yyyy", Locale.ENGLISH)
                 .format(new Date()));
     }
 

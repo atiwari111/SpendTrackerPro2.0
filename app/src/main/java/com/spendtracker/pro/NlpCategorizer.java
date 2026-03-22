@@ -147,7 +147,7 @@ public class NlpCategorizer {
 
     public static String predict(String merchant) {
         if (merchant == null || merchant.trim().isEmpty()) return "💼 Others";
-        String m = merchant.toLowerCase().trim();
+        String m = merchant.toLowerCase(java.util.Locale.ROOT).trim();
         for (String[] group : WORD_GROUPS) {
             String category = group[0];
             for (int i = 1; i < group.length; i++) {

@@ -8,36 +8,88 @@
         android:layout_width="match_parent" android:layout_height="?attr/actionBarSize"
         android:background="@color/bg_card" app:titleTextColor="@color/text_primary"/>
 
-    <!-- Summary header -->
+    <!-- Row 1: Total Budget | Spent | Remaining -->
     <androidx.cardview.widget.CardView android:layout_width="match_parent"
-        android:layout_height="wrap_content" android:layout_margin="16dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp" android:layout_marginEnd="16dp"
+        android:layout_marginTop="16dp" android:layout_marginBottom="8dp"
         app:cardBackgroundColor="@color/bg_card2" app:cardCornerRadius="14dp">
-        <LinearLayout android:baselineAligned="false" android:layout_width="match_parent" android:layout_height="wrap_content"
-        android:orientation="horizontal" android:padding="16dp">
+        <LinearLayout android:baselineAligned="false"
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:orientation="horizontal" android:padding="16dp">
+
             <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content"
                 android:layout_weight="1" android:orientation="vertical" android:gravity="center">
                 <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                    android:text="Total Budget" android:textColor="@color/text_secondary" android:textSize="11sp"/>
+                    android:text="Total Budget" android:textColor="@color/text_secondary"
+                    android:textSize="11sp"/>
                 <TextView android:id="@+id/tvTotalBudget" android:layout_width="wrap_content"
                     android:layout_height="wrap_content" android:text="₹0"
-                    android:textColor="@color/text_primary" android:textSize="18sp" android:textStyle="bold"/>
+                    android:textColor="@color/text_primary" android:textSize="18sp"
+                    android:textStyle="bold"/>
             </LinearLayout>
+
             <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content"
                 android:layout_weight="1" android:orientation="vertical" android:gravity="center">
                 <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                    android:text="Spent" android:textColor="@color/text_secondary" android:textSize="11sp"/>
+                    android:text="Spent" android:textColor="@color/text_secondary"
+                    android:textSize="11sp"/>
                 <TextView android:id="@+id/tvTotalUsed" android:layout_width="wrap_content"
                     android:layout_height="wrap_content" android:text="₹0"
-                    android:textColor="#EF4444" android:textSize="18sp" android:textStyle="bold"/>
+                    android:textColor="#EF4444" android:textSize="18sp"
+                    android:textStyle="bold"/>
             </LinearLayout>
+
             <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content"
                 android:layout_weight="1" android:orientation="vertical" android:gravity="center">
                 <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                    android:text="Remaining" android:textColor="@color/text_secondary" android:textSize="11sp"/>
+                    android:text="Remaining" android:textColor="@color/text_secondary"
+                    android:textSize="11sp"/>
                 <TextView android:id="@+id/tvTotalLeft" android:layout_width="wrap_content"
                     android:layout_height="wrap_content" android:text="₹0"
-                    android:textColor="#10B981" android:textSize="18sp" android:textStyle="bold"/>
+                    android:textColor="#10B981" android:textSize="18sp"
+                    android:textStyle="bold"/>
             </LinearLayout>
+
+        </LinearLayout>
+    </androidx.cardview.widget.CardView>
+
+    <!-- Row 2: Income this month card -->
+    <androidx.cardview.widget.CardView android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp" android:layout_marginEnd="16dp"
+        android:layout_marginBottom="12dp"
+        app:cardBackgroundColor="#1A10B981" app:cardCornerRadius="12dp"
+        app:cardElevation="0dp">
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:orientation="horizontal" android:gravity="center_vertical"
+            android:paddingStart="16dp" android:paddingEnd="16dp"
+            android:paddingTop="12dp" android:paddingBottom="12dp">
+
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:text="💚"
+                android:textSize="20sp"
+                android:layout_marginEnd="10dp"/>
+
+            <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content"
+                android:layout_weight="1" android:orientation="vertical">
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:text="Income this month"
+                    android:textColor="#10B981"
+                    android:textSize="12sp"/>
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:text="Salary, cashback &amp; refunds"
+                    android:textColor="#8010B981"
+                    android:textSize="11sp"/>
+            </LinearLayout>
+
+            <TextView android:id="@+id/tvTotalIncome"
+                android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:text="₹0"
+                android:textColor="#10B981"
+                android:textSize="20sp"
+                android:textStyle="bold"/>
+
         </LinearLayout>
     </androidx.cardview.widget.CardView>
 
@@ -45,8 +97,8 @@
     <TextView android:id="@+id/tvEmptyState"
         android:layout_width="match_parent" android:layout_height="wrap_content"
         android:text="No budgets set yet.\nTap + to add a budget for a category."
-        android:textColor="@color/text_secondary" android:textSize="14sp" android:gravity="center"
-        android:padding="32dp" android:visibility="gone"/>
+        android:textColor="@color/text_secondary" android:textSize="14sp"
+        android:gravity="center" android:padding="32dp" android:visibility="gone"/>
 
     <androidx.recyclerview.widget.RecyclerView android:id="@+id/rv"
         android:layout_width="match_parent" android:layout_height="0dp"

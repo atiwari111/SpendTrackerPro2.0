@@ -80,7 +80,7 @@ public class BankAccountActivity extends AppCompatActivity {
             // Total balance
             double total = 0;
             for (BankAccount a : accounts) total += a.balance;
-            tvTotalBalance.setText(String.format("₹%,.2f", total));
+            tvTotalBalance.setText(String.format(Locale.getDefault(), "₹%,.2f", total));
 
             // "X of Y accounts" label
             final int activeCount = accounts.size();
@@ -113,7 +113,7 @@ public class BankAccountActivity extends AppCompatActivity {
         etBalance.setText(String.valueOf(acc.balance));
 
         if (acc.updatedAt > 0) {
-            String ts = new SimpleDateFormat("dd MMM yyyy, hh:mm a", Locale.getDefault())
+            String ts = new SimpleDateFormat("dd MMM yyyy, hh:mm a", Locale.ENGLISH)
                     .format(new Date(acc.updatedAt));
             tvLastUpdated.setText("Last updated: " + ts);
         } else {

@@ -19,7 +19,12 @@ public class SmsParser {
         "as on ", "mcx ", "mcx ltd", "nse ", "bse ", "sensex", "nifty",
         "gold rate", "silver rate", "commodity", "market price",
         "otp", "one time password", "verification code", "do not share",
-        "avl bal", "avbl bal", "closing balance",
+        // "avl bal" and "avbl bal" intentionally removed — every Indian bank appends the
+        // remaining balance at the end of real transaction SMS (e.g. "Avl Bal Rs.8500").
+        // Keeping them here caused isTransactionSms() to reject legitimate debit/credit SMS.
+        // Balance-ONLY alerts (no debit/credit keyword) are still rejected by the
+        // hasDebit || hasCredit guard at the bottom of this method.
+        "closing balance",
         "min due", "minimum due", "your limit", "credit limit",
         "congratulations", "you have won", "offer expires",
         "get flat", "upto ", "cashback offer",

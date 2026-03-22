@@ -1,6 +1,7 @@
 package com.spendtracker.pro;
 
-import android.app.AlertDialog;
+import androidx.appcompat.app.AlertDialog;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.view.*;
 import android.widget.*;
@@ -13,7 +14,7 @@ import java.util.concurrent.Executors;
 public class BudgetActivity extends AppCompatActivity {
     private RecyclerView rv;
     private BudgetAdapter adapter;
-    private TextView tvTotalBudget, tvTotalUsed, tvTotalLeft, tvEmptyState;
+    private TextView tvTotalBudget, tvTotalUsed, tvTotalLeft, tvTotalIncome, tvEmptyState;
     private AppDatabase db;
     private int month, year;
     private long monthStart, monthEnd;
@@ -46,6 +47,7 @@ public class BudgetActivity extends AppCompatActivity {
         tvTotalBudget = findViewById(R.id.tvTotalBudget);
         tvTotalUsed   = findViewById(R.id.tvTotalUsed);
         tvTotalLeft   = findViewById(R.id.tvTotalLeft);
+        tvTotalIncome = findViewById(R.id.tvTotalIncome);
         tvEmptyState  = findViewById(R.id.tvEmptyState);
 
         adapter = new BudgetAdapter(this::showEditDialog);
@@ -93,6 +95,15 @@ public class BudgetActivity extends AppCompatActivity {
                 // Update stored value so other screens are also consistent
                 db.budgetDao().update(b);
             }
+            // Fetch total income this month (isCredit transactions)
+            double incomeSum = 0;
+            try {
+                List<Transaction> allInRange = db.transactionDao().getInRange(monthStart, monthEnd);
+                for (Transaction t : allInRange) {
+                    if (t.isCredit && !t.isSelfTransfer) incomeSum += t.amount;
+                }
+            } catch (Exception ignored) {}
+            final double totalIncome = incomeSum;
             final List<Budget> finalList = list;
             runOnUiThread(() -> {
                 boolean isEmpty = finalList.isEmpty();
@@ -103,10 +114,13 @@ public class BudgetActivity extends AppCompatActivity {
                 double totalLimit = 0, totalUsed = 0;
                 for (Budget b : finalList) { totalLimit += b.limitAmount; totalUsed += b.usedAmount; }
                 double left = totalLimit - totalUsed;
-                tvTotalBudget.setText(String.format("₹%.0f", totalLimit));
-                tvTotalUsed.setText(String.format("₹%.0f", totalUsed));
-                tvTotalLeft.setText(String.format("₹%.0f", left));
+                tvTotalBudget.setText(String.format(java.util.Locale.getDefault(), "₹%.0f", totalLimit));
+                tvTotalUsed.setText(String.format(java.util.Locale.getDefault(), "₹%.0f", totalUsed));
+                tvTotalLeft.setText(String.format(java.util.Locale.getDefault(), "₹%.0f", left));
                 tvTotalLeft.setTextColor(left >= 0 ? 0xFF10B981 : 0xFFEF4444);
+                if (tvTotalIncome != null) {
+                    tvTotalIncome.setText(String.format(java.util.Locale.getDefault(), "₹%.0f", totalIncome));
+                }
             });
         });
     }
@@ -115,10 +129,10 @@ public class BudgetActivity extends AppCompatActivity {
         View v = LayoutInflater.from(this).inflate(R.layout.dialog_budget, null);
         Spinner sp = v.findViewById(R.id.spCategory);
         EditText etLimit = v.findViewById(R.id.etLimit);
-        String[] cats = CategoryEngine.getCategoryNames();
+        String[] cats = CategoryEngine.getSpendCategoryNames(); // Income excluded
         sp.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, cats));
 
-        new AlertDialog.Builder(this, R.style.AlertDialogDark)
+        AlertDialog dlg1 = new AlertDialog.Builder(this, R.style.AlertDialogDark)
                 .setTitle("Set Budget")
                 .setView(v)
                 .setPositiveButton("Save", (d, w) -> {
@@ -135,7 +149,6 @@ public class BudgetActivity extends AppCompatActivity {
                         Budget existing = db.budgetDao().getByCategoryMonthYear(cat, month, year);
                         if (existing != null) {
                             existing.limitAmount = limit;
-                            // Compute live used right now
                             existing.usedAmount = db.transactionDao().getSumForCategoryBetween(cat, monthStart, monthEnd);
                             db.budgetDao().update(existing);
                         } else {
@@ -148,14 +161,17 @@ public class BudgetActivity extends AppCompatActivity {
                     });
                 })
                 .setNegativeButton("Cancel", null)
-                .show();
+                .create();
+        dlg1.show();
+        dlg1.getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(0xFF7C3AED);
+        dlg1.getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(0xFF94A3B8);
     }
 
     private void showEditDialog(Budget budget) {
         View v = LayoutInflater.from(this).inflate(R.layout.dialog_budget, null);
         Spinner sp = v.findViewById(R.id.spCategory);
         EditText etLimit = v.findViewById(R.id.etLimit);
-        String[] cats = CategoryEngine.getCategoryNames();
+        String[] cats = CategoryEngine.getSpendCategoryNames(); // Income excluded
         sp.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, cats));
         for (int i = 0; i < cats.length; i++) { if (cats[i].equals(budget.category)) { sp.setSelection(i); break; } }
         etLimit.setText(String.valueOf((int) budget.limitAmount));
@@ -170,7 +186,7 @@ public class BudgetActivity extends AppCompatActivity {
             ((android.widget.LinearLayout) v).addView(tvInfo, 0);
         }
 
-        new AlertDialog.Builder(this, R.style.AlertDialogDark)
+        AlertDialog dlg2 = new AlertDialog.Builder(this, R.style.AlertDialogDark)
                 .setTitle("Edit Budget — " + budget.category)
                 .setView(v)
                 .setPositiveButton("Update", (d, w) -> {
@@ -192,7 +208,11 @@ public class BudgetActivity extends AppCompatActivity {
                             refreshBudgets();
                         }))
                 .setNeutralButton("Cancel", null)
-                .show();
+                .create();
+        dlg2.show();
+        dlg2.getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(0xFF7C3AED);
+        dlg2.getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(0xFFEF4444);
+        dlg2.getButton(AlertDialog.BUTTON_NEUTRAL).setTextColor(0xFF94A3B8);
     }
 
     @Override public boolean onOptionsItemSelected(MenuItem item) {

@@ -1,18 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-
     <!-- ═══════════════════════════════════════════════════════════
-         Neo-Banking Light Theme — warm pink/orange tones
+         SpendTracker Pro — Light Theme "Fresh Purple"
+         Page bg: soft lavender  |  Cards: pure white
+         Text: deep indigo + rich purple secondary
          ═══════════════════════════════════════════════════════════ -->
 
     <!-- Backgrounds -->
-    <color name="bg_dark">#FFF0F5</color>      <!-- light pink app background -->
-    <color name="bg_card">#FFF3E0</color>      <!-- light orange cards -->
-    <color name="bg_card2">#FFEBD6</color>     <!-- slightly deeper light orange -->
+    <color name="bg_dark">#EEE8FF</color>       <!-- soft lavender page background -->
+    <color name="bg_card">#FFFFFF</color>        <!-- pure white cards — max icon visibility -->
+    <color name="bg_card2">#F5F0FF</color>       <!-- barely-lavender secondary surfaces -->
     <color name="bg_nav">#FFFFFF</color>
-    <color name="bg_elevated">#FFE4CC</color>  <!-- elevated surfaces -->
+    <color name="bg_elevated">#E4DAFF</color>    <!-- lavender elevated surfaces -->
 
-    <!-- 🔥 NEW: Onboarding Dark Theme (for your XML screens) -->
+    <!-- NEW: Onboarding Dark -->
     <color name="background_dark">#0F172A</color>
 
     <!-- Brand -->
@@ -30,26 +31,26 @@
     <color name="amber_dim">#FEF3C7</color>
     <color name="cyan">#06B6D4</color>
 
-    <!-- 🔥 NEW: CTA Button Color -->
+    <!-- CTA -->
     <color name="cta_green">#22C55E</color>
 
-    <!-- Text — light theme -->
+    <!-- Text — light theme (deep indigo palette for readability) -->
     <color name="white">#FFFFFF</color>
-    <color name="text_primary">#0F172A</color>
-    <color name="text_secondary">#64748B</color>
-    <color name="text_hint">#94A3B8</color>
+    <color name="text_primary">#1E1035</color>    <!-- deep purple-black — crisp and readable -->
+    <color name="text_secondary">#5B4B9B</color>  <!-- rich purple — clearly visible on white -->
+    <color name="text_hint">#9585C8</color>        <!-- soft purple hint -->
 
-    <!-- 🔥 NEW: Text for dark backgrounds (onboarding) -->
+    <!-- Text for dark backgrounds (onboarding) -->
     <color name="text_on_dark_primary">#FFFFFF</color>
     <color name="text_on_dark_secondary">#B3FFFFFF</color>
 
-    <!-- Existing opacity variants -->
-    <color name="white_70">#B30F172A</color>
-    <color name="white_50">#800F172A</color>
-    <color name="white_30">#4D0F172A</color>
-    <color name="white_10">#1A0F172A</color>
+    <!-- Opacity variants -->
+    <color name="white_70">#B31E1035</color>
+    <color name="white_50">#801E1035</color>
+    <color name="white_30">#4D1E1035</color>
+    <color name="white_10">#1A1E1035</color>
 
-    <color name="divider">#F5DEB3</color>
+    <color name="divider">#DDD5FF</color>          <!-- soft purple divider -->
 
     <!-- System -->
     <color name="colorPrimary">#7C3AED</color>
@@ -57,8 +58,8 @@
     <color name="colorAccent">#A78BFA</color>
 
     <!-- Gradients -->
-    <color name="gradient_start">#FFF0F5</color>
-    <color name="gradient_end">#FFF3E0</color>
+    <color name="gradient_start">#EEE8FF</color>
+    <color name="gradient_end">#F5F0FF</color>
 
     <!-- Launcher -->
     <color name="ic_launcher_background">#7C3AED</color>

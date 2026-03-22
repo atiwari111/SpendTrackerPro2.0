@@ -15,4 +15,7 @@ public interface RecurringDao {
     List<RecurringTransaction> getActiveSync();
     @Query("SELECT * FROM recurring WHERE nextDueDate <= :timestamp AND isActive = 1")
     List<RecurringTransaction> getDue(long timestamp);
+
+    @androidx.room.Query("DELETE FROM recurring")
+    void deleteAll();
 }

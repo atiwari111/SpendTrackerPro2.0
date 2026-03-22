@@ -8,6 +8,7 @@ import android.widget.*;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.SwitchCompat;
 import androidx.appcompat.widget.Toolbar;
 import com.google.android.material.textfield.TextInputEditText;
 import java.text.SimpleDateFormat;
@@ -26,7 +27,7 @@ public class AddExpenseActivity extends AppCompatActivity {
     private TextInputEditText etAmount, etMerchant, etNotes;
     private Spinner spCategory, spPayment;
     private TextView tvDate;
-    private Switch swSelfTransfer;
+    private SwitchCompat swSelfTransfer;
     private long selectedDate = System.currentTimeMillis();
     private AppDatabase db;
     private HybridTransactionAgent agent;
@@ -150,7 +151,7 @@ public class AddExpenseActivity extends AppCompatActivity {
                         if (suggestion.avgAmount > 0
                                 && (etAmount.getText() == null
                                     || etAmount.getText().toString().isEmpty())) {
-                            etAmount.setHint(String.format("~₹%.0f (avg)", suggestion.avgAmount));
+                            etAmount.setHint(String.format(Locale.getDefault(), "~₹%.0f (avg)", suggestion.avgAmount));
                         }
 
                         // Show last notes as placeholder hint
@@ -355,7 +356,7 @@ public class AddExpenseActivity extends AppCompatActivity {
     }
 
     private void updateDateLabel() {
-        tvDate.setText(new SimpleDateFormat("dd MMM yyyy", Locale.getDefault())
+        tvDate.setText(new SimpleDateFormat("dd MMM yyyy", Locale.ENGLISH)
                 .format(new Date(selectedDate)));
     }
 

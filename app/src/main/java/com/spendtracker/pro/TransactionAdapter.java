@@ -14,7 +14,7 @@ public class TransactionAdapter
     private List<Transaction> transactions = new ArrayList<>();
     private final boolean dashboard;
     private final SimpleDateFormat dateFmt =
-            new SimpleDateFormat("dd MMM yyyy, hh:mm a", Locale.getDefault());
+            new SimpleDateFormat("dd MMM yyyy, hh:mm a", Locale.ENGLISH);
 
     public TransactionAdapter(boolean dashboard) {
         this.dashboard = dashboard;
@@ -57,7 +57,7 @@ public class TransactionAdapter
 
         // Amount — green for credit/income, red for expense, grey for self-transfer
         String amtPrefix = t.isCredit ? "+ ₹" : "₹";
-        h.amount.setText(String.format(amtPrefix + "%.0f", t.amount));
+        h.amount.setText(String.format(java.util.Locale.getDefault(), amtPrefix + "%.0f", t.amount));
         android.content.Context ctx = h.itemView.getContext();
         h.amount.setTextColor(t.isSelfTransfer
                 ? androidx.core.content.ContextCompat.getColor(ctx, R.color.text_hint)

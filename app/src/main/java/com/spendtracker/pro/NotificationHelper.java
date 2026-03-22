@@ -108,7 +108,7 @@ public class NotificationHelper {
                      : "📋 Bill Due in " + days + " day(s): " + bill.name;
         String msg = String.format(Locale.getDefault(), "₹%.0f due %s",
                 bill.amount,
-                days <= 0 ? "NOW" : "on " + new java.text.SimpleDateFormat("dd MMM", java.util.Locale.getDefault())
+                days <= 0 ? "NOW" : "on " + new java.text.SimpleDateFormat("dd MMM", Locale.ENGLISH)
                         .format(new java.util.Date(bill.dueDate)));
         int id = bill.id + 50000; // stable: one per bill row
         send(ctx, CH_BILLS, id, title, msg, makeStackedIntent(ctx, BillActivity.class, id));

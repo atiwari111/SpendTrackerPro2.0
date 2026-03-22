@@ -17,7 +17,7 @@ public class BillActivity extends AppCompatActivity {
     private RecyclerView rvPending, rvPaid, rvRecurring;
     private TextView tvPendingCount, tvPaidCount, tvEmptyPending;
     private AppDatabase db;
-    private final SimpleDateFormat dateFmt = new SimpleDateFormat("dd MMM yyyy", Locale.getDefault());
+    private final SimpleDateFormat dateFmt = new SimpleDateFormat("dd MMM yyyy", Locale.ENGLISH);
 
     @Override
     protected void onCreate(Bundle s) {
