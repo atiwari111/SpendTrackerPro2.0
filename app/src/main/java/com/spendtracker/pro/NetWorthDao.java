@@ -17,4 +17,7 @@ public interface NetWorthDao {
     double getTotalAssets();
     @Query("SELECT COALESCE(SUM(amount), 0) FROM net_worth WHERE type = 'LIABILITY'")
     double getTotalLiabilities();
+
+    @androidx.room.Query("DELETE FROM net_worth")
+    void deleteAll();
 }

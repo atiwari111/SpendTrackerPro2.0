@@ -28,4 +28,7 @@ public interface BudgetDao {
      */
     @Query("UPDATE budgets SET usedAmount = (SELECT COALESCE(SUM(t.amount),0) FROM transactions t WHERE t.category = budgets.category AND t.isSelfTransfer = 0 AND t.timestamp >= :start AND t.timestamp < :end) WHERE month = :month AND year = :year")
     void recalcAllUsed(int month, int year, long start, long end);
+
+    @androidx.room.Query("DELETE FROM budgets")
+    void deleteAll();
 }

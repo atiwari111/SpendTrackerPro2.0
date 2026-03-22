@@ -30,4 +30,7 @@ public interface SplitEntryDao {
 
     @Query("UPDATE split_entries SET isPaid = 1, paidAt = :paidAt WHERE id = :id")
     void markPaid(int id, long paidAt);
+
+    @androidx.room.Query("DELETE FROM split_entries")
+    void deleteAll();
 }

@@ -52,4 +52,7 @@ public interface BankAccountDao {
            "  SELECT MAX(updatedAt) FROM bank_accounts b2 WHERE b2.lastFour = b1.lastFour)" +
            ")")
     void deleteDuplicatesByLastFour();
+
+    @androidx.room.Query("DELETE FROM bank_accounts")
+    void deleteAll();
 }

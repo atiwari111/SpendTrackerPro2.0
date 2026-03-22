@@ -242,17 +242,66 @@ public class SettingsFragment extends Fragment {
     }
 
     private void confirmClear() {
+        // Step 1: first confirmation dialog
         new androidx.appcompat.app.AlertDialog.Builder(requireContext())
                 .setTitle("Clear All Data")
-                .setMessage("This will permanently delete all transactions. Are you sure?")
-                .setPositiveButton("Delete All", (d, w) ->
-                        AppExecutors.db().execute(() -> {
-                            db.transactionDao().deleteAll();
-                            if (!isAdded()) return;
-                            requireActivity().runOnUiThread(() -> Toast.makeText(requireContext(),
-                                    "All data cleared", Toast.LENGTH_SHORT).show());
-                        }))
-                .setNegativeButton("Cancel", null).show();
+                .setMessage("This will permanently delete ALL local data — transactions, budgets, bills, " +
+                        "credit cards, bank accounts, recurring entries, net worth items, and split records.\n\n" +
+                        "This action cannot be undone.")
+                .setPositiveButton("Continue", (d, w) -> confirmClearFinal())
+                .setNegativeButton("Cancel", null)
+                .show();
+    }
+
+    /** Step 2: second-confirmation dialog to prevent accidental wipes. */
+    private void confirmClearFinal() {
+        android.widget.EditText input = new android.widget.EditText(requireContext());
+        input.setHint("Type DELETE to confirm");
+        input.setInputType(android.text.InputType.TYPE_CLASS_TEXT);
+        int pad = (int) (16 * requireContext().getResources().getDisplayMetrics().density);
+        input.setPadding(pad, pad, pad, pad);
+
+        androidx.appcompat.app.AlertDialog dialog = new androidx.appcompat.app.AlertDialog.Builder(requireContext())
+                .setTitle("Are you absolutely sure?")
+                .setMessage("Type DELETE (all caps) to permanently erase all app data.")
+                .setView(input)
+                .setPositiveButton("Erase Everything", null) // set below to prevent auto-dismiss
+                .setNegativeButton("Cancel", null)
+                .create();
+
+        dialog.setOnShowListener(di -> {
+            dialog.getButton(androidx.appcompat.app.AlertDialog.BUTTON_POSITIVE)
+                    .setOnClickListener(v -> {
+                        String typed = input.getText().toString().trim();
+                        if ("DELETE".equals(typed)) {
+                            dialog.dismiss();
+                            performFullDataClear();
+                        } else {
+                            input.setError("Type DELETE exactly");
+                        }
+                    });
+        });
+        dialog.show();
+    }
+
+    /** Wipes every table in the database, then notifies the user. */
+    private void performFullDataClear() {
+        AppExecutors.db().execute(() -> {
+            db.transactionDao().deleteAll();
+            db.budgetDao().deleteAll();
+            db.billDao().deleteAll();
+            db.creditCardDao().deleteAll();
+            db.bankAccountDao().deleteAll();
+            db.recurringDao().deleteAll();
+            db.netWorthDao().deleteAll();
+            db.splitEntryDao().deleteAll();
+            db.merchantPatternDao().deleteAll();
+            db.userFeedbackDao().deleteAll();
+            if (!isAdded()) return;
+            requireActivity().runOnUiThread(() ->
+                    Toast.makeText(requireContext(),
+                            "All data erased.", Toast.LENGTH_LONG).show());
+        });
     }
 
     private void importCsv(Uri uri) {
