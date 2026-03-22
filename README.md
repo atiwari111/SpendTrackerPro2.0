@@ -2,7 +2,6 @@
 
 A privacy-first personal finance Android app that automatically reads your bank SMS messages, categorises transactions using on-device machine learning, and gives you a complete picture of your spending — without sending any data to the cloud.
 
-Author --> Animesh Tiwari
 ---
 
 ## Screenshots
@@ -247,6 +246,11 @@ All processing happens on your device. SpendTracker Pro does not:
 - Show ads
 
 Your data lives in the app's private storage and never leaves unless you explicitly export or share a backup.
+
+---
+
+Author : Animesh Tiwari
+Linkdin : https://www.linkedin.com/in/animeshtiwari/
 
 ---
 
